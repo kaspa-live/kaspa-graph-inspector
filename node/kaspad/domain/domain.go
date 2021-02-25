@@ -6,8 +6,8 @@ import (
 	"github.com/kaspanet/kaspad/domain/dagconfig"
 	"github.com/kaspanet/kaspad/domain/miningmanager"
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
-	consensusPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/domain/consensus"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/domain/mining_manager"
+	consensusPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/kaspad/domain/consensus"
+	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/kaspad/domain/mining_manager"
 )
 
 func New(dagParams *dagconfig.Params, databaseContext database.Database) (kaspadDomainPackage.Domain, error) {
