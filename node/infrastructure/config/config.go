@@ -5,17 +5,14 @@ import (
 	"github.com/kaspanet/kaspad/infrastructure/config"
 	"github.com/kaspanet/kaspad/util"
 	"github.com/pkg/errors"
-	"path/filepath"
 )
 
 const (
-	appDataDirectory      = "kaspa-dag-visualizer-node"
-	databaseDirectoryName = "database"
+	appDataDirectory = "kaspa-dag-visualizer-node"
 )
 
 var (
-	HomeDir           = util.AppDataDir(appDataDirectory, false)
-	DatabaseDirectory = filepath.Join(appDataDirectory, databaseDirectoryName)
+	HomeDir = util.AppDataDir(appDataDirectory, false)
 )
 
 type Config struct {
