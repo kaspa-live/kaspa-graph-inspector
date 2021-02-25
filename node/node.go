@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/kaspanet/kaspad/app/protocol"
-	domainPackage "github.com/kaspanet/kaspad/domain"
 	kaspadConfigPackage "github.com/kaspanet/kaspad/infrastructure/config"
 	"github.com/kaspanet/kaspad/infrastructure/network/addressmanager"
 	"github.com/kaspanet/kaspad/infrastructure/network/connmanager"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter/router"
+	domainPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/domain"
 	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/config"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/database"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/logging"
@@ -52,7 +52,7 @@ func newNode(config *configPackage.Config) (*node, error) {
 	if err != nil {
 		return nil, err
 	}
-	domain, err := domainPackage.New(config.NetworkFlags.ActiveNetParams, databaseContext, false)
+	domain, err := domainPackage.New(config.NetworkFlags.ActiveNetParams, databaseContext)
 	if err != nil {
 		return nil, err
 	}
