@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
+	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/config"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/logging"
 	kaspadPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/kaspad"
@@ -19,6 +21,9 @@ func main() {
 	if err != nil {
 		logErrorAndExit("Could not create kaspad: %s", err)
 	}
+	kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock) {
+		log.Infof("aaa!! %s", consensushashing.BlockHash(block))
+	})
 	err = kaspad.Start()
 	if err != nil {
 		logErrorAndExit("Could not start kaspad: %s", err)

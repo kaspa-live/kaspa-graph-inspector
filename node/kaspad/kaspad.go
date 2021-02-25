@@ -10,9 +10,11 @@ import (
 	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/config"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/database"
 	domainPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/kaspad/domain"
+	consensusPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/kaspad/domain/consensus"
 )
 
 type Kaspad struct {
+	domain            *domainPackage.Domain
 	netAdapter        *netadapter.NetAdapter
 	connectionManager *connmanager.ConnectionManager
 	protocolManager   *protocol.Manager
@@ -51,10 +53,15 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 		return nil, err
 	}
 	return &Kaspad{
+		domain:            domain,
 		netAdapter:        netAdapter,
 		connectionManager: connectionManager,
 		protocolManager:   protocolManager,
 	}, nil
+}
+
+func (n *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
+	n.domain.SetOnBlockAddedListener(listener)
 }
 
 func (n *Kaspad) Start() error {
