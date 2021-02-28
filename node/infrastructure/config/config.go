@@ -16,7 +16,8 @@ var (
 )
 
 type Config struct {
-	P2PServerAddress string `long:"p2p-server" description:"Kaspad P2P server to connect to. Should be of the form: <host>:<port>"`
+	P2PServerAddress         string `long:"p2p-server" description:"Kaspad P2P server to connect to. Should be of the form: <host>:<port>"`
+	DatabaseConnectionString string `long:"connection-string" description:"Connection string for PostgrSQL database to connect to. Should be of the form: postgres://<username>:<password>@<host>:<port>/<database name>"`
 	config.NetworkFlags
 }
 
@@ -30,6 +31,9 @@ func Parse() (*Config, error) {
 
 	if config.P2PServerAddress == "" {
 		return nil, errors.Errorf("--p2p-server is required.")
+	}
+	if config.DatabaseConnectionString == "" {
+		return nil, errors.Errorf("--connection-string is required.")
 	}
 
 	err = config.ResolveNetwork(parser)

@@ -36,7 +36,7 @@ docker-compose up -d postgres
 sleep 10s
 
 # Start the node
-docker-compose up -d node
+docker-compose up -d kaspa-dag-visualizer-node
 
 # Print logs for all services
 docker-compose logs -f
