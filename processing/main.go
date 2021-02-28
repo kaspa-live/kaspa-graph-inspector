@@ -1,12 +1,11 @@
 package main
 
 import (
-	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	databasePackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database"
 	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/config"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
 	kaspadPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/kaspad"
+	processingPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/processing"
 	"os"
 )
 
@@ -28,13 +27,13 @@ func main() {
 	if err != nil {
 		logErrorAndExit("Could not create kaspad: %s", err)
 	}
-	kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock) {
-		log.Infof("aaa!! %s", consensushashing.BlockHash(block))
-	})
 	err = kaspad.Start()
 	if err != nil {
 		logErrorAndExit("Could not start kaspad: %s", err)
 	}
+
+	processing := processingPackage.NewProcessing(database, kaspad)
+	kaspad.SetOnBlockAddedListener(processing.ProcessBlock)
 
 	<-make(chan struct{})
 }
