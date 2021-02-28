@@ -3,10 +3,10 @@ package main
 import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
-	databasePackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/database"
-	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/config"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/logging"
-	kaspadPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/kaspad"
+	databasePackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database"
+	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/config"
+	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
+	kaspadPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/kaspad"
 	"os"
 )
 
@@ -36,7 +36,6 @@ func main() {
 		logErrorAndExit("Could not start kaspad: %s", err)
 	}
 
-	log.Infof("Node started!")
 	<-make(chan struct{})
 }
 

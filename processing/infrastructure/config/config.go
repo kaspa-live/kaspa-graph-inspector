@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	appDataDirectory = "kaspa-dag-visualizer-node"
+	appDataDirectory = "kaspa-dag-visualizer-processing"
 )
 
 var (

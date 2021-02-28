@@ -9,12 +9,12 @@ services:
     user: root
     network_mode: host
 
-  kaspa-dag-visualizer-node:
-    image: "kaspa-dag-visualizer-node:latest"
+  kaspa-dag-visualizer-processing:
+    image: "kaspa-dag-visualizer-processing:latest"
     depends_on:
       - postgres
     command:
-      - "/app/node"
+      - "/app/processing"
       - "--testnet"
       - "--p2p-server=${KASPAD_ADDRESS}"
       - "--connection-string=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=disable"

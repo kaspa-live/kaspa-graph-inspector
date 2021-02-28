@@ -6,18 +6,18 @@ RUN apk add gcc musl-dev
 RUN mkdir /build
 WORKDIR /build
 
-COPY node/go.mod .
-COPY node/go.sum .
+COPY processing/go.mod .
+COPY processing/go.sum .
 
 RUN go mod download
 
-COPY node .
+COPY processing .
 
-RUN GOOS=linux go build -o node .
+RUN GOOS=linux go build -o processing .
 
 FROM alpine
 WORKDIR /app
-COPY --from=build /build/node /app/
+COPY --from=build /build/processing /app/
 
 RUN mkdir -p /app/database/migrations
 COPY --from=build /build/database/migrations/ /app/database/migrations/

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/v9"
 	"github.com/pkg/errors"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/database/model"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/logging"
+	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database/model"
+	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
 	"strings"
 )
 

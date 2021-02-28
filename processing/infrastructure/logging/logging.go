@@ -3,14 +3,14 @@ package logging
 import (
 	"fmt"
 	"github.com/kaspanet/kaspad/infrastructure/logger"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/config"
+	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/config"
 	"os"
 	"path/filepath"
 )
 
 const (
-	logFileName      = "kaspa-dag-visualizer-node.log"
-	errorLogFileName = "kaspa-dag-visualizer-node_errors.log"
+	logFileName      = "kaspa-dag-visualizer-processing.log"
+	errorLogFileName = "kaspa-dag-visualizer-processing_errors.log"
 )
 
 var (
