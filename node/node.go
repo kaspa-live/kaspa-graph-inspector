@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
+	databasePackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/database"
 	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/config"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/node/infrastructure/logging"
 	kaspadPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/node/kaspad"
@@ -16,6 +17,12 @@ func main() {
 	if err != nil {
 		logErrorAndExit("Could not parse command line arguments.\n%s", err)
 	}
+
+	database, err := databasePackage.Connect(config.DatabaseConnectionString)
+	if err != nil {
+		logErrorAndExit("Could not connect to database %s: %s", config.DatabaseConnectionString, err)
+	}
+	defer database.Close()
 
 	kaspad, err := kaspadPackage.New(config)
 	if err != nil {

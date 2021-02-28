@@ -18,3 +18,6 @@ RUN GOOS=linux go build -o node .
 FROM alpine
 WORKDIR /app
 COPY --from=build /build/node /app/
+
+RUN mkdir -p /app/database/migrations
+COPY --from=build /build/database/migrations/ /app/database/migrations/
