@@ -10,6 +10,14 @@ type Database struct {
 	database *pg.DB
 }
 
+func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, error) {
+	blockIds, err := db.BlockIDsByHashes([]*externalapi.DomainHash{blockHash})
+	if err != nil {
+		return false, err
+	}
+	return len(blockIds) == 1, nil
+}
+
 func (db *Database) InsertBlock(block *model.Block) error {
 	return db.database.Insert(block)
 }

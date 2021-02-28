@@ -72,3 +72,7 @@ func (n *Kaspad) Start() error {
 	n.connectionManager.Start()
 	return nil
 }
+
+func (n *Kaspad) Domain() *domainPackage.Domain {
+	return n.domain
+}
