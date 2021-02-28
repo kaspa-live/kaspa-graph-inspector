@@ -1,0 +1,23 @@
+version: '3'
+services:
+  postgres:
+    image: "postgres:13.2"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    user: root
+    network_mode: host
+
+  kaspa-dag-visualizer-node:
+    image: "kaspa-dag-visualizer-node:latest"
+    depends_on:
+      - postgres
+    command:
+      - "/app/node"
+      - "--testnet"
+      - "--p2p-server=${KASPAD_ADDRESS}"
+      - "--connection-string=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=disable"
+    network_mode: host
+    user: root
+    restart: always
