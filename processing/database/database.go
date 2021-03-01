@@ -19,19 +19,22 @@ func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, err
 }
 
 func (db *Database) InsertBlock(block *model.Block) error {
-	_, err := db.database.Model(block).Returning("*").Insert()
+	_, err := db.database.Model(block).Insert()
 	return err
 }
 
 func (db *Database) BlockIDsByHashes(blockHashes []*externalapi.DomainHash) ([]uint64, error) {
-	var result struct {
-		IDs []uint64
+	blockHashStrings := make([]string, len(blockHashes))
+	for i, blockHash := range blockHashes {
+		blockHashStrings[i] = blockHash.String()
 	}
-	_, err := db.database.Query(&result, "SELECT id FROM blocks WHERE block_hash IN (?)", pg.In(blockHashes))
+
+	var ids []uint64
+	_, err := db.database.Query(&ids, "SELECT id FROM blocks WHERE block_hash IN (?)", pg.In(blockHashStrings))
 	if err != nil {
 		return nil, err
 	}
-	return result.IDs, nil
+	return ids, nil
 }
 
 func (db *Database) HighestBlockHeight(blockIDs []uint64) (uint64, error) {
