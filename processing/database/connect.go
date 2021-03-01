@@ -2,7 +2,8 @@ package database
 
 import (
 	"fmt"
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/extra/pgdebug"
+	"github.com/go-pg/pg/v10"
 	"github.com/pkg/errors"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
 	"strings"
@@ -40,6 +41,9 @@ func Connect(connectionString string) (*Database, error) {
 	}
 
 	pgDB := pg.Connect(connectionOptions)
+	pgDB.AddQueryHook(pgdebug.DebugHook{
+		Verbose: true, // Print all queries for debugging purposes
+	})
 
 	err = validateTimeZone(pgDB)
 	if err != nil {

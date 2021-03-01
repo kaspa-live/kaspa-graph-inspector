@@ -1,7 +1,7 @@
 package database
 
 import (
-	"github.com/go-pg/pg/v9"
+	"github.com/go-pg/pg/v10"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database/model"
 )
@@ -19,7 +19,8 @@ func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, err
 }
 
 func (db *Database) InsertBlock(block *model.Block) error {
-	return db.database.Insert(block)
+	_, err := db.database.Model(block).Returning("*").Insert()
+	return err
 }
 
 func (db *Database) BlockIDsByHashes(blockHashes []*externalapi.DomainHash) ([]uint64, error) {
