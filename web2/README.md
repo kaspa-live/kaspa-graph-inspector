@@ -1,2 +1,0 @@
-kaspa-dag-visualizer-web
-========================
