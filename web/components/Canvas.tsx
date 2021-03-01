@@ -5,42 +5,35 @@ const Canvas = props => {
     const canvasRef = useRef(null);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        const context = canvas.getContext('2d');
-        const renderer = new Renderer(canvas, context);
-        renderer.render();
+        const canvas = canvasRef.current
+        const renderer = new PixiRenderer(canvas)
+        return () => {
+            renderer.stop()
+        };
     }, [])
 
     return <canvas ref={canvasRef} className={style.canvas} {...props}/>
 }
 
-class Renderer {
-    private readonly canvas: HTMLCanvasElement;
-    private readonly context: CanvasRenderingContext2D;
+class PixiRenderer {
+    private pixi;
+    private pixiApplication;
 
-    constructor(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D) {
-        this.canvas = canvas;
-        this.context = context;
-        this.render = this.render.bind(this);
+    constructor(canvas: HTMLCanvasElement) {
+        import("pixi.js").then(pixi => {
+            this.pixi = pixi
+            this.pixiApplication = new pixi.Application({
+                backgroundColor: 0xFFBA6F,
+                view: canvas,
+                resizeTo: canvas,
+            });
+            this.pixiApplication.start();
+        });
     }
 
-    render() {
-        this.resizeIfRequired(this.canvas);
-
-        this.context.fillStyle = '#ffffff';
-        this.context.fillRect(0, 0, this.context.canvas.width, this.context.canvas.height);
-
-        this.context.fillStyle = '#ff0000';
-        this.context.fillRect(200, 100, 100, 100);
-
-        requestAnimationFrame(this.render);
-    }
-
-    resizeIfRequired(canvas: HTMLCanvasElement) {
-        const {width, height} = canvas.getBoundingClientRect()
-        if (canvas.width !== width || canvas.height !== height) {
-            canvas.width = width
-            canvas.height = height
+    stop() {
+        if (this.pixiApplication) {
+            this.pixiApplication.stop();
         }
     }
 }
