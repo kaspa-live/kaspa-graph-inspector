@@ -10,6 +10,10 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico"/>
             </Head>
             <Canvas/>
+            <div className={styles.header}>
+                <div className={styles.logo}/>
+                <div className={styles.title}>kaspa-dag-visualizer</div>
+            </div>
         </div>
     )
 }

@@ -8,8 +8,11 @@ const Canvas = props => {
         const canvas = canvasRef.current
         const context = canvas.getContext('2d')
 
-        context.fillStyle = '#ff0000'
+        context.fillStyle = '#ffffff'
         context.fillRect(0, 0, context.canvas.width, context.canvas.height)
+
+        context.fillStyle = '#ff0000'
+        context.fillRect(100, 100, 100, 100)
     }, [])
 
     return <canvas ref={canvasRef} className={style.canvas} {...props}/>
