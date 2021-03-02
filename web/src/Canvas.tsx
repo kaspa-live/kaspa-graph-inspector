@@ -1,5 +1,5 @@
 import {useEffect, useRef} from 'react'
-import DagVisualization from "./DagVisualization";
+import Dag from "./dag/dag";
 import './Canvas.css'
 
 const Canvas = (props: any) => {
@@ -7,7 +7,7 @@ const Canvas = (props: any) => {
 
     useEffect(() => {
         const canvas = canvasRef.current
-        const dagVisualization = new DagVisualization(canvas)
+        const dagVisualization = new Dag(canvas)
         return () => {
             dagVisualization.stop()
         };

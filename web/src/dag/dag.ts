@@ -1,8 +1,9 @@
 import * as PIXI from 'pixi.js'
+import {newBlock} from "./block";
 
-export default class DagVisualization {
+export default class Dag {
     private readonly application: PIXI.Application;
-    private readonly circle: PIXI.Graphics;
+    private readonly roundedRectangle: PIXI.Sprite;
 
     constructor(canvas: HTMLCanvasElement) {
         this.application = new PIXI.Application({
@@ -12,11 +13,9 @@ export default class DagVisualization {
             resizeTo: canvas,
         });
 
-        this.circle = new PIXI.Graphics();
-        this.circle.beginFill(0xff0000);
-        this.circle.drawCircle(30, 30, 30);
-        this.circle.endFill();
-        this.application.stage.addChild(this.circle);
+
+        this.roundedRectangle = newBlock(this.application);
+        this.application.stage.addChild(this.roundedRectangle);
 
         this.update = this.update.bind(this);
         this.application.ticker.add(this.update);
@@ -24,8 +23,8 @@ export default class DagVisualization {
     }
 
     private update(deltaTime: number) {
-        this.circle.x += 0.1 * deltaTime;
-        this.circle.y += 0.1 * deltaTime;
+        this.roundedRectangle.x += 0.1 * deltaTime;
+        this.roundedRectangle.y += 0.1 * deltaTime;
     }
 
     stop() {
