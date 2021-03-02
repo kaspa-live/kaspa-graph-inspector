@@ -5,21 +5,25 @@ const database = new Database();
 
 const server = express();
 server.get('/blocks', async (request, response) => {
-    if (!request.query.startTimestamp) {
-        response.status(400).send("missing parameter: startTimestamp");
+    if (!request.query.startHeight) {
+        response.status(400).send("missing parameter: startHeight");
+        return;
     }
-    if (!request.query.endTimestamp) {
-        response.status(400).send("missing parameter: endTimestamp");
+    if (!request.query.endHeight) {
+        response.status(400).send("missing parameter: endHeight");
+        return;
     }
 
     try {
-        const startTimestamp = parseInt(request.query.startTimestamp as string);
-        const endTimestamp = parseInt(request.query.endTimestamp as string);
-        const blocks = await database.getBlocks(startTimestamp, endTimestamp)
+        const startHeight = parseInt(request.query.startHeight as string);
+        const endHeight = parseInt(request.query.endHeight as string);
+        const blocks = await database.getBlocks(startHeight, endHeight)
         response.send(JSON.stringify(blocks));
+        return;
     }
     catch (error) {
         response.status(400).send(`invalid input: ${error}`);
+        return;
     }
 });
 

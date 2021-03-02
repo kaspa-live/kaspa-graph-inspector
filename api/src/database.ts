@@ -8,11 +8,11 @@ export default class Database {
         this.client.connect();
     }
 
-    async getBlocks(startTimestamp: number, endTimestamp: number): Promise<Block[]> {
+    async getBlocks(startHeight: number, endHeight: number): Promise<Block[]> {
         const result = await this.client.query('SELECT * FROM blocks ' +
-            'WHERE "timestamp" >= $1 AND "timestamp" < $2 ' +
+            'WHERE height >= $1 AND height < $2 ' +
             'ORDER BY height',
-            [startTimestamp, endTimestamp]);
+            [startHeight, endHeight]);
 
         return result.rows.map(item => {
             return {
