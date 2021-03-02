@@ -13,6 +13,9 @@ export default class Dag {
             resizeTo: canvas,
         });
 
+        fetch("http://localhost:3001/blocks?startHeight=0&endHeight=100")
+            .then(response => response.json())
+            .then(json => console.log(json));
 
         this.roundedRectangle = newBlock(this.application);
         this.application.stage.addChild(this.roundedRectangle);

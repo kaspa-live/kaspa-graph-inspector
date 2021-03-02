@@ -1,9 +1,11 @@
 import express from 'express';
 import Database from "./database.js";
+import cors from 'cors';
 
 const database = new Database();
 
 const server = express();
+server.use(cors());
 server.get('/blocks', async (request, response) => {
     if (!request.query.startHeight) {
         response.status(400).send("missing parameter: startHeight");
@@ -20,8 +22,7 @@ server.get('/blocks', async (request, response) => {
         const blocks = await database.getBlocks(startHeight, endHeight)
         response.send(JSON.stringify(blocks));
         return;
-    }
-    catch (error) {
+    } catch (error) {
         response.status(400).send(`invalid input: ${error}`);
         return;
     }
