@@ -16,7 +16,7 @@ const blockTexture = (application: PIXI.Application) => {
     return blockTextureInstance;
 };
 
-export const newBlock = (application: PIXI.Application) => {
+export const newBlockSprite = (application: PIXI.Application) => {
     const sprite = new PIXI.Sprite(blockTexture(application));
     sprite.anchor.set(0.5, 0.5);
     return sprite;
