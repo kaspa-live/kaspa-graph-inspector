@@ -42,7 +42,7 @@ func Connect(connectionString string) (*Database, error) {
 
 	pgDB := pg.Connect(connectionOptions)
 	pgDB.AddQueryHook(pgdebug.DebugHook{
-		Verbose: true, // Print all queries for debugging purposes
+		Verbose: false, // Set to `true` to print all queries
 	})
 
 	err = validateTimeZone(pgDB)

@@ -65,8 +65,8 @@ func (p *Processing) insertGenesisIfRequired() error {
 
 func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
 	blockHash := consensushashing.BlockHash(block)
-	log.Infof("Processing block %s", blockHash)
-	defer log.Infof("Finished processing block %s", blockHash)
+	log.Debugf("Processing block %s", blockHash)
+	defer log.Debugf("Finished processing block %s", blockHash)
 
 	parentHashes := block.Header.ParentHashes()
 	parentIDs, err := p.blockHashesToIDs(parentHashes)
