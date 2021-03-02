@@ -9,15 +9,23 @@ export default class Database {
     }
 
     async getBlocks(): Promise<Block[]> {
-        const result = await this.client.query("SELECT id FROM blocks ORDER BY height LIMIT 100");
+        const result = await this.client.query("SELECT * FROM blocks ORDER BY height LIMIT 1000");
         return result.rows.map(item => {
             return {
                 id: parseInt(item.id),
+                blockHash: item.block_hash,
+                timestamp: parseInt(item.timestamp),
+                parentIds: item.parent_ids,
+                height: parseInt(item.height),
             };
         });
     }
 }
 
 export type Block = {
-    id: number
+    id: number,
+    blockHash: string,
+    timestamp: number,
+    parentIds: number[],
+    height: number
 };
