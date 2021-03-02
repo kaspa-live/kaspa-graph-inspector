@@ -1,0 +1,12 @@
+{
+  "name": "api",
+  "version": "0.1.0",
+  "main": "dist/app.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "typescript": "^4.2.2"
+  },
+  "scripts": {
+    "start": "tsc && node dist/api.js"
+  }
+}
