@@ -26,17 +26,24 @@ if [ true = "${REQUIRED_VARIABLE_NOT_SET}" ]; then
   exit 1
 fi
 
-# Build the processing image
-#docker build -f processing/Dockerfile -t kaspa-dag-visualizer-processing:latest .
+# Build the images
+docker build -f processing/Dockerfile -t kaspa-dag-visualizer-processing:latest .
+docker build -f api/Dockerfile -t kaspa-dag-visualizer-api:latest .
 
 # Start postgres
 docker-compose up -d postgres
 
 # Wait for postgres to finish initializing
-#sleep 10s
+sleep 10s
 
 # Start processing
-#docker-compose up -d kaspa-dag-visualizer-processing
+docker-compose up -d kaspa-dag-visualizer-processing
+
+# Wait for processing to finish initializing
+sleep 10s
+
+# Start api
+docker-compose up -d kaspa-dag-visualizer-api
 
 # Print logs for all services
-#docker-compose logs -f
+docker-compose logs -f

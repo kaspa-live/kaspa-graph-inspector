@@ -21,3 +21,21 @@ services:
     network_mode: host
     user: root
     restart: always
+
+  kaspa-dag-visualizer-api:
+    image: "kaspa-dag-visualizer-api:latest"
+    depends_on:
+      - postgres
+    environment:
+      - PGUSER=${POSTGRES_USER}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+      - PGDATABASE=${POSTGRES_DB}
+    command:
+      - "npm"
+      - "run"
+      - "--prefix"
+      - "/app"
+      - "start"
+    network_mode: host
+    user: root
+    restart: always
