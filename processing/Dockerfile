@@ -6,12 +6,12 @@ RUN apk add gcc musl-dev
 RUN mkdir /build
 WORKDIR /build
 
-COPY processing/go.mod .
-COPY processing/go.sum .
+COPY ./go.mod .
+COPY ./go.sum .
 
 RUN go mod download
 
-COPY processing .
+COPY . .
 
 RUN GOOS=linux go build -o processing .
 

@@ -27,8 +27,8 @@ if [ true = "${REQUIRED_VARIABLE_NOT_SET}" ]; then
 fi
 
 # Build the images
-docker build -f processing/Dockerfile -t kaspa-dag-visualizer-processing:latest .
-docker build -f api/Dockerfile -t kaspa-dag-visualizer-api:latest .
+docker build -f processing/Dockerfile -t kaspa-dag-visualizer-processing:latest processing
+docker build -f api/Dockerfile -t kaspa-dag-visualizer-api:latest api
 
 # Start postgres
 docker-compose up -d postgres

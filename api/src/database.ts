@@ -8,8 +8,12 @@ export default class Database {
         this.client.connect();
     }
 
-    async getBlocks(): Promise<Block[]> {
-        const result = await this.client.query("SELECT * FROM blocks ORDER BY height LIMIT 1000");
+    async getBlocks(startTimestamp: number, endTimestamp: number): Promise<Block[]> {
+        const result = await this.client.query('SELECT * FROM blocks ' +
+            'WHERE "timestamp" >= $1 AND "timestamp" < $2 ' +
+            'ORDER BY height',
+            [startTimestamp, endTimestamp]);
+
         return result.rows.map(item => {
             return {
                 id: parseInt(item.id),
