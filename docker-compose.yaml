@@ -9,7 +9,7 @@ services:
     user: root
     network_mode: host
 
-  kaspa-dag-visualizer-processing:
+  processing:
     image: "kaspa-dag-visualizer-processing:latest"
     depends_on:
       - postgres
@@ -22,14 +22,31 @@ services:
     user: root
     restart: always
 
-  kaspa-dag-visualizer-api:
+  api:
     image: "kaspa-dag-visualizer-api:latest"
     depends_on:
       - postgres
+      - processing
     environment:
       - PGUSER=${POSTGRES_USER}
       - PGPASSWORD=${POSTGRES_PASSWORD}
       - PGDATABASE=${POSTGRES_DB}
+    command:
+      - "npm"
+      - "run"
+      - "--prefix"
+      - "/app"
+      - "start"
+    network_mode: host
+    user: root
+    restart: always
+
+  web:
+    image: "kaspa-dag-visualizer-web:latest"
+    depends_on:
+      - postgres
+      - processing
+      - api
     command:
       - "npm"
       - "run"

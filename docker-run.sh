@@ -29,6 +29,7 @@ fi
 # Build the images
 docker build -f processing/Dockerfile -t kaspa-dag-visualizer-processing:latest processing
 docker build -f api/Dockerfile -t kaspa-dag-visualizer-api:latest api
+docker build -f web/Dockerfile -t kaspa-dag-visualizer-web:latest web
 
 # Start postgres
 docker-compose up -d postgres
@@ -37,13 +38,19 @@ docker-compose up -d postgres
 sleep 10s
 
 # Start processing
-docker-compose up -d kaspa-dag-visualizer-processing
+docker-compose up -d processing
 
 # Wait for processing to finish initializing
 sleep 10s
 
 # Start api
-docker-compose up -d kaspa-dag-visualizer-api
+docker-compose up -d api
+
+# Wait for api to finish initializing
+sleep 10s
+
+# Start web
+docker-compose up -d web
 
 # Print logs for all services
 docker-compose logs -f
