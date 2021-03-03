@@ -1,20 +1,21 @@
 import * as PIXI from "pixi.js";
 
-const edgeColor = 0xffaaaa;
+const edgeColor = 0xaaaaaa;
 const edgeLineWidth = 2;
-const edgeTextures = new Map<{ x: number; y: number }, PIXI.RenderTexture>();
+const edgeTextures: { [key: string]: PIXI.RenderTexture } = {};
 
-const edgeTexture = (application: PIXI.Application, x: number, y: number) => {
-    if (!edgeTextures.has({x, y})) {
+const edgeTexture = (application: PIXI.Application, vectorX: number, vectorY: number) => {
+    const key = `${vectorX},${vectorY}`
+    if (!edgeTextures[key]) {
         const graphics = new PIXI.Graphics();
         graphics.lineStyle(edgeLineWidth, edgeColor);
         graphics.moveTo(0, 0);
-        graphics.lineTo(x, y);
+        graphics.lineTo(vectorX, vectorY);
 
-        edgeTextures.set({x, y}, application.renderer.generateTexture(graphics, PIXI.SCALE_MODES.LINEAR, 1));
+        edgeTextures[key] = application.renderer.generateTexture(graphics, PIXI.SCALE_MODES.LINEAR, 1);
     }
 
-    return edgeTextures.get({x, y}) as PIXI.RenderTexture;
+    return edgeTextures[key];
 };
 
 export default class EdgeSprite extends PIXI.Sprite {
@@ -22,10 +23,8 @@ export default class EdgeSprite extends PIXI.Sprite {
     private readonly fromBlockId: number;
     private readonly toBlockId: number;
 
-    private fromX: number = 0;
-    private fromY: number = 0;
-    private toX: number = 0;
-    private toY: number = 0;
+    private vectorX: number = 0;
+    private vectorY: number = 0;
 
     constructor(application: PIXI.Application, fromBlockId: number, toBlockId: number) {
         super();
@@ -35,16 +34,12 @@ export default class EdgeSprite extends PIXI.Sprite {
         this.toBlockId = toBlockId;
     }
 
-    update = (fromX: number, fromY: number, toX: number, toY: number) => {
-        if (!this.texture || this.fromX !== fromX || this.fromY !== fromY || this.toX !== toX || this.toY !== toY) {
-            this.fromX = fromX;
-            this.fromY = fromY;
-            this.toX = toX;
-            this.toY = toY;
+    setVector = (vectorX: number, vectorY: number) => {
+        if (!this.texture || this.vectorX !== vectorX || this.vectorY !== vectorY) {
+            this.vectorX = vectorX;
+            this.vectorY = vectorY;
 
-            const x = toX - fromX;
-            const y = toY - fromY;
-            this.texture = edgeTexture(this.application, x, y);
+            this.texture = edgeTexture(this.application, vectorX, vectorY);
         }
     }
 

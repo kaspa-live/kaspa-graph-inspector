@@ -64,8 +64,13 @@ export default class TimelineContainer extends PIXI.Container {
             }
         }
         if (shouldRecalculateBlockSpritePositions) {
-            this.recalculateBlockSpritePositions();
+            this.recalculateSpritePositions();
         }
+    }
+
+    private recalculateSpritePositions = () => {
+        this.recalculateBlockSpritePositions();
+        this.recalculateEdgeSpritePositions();
     }
 
     private recalculateBlockSpritePositions = () => {
@@ -83,6 +88,43 @@ export default class TimelineContainer extends PIXI.Container {
                 blockSprite.x = block.height * (blockSize + margin);
                 blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
                 blockSprite.y = this.calculateBlockSpriteY(i, blockIds.length, rendererHeight);
+            }
+        });
+    }
+
+    private recalculateEdgeSpritePositions = () => {
+        const rendererWidth = this.application.renderer.width;
+        const rendererHeight = this.application.renderer.height;
+
+        Object.values(this.blockIdsToEdgeSprites).forEach(edgeSprites => {
+            for (let i = 0; i < edgeSprites.length; i++) {
+                const edgeSprite = edgeSprites[i];
+
+                const fromBlockSprite = this.blockIdsToBlockSprites[edgeSprite.getFromBlockId()];
+                const fromX = fromBlockSprite.x;
+                const fromY = fromBlockSprite.y;
+
+                let toX;
+                let toY;
+                if (!this.blockIdsToBlockSprites[edgeSprite.getToBlockId()]) {
+                    // These blocks have not been loaded/fetched
+                    // so we make up `to` values for them
+                    toX = fromX - rendererWidth;
+                    toY = this.calculateBlockSpriteY(i, edgeSprites.length, rendererHeight);
+                } else {
+                    const toBlockSprite = this.blockIdsToBlockSprites[edgeSprite.getToBlockId()];
+                    toX = toBlockSprite.x;
+                    toY = toBlockSprite.y;
+                }
+
+                const vectorX = toX - fromX;
+                const vectorY = toY - fromY;
+                edgeSprite.setVector(vectorX, vectorY);
+
+                // The position is the top left corner of the
+                // bounding box of the edge sprite
+                edgeSprite.x = toX;
+                edgeSprite.y = Math.min(fromY, toY);
             }
         });
     }
@@ -127,7 +169,7 @@ export default class TimelineContainer extends PIXI.Container {
 
     recalculatePositions = () => {
         this.recalculateTimelineContainerPosition();
-        this.recalculateBlockSpritePositions();
+        this.recalculateSpritePositions();
     }
 
     private recalculateTimelineContainerPosition = () => {
