@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import {Block} from "./model/Block";
 import BlockSprite from "./BlockSprite";
+import EdgeSprite from "./EdgeSprite";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly fetchHeightDifference: number = 100;
@@ -8,7 +9,10 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly marginMultiplier = 2.0;
 
     private readonly application: PIXI.Application;
+    private readonly edgeContainer: PIXI.Container;
+    private readonly blockContainer: PIXI.Container;
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
+    private readonly blockIdsToEdgeSprites: { [id: number]: EdgeSprite[] } = {};
     private readonly heightGroups: { [height: number]: number[] } = {};
 
     private targetHeight: number = 0;
@@ -17,6 +21,12 @@ export default class TimelineContainer extends PIXI.Container {
         super();
 
         this.application = application;
+
+        this.edgeContainer = new PIXI.Container();
+        this.addChild(this.edgeContainer);
+
+        this.blockContainer = new PIXI.Container();
+        this.addChild(this.blockContainer);
     }
 
     private insertOrIgnoreBlocks = (blocks: Block[]) => {
@@ -35,7 +45,7 @@ export default class TimelineContainer extends PIXI.Container {
                 this.blockIdsToBlockSprites[block.id] = blockSprite;
 
                 // Add the block sprite to the timeline container
-                this.addChild(blockSprite);
+                this.blockContainer.addChild(blockSprite);
 
                 // The timeline container changed so the block
                 // sprite positions needs to be recalculated
