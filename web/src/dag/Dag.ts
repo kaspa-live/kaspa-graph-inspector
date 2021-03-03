@@ -33,7 +33,7 @@ export default class Dag {
         }
     }
 
-    stop() {
+    stop = () => {
         if (this.application) {
             this.application.stop();
         }

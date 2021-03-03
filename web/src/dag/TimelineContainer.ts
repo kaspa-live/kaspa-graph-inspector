@@ -3,25 +3,24 @@ import {Block} from "./model/Block";
 import BlockSprite from "./BlockSprite";
 
 export default class TimelineContainer extends PIXI.Container {
+    private readonly maxBlocksPerHeightGroup = 20;
+    private readonly marginMultiplier = 2.0;
+
     private readonly application: PIXI.Application;
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
     private readonly heightGroups: { [height: number]: number[] } = {};
-
-    private targetHeight: number = 0;
 
     constructor(application: PIXI.Application) {
         super();
 
         this.application = application;
 
-        this.insertOrIgnoreBlocks = this.insertOrIgnoreBlocks.bind(this);
-
         fetch("http://localhost:3001/blocks?startHeight=0&endHeight=100")
             .then(response => response.json())
             .then(this.insertOrIgnoreBlocks);
     }
 
-    private insertOrIgnoreBlocks(blocks: Block[]) {
+    private insertOrIgnoreBlocks = (blocks: Block[]) => {
         let shouldRecalculateBlockSpritePositions = false;
         for (let block of blocks) {
             if (!this.blockIdsToBlockSprites[block.id]) {
@@ -49,10 +48,7 @@ export default class TimelineContainer extends PIXI.Container {
         }
     }
 
-    private readonly maxBlocksPerHeightGroup = 20;
-    private readonly marginMultiplier = 2.0;
-
-    private recalculateBlockSpritePositions() {
+    private recalculateBlockSpritePositions = () => {
         const rendererHeight = this.application.renderer.height;
         const blockSize = rendererHeight / this.maxBlocksPerHeightGroup;
         const margin = blockSize * this.marginMultiplier;
@@ -68,7 +64,7 @@ export default class TimelineContainer extends PIXI.Container {
         });
     }
 
-    recalculatePositions() {
+    recalculatePositions = () => {
         const rendererHeight = this.application.renderer.height;
         this.y = rendererHeight / 2;
 

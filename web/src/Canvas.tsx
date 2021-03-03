@@ -9,7 +9,7 @@ const Canvas = (props: any) => {
         const canvas = canvasRef.current
         const dagVisualization = new Dag(canvas)
         return () => {
-            dagVisualization.stop()
+            dagVisualization.stop();
         };
     }, [])
 

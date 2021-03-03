@@ -32,14 +32,14 @@ export default class BlockSprite extends PIXI.Sprite {
         this.anchor.set(0.5, 0.5);
     }
 
-    resize(blockSize: number) {
+    resize = (blockSize: number) => {
         if (!this.texture || this.blockSize !== blockSize) {
             this.blockSize = blockSize;
             this.texture = blockTexture(this.application, blockSize)
         }
     }
 
-    getBlock(): Block {
+    getBlock = () => {
         return this.block
     }
 };
