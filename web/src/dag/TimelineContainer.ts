@@ -52,14 +52,16 @@ export default class TimelineContainer extends PIXI.Container {
 
     private recalculateBlockSpritePositions() {
         const rendererHeight = this.application.renderer.height;
-        const blockHeight = rendererHeight / this.maxBlocksPerHeightGroup;
-        const margin = blockHeight * this.marginMultiplier;
+        const blockSize = rendererHeight / this.maxBlocksPerHeightGroup;
+        const margin = blockSize * this.marginMultiplier;
 
-        Object.entries(this.heightGroups).forEach(([height, blockIds]) => {
+        Object.values(this.heightGroups).forEach(blockIds => {
             for (let blockId of blockIds) {
                 const blockSprite = this.blockIdsToBlockSprites[blockId];
+                blockSprite.resize(blockSize);
+
                 const block = blockSprite.getBlock();
-                blockSprite.x = block.height * (blockHeight + margin);
+                blockSprite.x = block.height * (blockSize + margin);
             }
         });
     }

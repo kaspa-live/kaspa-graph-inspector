@@ -1,33 +1,42 @@
 import * as PIXI from "pixi.js";
 import {Block} from "./model/Block";
 
-let blockTextureInstance: PIXI.RenderTexture
+const blockColor = 0xaaaaaa;
+const blockRoundingRadius = 10;
+const blockTextures: { [blockSize: number]: PIXI.RenderTexture } = {};
 
-const blockTexture = (application: PIXI.Application) => {
-    if (!blockTextureInstance) {
+const blockTexture = (application: PIXI.Application, blockSize: number) => {
+    if (!blockTextures[blockSize]) {
         const graphics = new PIXI.Graphics();
-        graphics.lineStyle(2, 0x000000)
-        graphics.beginFill(0xff0000);
-        graphics.drawRoundedRect(0, 0, 100, 100, 30);
+        graphics.beginFill(blockColor);
+        graphics.drawRoundedRect(0, 0, blockSize, blockSize, blockRoundingRadius);
         graphics.endFill();
 
-        blockTextureInstance = application.renderer.generateTexture(graphics, PIXI.SCALE_MODES.LINEAR, 1);
+        blockTextures[blockSize] = application.renderer.generateTexture(graphics, PIXI.SCALE_MODES.LINEAR, 1);
     }
 
-    return blockTextureInstance;
+    return blockTextures[blockSize];
 };
 
 export default class BlockSprite extends PIXI.Sprite {
     private readonly application: PIXI.Application;
     private readonly block: Block;
+    private blockSize: number = 0;
 
     constructor(application: PIXI.Application, block: Block) {
-        super(blockTexture(application));
+        super();
 
         this.application = application;
         this.block = block;
 
         this.anchor.set(0.5, 0.5);
+    }
+
+    resize(blockSize: number) {
+        if (!this.texture || this.blockSize !== blockSize) {
+            this.blockSize = blockSize;
+            this.texture = blockTexture(this.application, blockSize)
+        }
     }
 
     getBlock(): Block {
