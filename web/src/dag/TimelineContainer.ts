@@ -53,9 +53,6 @@ export default class TimelineContainer extends PIXI.Container {
         const margin = this.calculateMargin(blockSize);
 
         Object.values(this.heightGroups).forEach(blockIds => {
-            if (blockIds.length > 1) {
-                console.log("aaaa!!!");
-            }
             for (let i = 0; i < blockIds.length; i++) {
                 const blockId = blockIds[i];
                 const blockSprite = this.blockIdsToBlockSprites[blockId];
