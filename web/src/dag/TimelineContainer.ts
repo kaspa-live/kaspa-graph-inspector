@@ -51,11 +51,13 @@ export default class TimelineContainer extends PIXI.Container {
                 // parents and add them to the appropriate
                 // collections
                 this.blockIdsToEdgeSprites[block.id] = [];
-                for (let parentId of block.parentIds) {
-                    const edgeSprite = new EdgeSprite(this.application, block.id, parentId);
-                    this.blockIdsToEdgeSprites[block.id].push(edgeSprite);
+                if (block.parentIds) {
+                    for (let parentId of block.parentIds) {
+                        const edgeSprite = new EdgeSprite(this.application, block.id, parentId);
+                        this.blockIdsToEdgeSprites[block.id].push(edgeSprite);
 
-                    this.edgeContainer.addChild(edgeSprite);
+                        this.edgeContainer.addChild(edgeSprite);
+                    }
                 }
 
                 // The timeline container changed so the block
