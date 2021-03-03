@@ -7,6 +7,8 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
     private readonly heightGroups: { [height: number]: number[] } = {};
 
+    private targetHeight: number = 0;
+
     constructor(application: PIXI.Application) {
         super();
 
@@ -64,5 +66,15 @@ export default class TimelineContainer extends PIXI.Container {
                 blockSprite.x = block.height * (blockSize + margin);
             }
         });
+    }
+
+    recalculatePositions() {
+        const rendererHeight = this.application.renderer.height;
+        this.y = rendererHeight / 2;
+
+        const rendererWidth = this.application.renderer.width;
+        this.x = rendererWidth / 2;
+
+        this.recalculateBlockSpritePositions();
     }
 }
