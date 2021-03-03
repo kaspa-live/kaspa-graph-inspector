@@ -19,6 +19,8 @@ export default class Dag {
         this.timelineContainer = new TimelineContainer(this.application);
         this.application.ticker.add(this.resizeIfRequired);
         this.application.stage.addChild(this.timelineContainer);
+        this.initializeTargetHeightByQueryParams();
+
 
         this.application.start();
     }
@@ -31,6 +33,19 @@ export default class Dag {
 
             this.timelineContainer.recalculatePositions();
         }
+    }
+
+    private initializeTargetHeightByQueryParams = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetHeightString = urlParams.get("targetHeight");
+        if (targetHeightString) {
+            const targetHeight = parseInt(targetHeightString);
+            if (targetHeight) {
+                this.timelineContainer.setTargetHeight(targetHeight);
+                return;
+            }
+        }
+        this.timelineContainer.setTargetHeight(0);
     }
 
     stop = () => {

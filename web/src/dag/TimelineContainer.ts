@@ -3,6 +3,7 @@ import {Block} from "./model/Block";
 import BlockSprite from "./BlockSprite";
 
 export default class TimelineContainer extends PIXI.Container {
+    private readonly fetchHeightDifference: number = 100;
     private readonly maxBlocksPerHeightGroup = 20;
     private readonly marginMultiplier = 2.0;
 
@@ -16,10 +17,6 @@ export default class TimelineContainer extends PIXI.Container {
         super();
 
         this.application = application;
-
-        fetch("http://localhost:3001/blocks?startHeight=0&endHeight=100")
-            .then(response => response.json())
-            .then(this.insertOrIgnoreBlocks);
     }
 
     private insertOrIgnoreBlocks = (blocks: Block[]) => {
@@ -80,6 +77,11 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     recalculatePositions = () => {
+        this.recalculateTimelineContainerPosition();
+        this.recalculateBlockSpritePositions();
+    }
+
+    private recalculateTimelineContainerPosition = () => {
         const rendererWidth = this.application.renderer.width;
         const rendererHeight = this.application.renderer.height;
         const blockSize = this.calculateBlockSize(rendererHeight);
@@ -89,7 +91,21 @@ export default class TimelineContainer extends PIXI.Container {
 
         this.x = rendererWidth / 2 - blockSpriteXForTargetHeight;
         this.y = rendererHeight / 2;
+    }
 
-        this.recalculateBlockSpritePositions();
+    setTargetHeight = (targetHeight: number) => {
+        this.targetHeight = targetHeight;
+
+        let startHeight = targetHeight - this.fetchHeightDifference;
+        if (startHeight < 0) {
+            startHeight = 0;
+        }
+        const endHeight = targetHeight + this.fetchHeightDifference;
+
+        fetch(`http://localhost:3001/blocks?startHeight=${startHeight}&endHeight=${endHeight}`)
+            .then(response => response.json())
+            .then(this.insertOrIgnoreBlocks);
+
+        this.recalculateTimelineContainerPosition();
     }
 }

@@ -7,9 +7,9 @@ const Canvas = (props: any) => {
 
     useEffect(() => {
         const canvas = canvasRef.current
-        const dagVisualization = new Dag(canvas)
+        const dag = new Dag(canvas)
         return () => {
-            dagVisualization.stop();
+            dag.stop();
         };
     }, [])
 
