@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js'
-import {newBlockSprite} from "./BlockView";
-import {Block} from "./model/Block";
+import TimelineView from "./TimelineView";
 
 export default class DagView {
     private readonly application: PIXI.Application;
+    private readonly timelineView: TimelineView;
 
     constructor(canvas: HTMLCanvasElement) {
         this.application = new PIXI.Application({
@@ -12,17 +12,11 @@ export default class DagView {
             view: canvas,
             resizeTo: canvas,
         });
-        this.application.start();
 
-        fetch("http://localhost:3001/blocks?startHeight=0&endHeight=100")
-            .then(response => response.json())
-            .then((blocks: Block[]) => {
-                for (let block of blocks) {
-                    const blockSprite = newBlockSprite(this.application);
-                    blockSprite.x = (blockSprite.width + 50) * block.height;
-                    this.application.stage.addChild(blockSprite);
-                }
-            });
+        this.timelineView = new TimelineView(this.application);
+        this.application.stage.addChild(this.timelineView);
+
+        this.application.start();
     }
 
     stop() {
