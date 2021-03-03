@@ -29,4 +29,8 @@ export default class BlockSprite extends PIXI.Sprite {
 
         this.anchor.set(0.5, 0.5);
     }
+
+    getBlock(): Block {
+        return this.block
+    }
 };
