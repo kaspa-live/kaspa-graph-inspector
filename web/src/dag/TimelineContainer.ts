@@ -44,8 +44,19 @@ export default class TimelineContainer extends PIXI.Container {
                 const blockSprite = new BlockSprite(this.application, block);
                 this.blockIdsToBlockSprites[block.id] = blockSprite;
 
-                // Add the block sprite to the timeline container
+                // Add the block sprite to the block container
                 this.blockContainer.addChild(blockSprite);
+
+                // Create edges between the block and all its
+                // parents and add them to the appropriate
+                // collections
+                this.blockIdsToEdgeSprites[block.id] = [];
+                for (let parentId of block.parentIds) {
+                    const edgeSprite = new EdgeSprite(this.application, block.id, parentId);
+                    this.blockIdsToEdgeSprites[block.id].push(edgeSprite);
+
+                    this.edgeContainer.addChild(edgeSprite);
+                }
 
                 // The timeline container changed so the block
                 // sprite positions needs to be recalculated

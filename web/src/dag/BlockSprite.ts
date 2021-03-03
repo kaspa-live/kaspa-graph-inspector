@@ -21,6 +21,7 @@ const blockTexture = (application: PIXI.Application, blockSize: number) => {
 export default class BlockSprite extends PIXI.Sprite {
     private readonly application: PIXI.Application;
     private readonly block: Block;
+
     private blockSize: number = 0;
 
     constructor(application: PIXI.Application, block: Block) {
