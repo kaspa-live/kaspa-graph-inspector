@@ -74,9 +74,21 @@ export default class TimelineContainer extends PIXI.Container {
             return 0;
         }
 
-        const centeredIndex = Math.floor((heightGroupSize - 1) / 2)
-            + (Math.ceil(heightGroupIndex / 2) * ((-1) ** (heightGroupIndex + 1)));
-        const normalizedPosition = centeredIndex / (heightGroupSize - 1);
+        // Offset the indices so that there's a natural margin between
+        // both the blocks and the top/bottom of the renderer
+        let offsetGroupIndex;
+        if (heightGroupSize % 2 === 0) {
+            offsetGroupIndex = heightGroupIndex % 2 === 0 ? (heightGroupIndex * 2) + 1 : heightGroupIndex * 2;
+        } else {
+            offsetGroupIndex = heightGroupIndex % 2 === 0 ? heightGroupIndex * 2 : (heightGroupIndex * 2) + 1;
+        }
+        const offsetGroupSize = (heightGroupSize * 2) + 1;
+
+        // These equations simply position indices in the following
+        // manner: 0, -1, 1, -2, 2, -3, 3...
+        const centeredIndex = Math.floor((offsetGroupSize - 1) / 2)
+            + (Math.ceil(offsetGroupIndex / 2) * ((-1) ** (offsetGroupIndex + 1)));
+        const normalizedPosition = centeredIndex / (offsetGroupSize - 1);
         return (normalizedPosition - 0.5) * rendererHeight;
     }
 
