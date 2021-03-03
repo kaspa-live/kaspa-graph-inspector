@@ -70,6 +70,9 @@ export default class TimelineContainer extends PIXI.Container {
         if (heightGroupSize === 1) {
             return 0;
         }
+        if (heightGroupIndex === 0 && heightGroupSize % 2 === 1) {
+            return 0;
+        }
 
         const centeredIndex = Math.floor((heightGroupSize - 1) / 2)
             + (Math.ceil(heightGroupIndex / 2) * ((-1) ** (heightGroupIndex + 1)));
