@@ -10,6 +10,8 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
     private readonly heightGroups: { [height: number]: number[] } = {};
 
+    private targetHeight: number = 2;
+
     constructor(application: PIXI.Application) {
         super();
 
@@ -50,8 +52,8 @@ export default class TimelineContainer extends PIXI.Container {
 
     private recalculateBlockSpritePositions = () => {
         const rendererHeight = this.application.renderer.height;
-        const blockSize = rendererHeight / this.maxBlocksPerHeightGroup;
-        const margin = blockSize * this.marginMultiplier;
+        const blockSize = this.calculateBlockSize(rendererHeight);
+        const margin = this.calculateMargin(blockSize);
 
         Object.values(this.heightGroups).forEach(blockIds => {
             for (let blockId of blockIds) {
@@ -60,16 +62,33 @@ export default class TimelineContainer extends PIXI.Container {
 
                 const block = blockSprite.getBlock();
                 blockSprite.x = block.height * (blockSize + margin);
+                blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
             }
         });
     }
 
-    recalculatePositions = () => {
-        const rendererHeight = this.application.renderer.height;
-        this.y = rendererHeight / 2;
+    private calculateBlockSpriteX = (blockHeight: number, blockSize: number, margin: number) => {
+        return blockHeight * (blockSize + margin);
+    }
 
+    private calculateBlockSize = (rendererHeight: number) => {
+        return rendererHeight / this.maxBlocksPerHeightGroup;
+    }
+
+    private calculateMargin = (blockSize: number) => {
+        return blockSize * this.marginMultiplier;
+    }
+
+    recalculatePositions = () => {
         const rendererWidth = this.application.renderer.width;
-        this.x = rendererWidth / 2;
+        const rendererHeight = this.application.renderer.height;
+        const blockSize = this.calculateBlockSize(rendererHeight);
+        const margin = this.calculateMargin(blockSize);
+
+        const blockSpriteXForTargetHeight = this.calculateBlockSpriteX(this.targetHeight, blockSize, margin);
+
+        this.x = rendererWidth / 2 - blockSpriteXForTargetHeight;
+        this.y = rendererHeight / 2;
 
         this.recalculateBlockSpritePositions();
     }
