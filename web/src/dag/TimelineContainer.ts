@@ -11,7 +11,7 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
     private readonly heightGroups: { [height: number]: number[] } = {};
 
-    private targetHeight: number = 2;
+    private targetHeight: number = 0;
 
     constructor(application: PIXI.Application) {
         super();
