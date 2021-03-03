@@ -1,9 +1,9 @@
 import * as PIXI from 'pixi.js'
-import TimelineView from "./TimelineView";
+import TimelineContainer from "./TimelineContainer";
 
-export default class DagView {
+export default class Dag {
     private readonly application: PIXI.Application;
-    private readonly timelineView: TimelineView;
+    private readonly timelineContainer: TimelineContainer;
 
     constructor(canvas: HTMLCanvasElement) {
         this.application = new PIXI.Application({
@@ -13,8 +13,8 @@ export default class DagView {
             resizeTo: canvas,
         });
 
-        this.timelineView = new TimelineView(this.application);
-        this.application.stage.addChild(this.timelineView);
+        this.timelineContainer = new TimelineContainer(this.application);
+        this.application.stage.addChild(this.timelineContainer);
 
         this.application.start();
     }

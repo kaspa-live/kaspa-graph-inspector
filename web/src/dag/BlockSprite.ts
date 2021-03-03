@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js";
+import {Block} from "./model/Block";
 
 let blockTextureInstance: PIXI.RenderTexture
 
@@ -16,8 +17,16 @@ const blockTexture = (application: PIXI.Application) => {
     return blockTextureInstance;
 };
 
-export const newBlockSprite = (application: PIXI.Application) => {
-    const sprite = new PIXI.Sprite(blockTexture(application));
-    sprite.anchor.set(0.5, 0.5);
-    return sprite;
+export default class BlockSprite extends PIXI.Sprite {
+    private readonly application: PIXI.Application;
+    private readonly block: Block;
+
+    constructor(application: PIXI.Application, block: Block) {
+        super(blockTexture(application));
+
+        this.application = application;
+        this.block = block;
+
+        this.anchor.set(0.5, 0.5);
+    }
 };

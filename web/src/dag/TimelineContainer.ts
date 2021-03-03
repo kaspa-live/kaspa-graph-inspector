@@ -1,10 +1,10 @@
 import * as PIXI from 'pixi.js'
 import {Block} from "./model/Block";
-import {newBlockSprite} from "./BlockView";
+import BlockSprite from "./BlockSprite";
 
-export default class TimelineView extends PIXI.Container {
+export default class TimelineContainer extends PIXI.Container {
     private readonly application: PIXI.Application;
-    private readonly blockIdsToBlockSprites: { [id: number]: PIXI.Sprite } = {};
+    private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
 
     constructor(application: PIXI.Application) {
         super();
@@ -16,7 +16,7 @@ export default class TimelineView extends PIXI.Container {
             .then((blocks: Block[]) => {
                 for (let block of blocks) {
                     if (!this.blockIdsToBlockSprites[block.id]) {
-                        this.blockIdsToBlockSprites[block.id] = newBlockSprite(this.application);
+                        this.blockIdsToBlockSprites[block.id] = new BlockSprite(this.application, block);
                     }
                 }
                 this.redraw();
@@ -24,6 +24,6 @@ export default class TimelineView extends PIXI.Container {
     }
 
     private redraw() {
-        this.removeChildren()
+        this.removeChildren();
     }
 }
