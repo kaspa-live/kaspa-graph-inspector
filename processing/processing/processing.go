@@ -64,6 +64,14 @@ func (p *Processing) insertGenesisIfRequired() error {
 }
 
 func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
+	// TODO: To resolve gray/red/blue:
+	// Go over the chainChanged
+	// For every block in the Removed set:
+	//   Get its merge set and set it to gray
+	// For every block in the Added set:
+	//   Get its merge set blues and set it to blue
+	//   Get its merge set reds and set it to red
+
 	blockHash := consensushashing.BlockHash(block)
 	log.Debugf("Processing block %s", blockHash)
 	defer log.Debugf("Finished processing block %s", blockHash)
