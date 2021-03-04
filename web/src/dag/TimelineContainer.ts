@@ -11,9 +11,11 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly application: PIXI.Application;
     private readonly edgeContainer: PIXI.Container;
     private readonly blockContainer: PIXI.Container;
+
+    private readonly blockIdsToBlocks: { [id: number]: Block } = {};
+    private readonly heightGroups: { [height: number]: number[] } = {};
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
     private readonly blockIdsToEdgeSprites: { [id: number]: EdgeSprite[] } = {};
-    private readonly heightGroups: { [height: number]: number[] } = {};
 
     private targetHeight: number = 0;
 
@@ -33,6 +35,9 @@ export default class TimelineContainer extends PIXI.Container {
         let shouldRecalculateBlockSpritePositions = false;
         for (let block of blocks) {
             if (!this.blockIdsToBlockSprites[block.id]) {
+                // Add this block to block-by-id map
+                this.blockIdsToBlocks[block.id] = block;
+
                 // Add the block to its "height group"--an ordered set of
                 // blocks with the same height
                 if (!this.heightGroups[block.height]) {
@@ -41,7 +46,7 @@ export default class TimelineContainer extends PIXI.Container {
                 this.heightGroups[block.height].push(block.id);
 
                 // Add the block to the block-by-ID map
-                const blockSprite = new BlockSprite(this.application, block);
+                const blockSprite = new BlockSprite(this.application, block.id);
                 this.blockIdsToBlockSprites[block.id] = blockSprite;
 
                 // Add the block sprite to the block container
@@ -86,7 +91,7 @@ export default class TimelineContainer extends PIXI.Container {
                 const blockSprite = this.blockIdsToBlockSprites[blockId];
                 blockSprite.resize(blockSize);
 
-                const block = blockSprite.getBlock();
+                const block = this.blockIdsToBlocks[blockId];
                 blockSprite.x = block.height * (blockSize + margin);
                 blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
                 blockSprite.y = this.calculateBlockSpriteY(i, blockIds.length, rendererHeight);

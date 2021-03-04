@@ -1,5 +1,4 @@
 import * as PIXI from "pixi.js";
-import {Block} from "./model/Block";
 
 const blockColor = 0xaaaaaa;
 const blockRoundingRadius = 10;
@@ -20,15 +19,15 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
 
 export default class BlockSprite extends PIXI.Sprite {
     private readonly application: PIXI.Application;
-    private readonly block: Block;
+    private readonly blockId: number;
 
     private blockSize: number = 0;
 
-    constructor(application: PIXI.Application, block: Block) {
+    constructor(application: PIXI.Application, blockId: number) {
         super();
 
         this.application = application;
-        this.block = block;
+        this.blockId = blockId;
 
         this.anchor.set(0.5, 0.5);
     }
@@ -40,7 +39,7 @@ export default class BlockSprite extends PIXI.Sprite {
         }
     }
 
-    getBlock = (): Block => {
-        return this.block
+    getBlockId = (): number => {
+        return this.blockId;
     }
 };
