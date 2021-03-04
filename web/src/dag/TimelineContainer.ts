@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js'
 import {Block} from "./model/Block";
 import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
+import {Tween} from "@createjs/tweenjs";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly maxBlocksPerHeightGroup = 20;
@@ -173,11 +174,11 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     recalculatePositions = () => {
-        this.recalculateTimelineContainerPosition();
+        this.moveTimelineContainer();
         this.recalculateSpritePositions();
     }
 
-    private recalculateTimelineContainerPosition = () => {
+    private moveTimelineContainer = () => {
         const rendererWidth = this.application.renderer.width;
         const rendererHeight = this.application.renderer.height;
         const blockSize = this.calculateBlockSize(rendererHeight);
@@ -185,8 +186,11 @@ export default class TimelineContainer extends PIXI.Container {
 
         const blockSpriteXForTargetHeight = this.calculateBlockSpriteX(this.targetHeight, blockSize, margin);
 
-        this.x = rendererWidth / 2 - blockSpriteXForTargetHeight;
         this.y = rendererHeight / 2;
+
+        // Animate the x
+        const targetX = rendererWidth / 2 - blockSpriteXForTargetHeight;
+        Tween.get(this).to({x: targetX}, 500);
     }
 
     getVisibleHeightRange = (targetHeight: number): [fromHeight: number, toHeight: number] => {
@@ -212,6 +216,6 @@ export default class TimelineContainer extends PIXI.Container {
 
     setTargetHeight = (targetHeight: number) => {
         this.targetHeight = targetHeight;
-        this.recalculateTimelineContainerPosition();
+        this.moveTimelineContainer();
     }
 }
