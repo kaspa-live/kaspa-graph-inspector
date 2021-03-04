@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js'
 import TimelineContainer from "./TimelineContainer";
+import {Block} from "./model/Block";
 
 export default class Dag {
     private readonly tickInternalInMilliseconds = 1000;
@@ -52,8 +53,10 @@ export default class Dag {
             if (targetHeight) {
                 this.targetHeight = targetHeight;
                 this.currentTickFunction = this.trackTargetHeight;
+                return;
             }
         }
+        this.currentTickFunction = this.trackHead;
     }
 
     private start = () => {
@@ -75,6 +78,24 @@ export default class Dag {
         const [startHeight, endHeight] = this.timelineContainer.getVisibleHeightRange(targetHeight);
         const response = await fetch(`http://localhost:3001/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
         const blocks = await response.json();
+        this.timelineContainer.insertOrIgnoreBlocks(blocks);
+    }
+
+    private trackHead = async () => {
+        const maxBlockAmountOnScreen = this.timelineContainer.getMaxBlockAmountOnScreen();
+        const heightDifference = Math.ceil(maxBlockAmountOnScreen / 2);
+
+        const response = await fetch(`http://localhost:3001/head?heightDifference=${heightDifference}`);
+        const blocks: Block[] = await response.json();
+
+        let maxHeight = 0;
+        for (let block of blocks) {
+            if (block.height > maxHeight) {
+                maxHeight = block.height;
+            }
+        }
+
+        this.timelineContainer.setTargetHeight(maxHeight);
         this.timelineContainer.insertOrIgnoreBlocks(blocks);
     }
 

@@ -196,7 +196,7 @@ export default class TimelineContainer extends PIXI.Container {
         return [fromHeight, toHeight];
     }
 
-    private getMaxBlockAmountOnScreen = (): number => {
+    getMaxBlockAmountOnScreen = (): number => {
         const rendererWidth = this.application.renderer.width;
         const rendererHeight = this.application.renderer.height;
         const blockSize = this.calculateBlockSize(rendererHeight);
