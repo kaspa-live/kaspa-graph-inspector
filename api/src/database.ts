@@ -24,6 +24,14 @@ export default class Database {
             };
         });
     }
+
+    async getMaxHeight(): Promise<number> {
+        const result = await this.client.query('SELECT MAX(height) AS max_height FROM blocks');
+        if (result.rows.length === 0) {
+            return 0;
+        }
+        return parseInt(result.rows[0].max_height);
+    }
 }
 
 export type Block = {

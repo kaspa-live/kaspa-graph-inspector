@@ -6,6 +6,7 @@ const database = new Database();
 
 const server = express();
 server.use(cors());
+
 server.get('/blocksBetweenHeights', async (request, response) => {
     if (!request.query.startHeight) {
         response.status(400).send("missing parameter: startHeight");
@@ -19,6 +20,25 @@ server.get('/blocksBetweenHeights', async (request, response) => {
     try {
         const startHeight = parseInt(request.query.startHeight as string);
         const endHeight = parseInt(request.query.endHeight as string);
+        const blocks = await database.getBlocks(startHeight, endHeight)
+        response.send(JSON.stringify(blocks));
+        return;
+    } catch (error) {
+        response.status(400).send(`invalid input: ${error}`);
+        return;
+    }
+});
+
+server.get('/head', async (request, response) => {
+    if (!request.query.heightDifference) {
+        response.status(400).send("missing parameter: heightDifference");
+        return;
+    }
+
+    try {
+        const heightDifference = parseInt(request.query.heightDifference as string);
+        const endHeight = await database.getMaxHeight();
+        const startHeight = endHeight - heightDifference
         const blocks = await database.getBlocks(startHeight, endHeight)
         response.send(JSON.stringify(blocks));
         return;
