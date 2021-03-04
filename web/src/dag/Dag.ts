@@ -73,7 +73,7 @@ export default class Dag {
         this.timelineContainer.setTargetHeight(targetHeight);
 
         const [startHeight, endHeight] = this.timelineContainer.getVisibleHeightRange(targetHeight);
-        const response = await fetch(`http://localhost:3001/blocks?startHeight=${startHeight}&endHeight=${endHeight}`);
+        const response = await fetch(`http://localhost:3001/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
         const blocks = await response.json();
         this.timelineContainer.insertOrIgnoreBlocks(blocks);
     }

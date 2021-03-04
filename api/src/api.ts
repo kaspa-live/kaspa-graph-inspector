@@ -6,7 +6,7 @@ const database = new Database();
 
 const server = express();
 server.use(cors());
-server.get('/blocks', async (request, response) => {
+server.get('/blocksBetweenHeights', async (request, response) => {
     if (!request.query.startHeight) {
         response.status(400).send("missing parameter: startHeight");
         return;
