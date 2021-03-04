@@ -123,10 +123,8 @@ export default class TimelineContainer extends PIXI.Container {
                 const vectorY = toY - fromY;
                 edgeSprite.setVector(vectorX, vectorY);
 
-                // The position is the top left corner of the
-                // bounding box of the edge sprite
-                edgeSprite.x = toX;
-                edgeSprite.y = Math.min(fromY, toY);
+                edgeSprite.x = fromX;
+                edgeSprite.y = fromY;
             }
         });
     }
