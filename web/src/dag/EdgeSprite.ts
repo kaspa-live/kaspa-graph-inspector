@@ -4,7 +4,7 @@ const edgeColor = 0xaaaaaa;
 const edgeLineWidth = 2;
 const edgeTextures: { [key: string]: PIXI.RenderTexture } = {};
 
-const edgeTexture = (application: PIXI.Application, vectorX: number, vectorY: number) => {
+const edgeTexture = (application: PIXI.Application, vectorX: number, vectorY: number): PIXI.RenderTexture => {
     const key = `${vectorX},${vectorY}`
     if (!edgeTextures[key]) {
         const graphics = new PIXI.Graphics();
@@ -43,11 +43,11 @@ export default class EdgeSprite extends PIXI.Sprite {
         }
     }
 
-    getFromBlockId = () => {
+    getFromBlockId = (): number => {
         return this.fromBlockId;
     }
 
-    getToBlockId = () => {
+    getToBlockId = (): number => {
         return this.toBlockId;
     }
 }

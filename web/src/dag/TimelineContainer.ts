@@ -131,7 +131,7 @@ export default class TimelineContainer extends PIXI.Container {
         });
     }
 
-    private calculateBlockSpriteY = (heightGroupIndex: number, heightGroupSize: number, rendererHeight: number) => {
+    private calculateBlockSpriteY = (heightGroupIndex: number, heightGroupSize: number, rendererHeight: number): number => {
         if (heightGroupSize === 1) {
             return 0;
         }
@@ -157,15 +157,15 @@ export default class TimelineContainer extends PIXI.Container {
         return (normalizedPosition - 0.5) * rendererHeight;
     }
 
-    private calculateBlockSpriteX = (blockHeight: number, blockSize: number, margin: number) => {
+    private calculateBlockSpriteX = (blockHeight: number, blockSize: number, margin: number): number => {
         return blockHeight * (blockSize + margin);
     }
 
-    private calculateBlockSize = (rendererHeight: number) => {
+    private calculateBlockSize = (rendererHeight: number): number => {
         return rendererHeight / this.maxBlocksPerHeightGroup;
     }
 
-    private calculateMargin = (blockSize: number) => {
+    private calculateMargin = (blockSize: number): number => {
         return blockSize * this.marginMultiplier;
     }
 

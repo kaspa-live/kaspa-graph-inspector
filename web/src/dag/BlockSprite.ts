@@ -5,7 +5,7 @@ const blockColor = 0xaaaaaa;
 const blockRoundingRadius = 10;
 const blockTextures: { [blockSize: number]: PIXI.RenderTexture } = {};
 
-const blockTexture = (application: PIXI.Application, blockSize: number) => {
+const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.RenderTexture => {
     if (!blockTextures[blockSize]) {
         const graphics = new PIXI.Graphics();
         graphics.beginFill(blockColor);
@@ -40,7 +40,7 @@ export default class BlockSprite extends PIXI.Sprite {
         }
     }
 
-    getBlock = () => {
+    getBlock = (): Block => {
         return this.block
     }
 };
