@@ -53,6 +53,10 @@ export default class TimelineContainer extends PIXI.Container {
                 // Add the block sprite to the block container
                 this.blockContainer.addChild(blockSprite);
 
+                // Animate the block sprite as it's created
+                blockSprite.alpha = 0.0;
+                Tween.get(blockSprite).to({alpha: 1.0}, 500);
+
                 // Create edges between the block and all its
                 // parents and add them to the appropriate
                 // collections
@@ -63,6 +67,10 @@ export default class TimelineContainer extends PIXI.Container {
                         this.blockIdsToEdgeSprites[block.id].push(edgeSprite);
 
                         this.edgeContainer.addChild(edgeSprite);
+
+                        // Animate the edge sprite as its created
+                        edgeSprite.alpha = 0.0;
+                        Tween.get(edgeSprite).to({alpha: 1.0}, 500);
                     }
                 }
 
