@@ -4,9 +4,9 @@ import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
 
 export default class TimelineContainer extends PIXI.Container {
-    private readonly fetchHeightDifference: number = 100;
     private readonly maxBlocksPerHeightGroup = 20;
     private readonly marginMultiplier = 2.0;
+    private readonly visibleHeightRangePadding: number = 2;
 
     private readonly application: PIXI.Application;
     private readonly edgeContainer: PIXI.Container;
@@ -29,7 +29,7 @@ export default class TimelineContainer extends PIXI.Container {
         this.addChild(this.blockContainer);
     }
 
-    private insertOrIgnoreBlocks = (blocks: Block[]) => {
+    insertOrIgnoreBlocks = (blocks: Block[]) => {
         let shouldRecalculateBlockSpritePositions = false;
         for (let block of blocks) {
             if (!this.blockIdsToBlockSprites[block.id]) {
@@ -186,19 +186,25 @@ export default class TimelineContainer extends PIXI.Container {
         this.y = rendererHeight / 2;
     }
 
+    getVisibleHeightRange = (targetHeight: number): [fromHeight: number, toHeight: number] => {
+        const rendererWidth = this.application.renderer.width;
+        const rendererHeight = this.application.renderer.height;
+        const blockSize = this.calculateBlockSize(rendererHeight);
+        const margin = this.calculateMargin(blockSize);
+
+        const maxBlockAmountOnScreen = rendererWidth / (blockSize + margin);
+
+        const kaka = Math.ceil(maxBlockAmountOnScreen / 2) + this.visibleHeightRangePadding;
+        let fromHeight = targetHeight - kaka;
+        if (fromHeight < 0) {
+            fromHeight = 0;
+        }
+        const toHeight = targetHeight + kaka;
+        return [fromHeight, toHeight];
+    }
+
     setTargetHeight = (targetHeight: number) => {
         this.targetHeight = targetHeight;
-
-        let startHeight = targetHeight - this.fetchHeightDifference;
-        if (startHeight < 0) {
-            startHeight = 0;
-        }
-        const endHeight = targetHeight + this.fetchHeightDifference;
-
-        fetch(`http://localhost:3001/blocks?startHeight=${startHeight}&endHeight=${endHeight}`)
-            .then(response => response.json())
-            .then(this.insertOrIgnoreBlocks);
-
         this.recalculateTimelineContainerPosition();
     }
 }

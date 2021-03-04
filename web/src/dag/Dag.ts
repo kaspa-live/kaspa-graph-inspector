@@ -36,16 +36,33 @@ export default class Dag {
     }
 
     private initializeTargetHeightByQueryParams = () => {
+        const targetHeight = this.extractTargetHeightFromParams();
+        if (targetHeight !== null) {
+            this.setTargetHeight(targetHeight);
+            return;
+        }
+        this.setTargetHeight(0);
+    }
+
+    private extractTargetHeightFromParams = (): number | null => {
         const urlParams = new URLSearchParams(window.location.search);
         const targetHeightString = urlParams.get("targetHeight");
         if (targetHeightString) {
             const targetHeight = parseInt(targetHeightString);
             if (targetHeight) {
-                this.timelineContainer.setTargetHeight(targetHeight);
-                return;
+                return targetHeight;
             }
         }
-        this.timelineContainer.setTargetHeight(0);
+        return null;
+    }
+
+    private setTargetHeight(targetHeight: number) {
+        this.timelineContainer.setTargetHeight(targetHeight);
+
+        const [startHeight, endHeight] = this.timelineContainer.getVisibleHeightRange(targetHeight);
+        fetch(`http://localhost:3001/blocks?startHeight=${startHeight}&endHeight=${endHeight}`)
+            .then(response => response.json())
+            .then(this.timelineContainer.insertOrIgnoreBlocks);
     }
 
     stop = () => {
