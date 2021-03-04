@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js'
 import {Block} from "./model/Block";
 import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
-import {Tween} from "@createjs/tweenjs";
+import {Tween, Ease} from "@createjs/tweenjs";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly maxBlocksPerHeightGroup = 20;
@@ -190,7 +190,7 @@ export default class TimelineContainer extends PIXI.Container {
 
         // Animate the x
         const targetX = rendererWidth / 2 - blockSpriteXForTargetHeight;
-        Tween.get(this).to({x: targetX}, 500);
+        Tween.get(this).to({x: targetX}, 500, Ease.quadOut);
     }
 
     getVisibleHeightRange = (targetHeight: number): [fromHeight: number, toHeight: number] => {
