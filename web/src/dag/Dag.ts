@@ -4,6 +4,7 @@ import {Block} from "./model/Block";
 
 export default class Dag {
     private readonly tickInternalInMilliseconds = 1000;
+    private readonly headHeightMarginMultiplier = 0.5;
 
     private readonly application: PIXI.Application;
     private readonly timelineContainer: TimelineContainer;
@@ -82,8 +83,9 @@ export default class Dag {
     }
 
     private trackHead = async () => {
-        const maxBlockAmountOnScreen = this.timelineContainer.getMaxBlockAmountOnScreen();
-        const heightDifference = Math.ceil(maxBlockAmountOnScreen / 2);
+        const maxBlockAmountOnHalfTheScreen = this.timelineContainer.getMaxBlockAmountOnHalfTheScreen();
+        const headMargin = Math.floor(maxBlockAmountOnHalfTheScreen * this.headHeightMarginMultiplier);
+        const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
 
         const response = await fetch(`http://localhost:3001/head?heightDifference=${heightDifference}`);
         const blocks: Block[] = await response.json();
@@ -95,7 +97,7 @@ export default class Dag {
             }
         }
 
-        this.timelineContainer.setTargetHeight(maxHeight);
+        this.timelineContainer.setTargetHeight(maxHeight - headMargin);
         this.timelineContainer.insertOrIgnoreBlocks(blocks);
     }
 
