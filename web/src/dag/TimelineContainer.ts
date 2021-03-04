@@ -185,20 +185,24 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     getVisibleHeightRange = (targetHeight: number): [fromHeight: number, toHeight: number] => {
+        const maxBlockAmountOnScreen = this.getMaxBlockAmountOnScreen();
+        const blockRangeOnOneSide = Math.ceil(maxBlockAmountOnScreen / 2) + this.visibleHeightRangePadding;
+
+        let fromHeight = targetHeight - blockRangeOnOneSide;
+        if (fromHeight < 0) {
+            fromHeight = 0;
+        }
+        const toHeight = targetHeight + blockRangeOnOneSide;
+        return [fromHeight, toHeight];
+    }
+
+    private getMaxBlockAmountOnScreen = (): number => {
         const rendererWidth = this.application.renderer.width;
         const rendererHeight = this.application.renderer.height;
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
-        const maxBlockAmountOnScreen = rendererWidth / (blockSize + margin);
-
-        const kaka = Math.ceil(maxBlockAmountOnScreen / 2) + this.visibleHeightRangePadding;
-        let fromHeight = targetHeight - kaka;
-        if (fromHeight < 0) {
-            fromHeight = 0;
-        }
-        const toHeight = targetHeight + kaka;
-        return [fromHeight, toHeight];
+        return rendererWidth / (blockSize + margin);
     }
 
     setTargetHeight = (targetHeight: number) => {
