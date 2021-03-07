@@ -55,6 +55,7 @@ func (p *Processing) insertGenesisIfRequired() error {
 		Timestamp: genesisBlock.Header.TimeInMilliseconds(),
 		ParentIDs: nil,
 		Height:    0,
+		Color:     model.ColorGray,
 	}
 	err = p.database.InsertBlock(databaseGenesisBlock)
 	if err != nil {
@@ -93,6 +94,7 @@ func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
 		Timestamp: block.Header.TimeInMilliseconds(),
 		ParentIDs: parentIDs,
 		Height:    blockHeight,
+		Color:     model.ColorGray,
 	}
 	err = p.database.InsertBlock(databaseBlock)
 	if err != nil {
