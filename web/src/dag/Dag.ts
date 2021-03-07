@@ -51,7 +51,7 @@ export default class Dag {
         const targetHeightString = urlParams.get("targetHeight");
         if (targetHeightString) {
             const targetHeight = parseInt(targetHeightString);
-            if (targetHeight) {
+            if (targetHeight || targetHeight === 0) {
                 this.targetHeight = targetHeight;
                 this.currentTickFunction = this.trackTargetHeight;
                 return;
