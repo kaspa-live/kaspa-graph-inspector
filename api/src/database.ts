@@ -10,7 +10,7 @@ export default class Database {
 
     async getBlocks(startHeight: number, endHeight: number): Promise<Block[]> {
         const result = await this.client.query('SELECT * FROM blocks ' +
-            'WHERE height >= $1 AND height < $2 ' +
+            'WHERE height >= $1 AND height <= $2 ' +
             'ORDER BY height',
             [startHeight, endHeight]);
 

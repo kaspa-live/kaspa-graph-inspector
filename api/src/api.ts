@@ -38,7 +38,10 @@ server.get('/head', async (request, response) => {
     try {
         const heightDifference = parseInt(request.query.heightDifference as string);
         const endHeight = await database.getMaxHeight();
-        const startHeight = endHeight - heightDifference
+        let startHeight = endHeight - heightDifference
+        if (startHeight < 0) {
+            startHeight = 0;
+        }
         const blocks = await database.getBlocks(startHeight, endHeight)
         response.send(JSON.stringify(blocks));
         return;

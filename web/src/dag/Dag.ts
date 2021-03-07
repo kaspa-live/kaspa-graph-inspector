@@ -97,7 +97,12 @@ export default class Dag {
             }
         }
 
-        this.timelineContainer.setTargetHeight(maxHeight - headMargin);
+        let targetHeight = maxHeight - headMargin;
+        if (targetHeight < 0) {
+            targetHeight = 0;
+        }
+
+        this.timelineContainer.setTargetHeight(targetHeight);
         this.timelineContainer.insertOrIgnoreBlocks(blocks);
     }
 
