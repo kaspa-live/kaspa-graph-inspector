@@ -66,7 +66,7 @@ func (p *Processing) insertGenesisIfRequired() error {
 	return nil
 }
 
-func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
+func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	// TODO: To resolve gray/red/blue:
 	// Go over the chainChanged
 	// For every block in the Removed set:
@@ -76,8 +76,8 @@ func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
 	//   Get its merge set reds and set it to red
 
 	blockHash := consensushashing.BlockHash(block)
-	log.Debugf("Processing block %s", blockHash)
-	defer log.Debugf("Finished processing block %s", blockHash)
+	log.Debugf("Preprocessing block %s", blockHash)
+	defer log.Debugf("Finished preprocessing block %s", blockHash)
 
 	parentHashes := block.Header.ParentHashes()
 	parentIDs, err := p.blockHashesToIDs(parentHashes)
@@ -105,6 +105,29 @@ func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
 		return errors.Wrapf(err, "Could not insert block %s", blockHash)
 	}
 	return nil
+}
+
+func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock) error {
+	blockHash := consensushashing.BlockHash(block)
+	log.Debugf("Processing added block %s", blockHash)
+	defer log.Debugf("Finished processing added block %s", blockHash)
+
+	blockID, err := p.database.BlockIDByHash(blockHash)
+	if err != nil {
+		return errors.Wrapf(err, "Could not get block ID for block %s", blockHash)
+	}
+
+	blockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(blockHash)
+	if err != nil {
+		return errors.Wrapf(err, "Could not get GHOSTDAG data for block %s", blockHash)
+	}
+
+	selectedParentID, err := p.database.BlockIDByHash(blockGHOSTDAGData.SelectedParent())
+	if err != nil {
+		return errors.Wrapf(err, "Could not get selected parent block ID for block %s", blockHash)
+	}
+
+	return p.database.UpdateBlockSelectedParent(blockID, selectedParentID)
 }
 
 func (p *Processing) blockHashesToIDs(blockHashes []*externalapi.DomainHash) ([]uint64, error) {

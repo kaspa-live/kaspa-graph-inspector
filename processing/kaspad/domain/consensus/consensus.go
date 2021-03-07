@@ -2,6 +2,9 @@ package consensus
 
 import (
 	kaspadConsensus "github.com/kaspanet/kaspad/domain/consensus"
+	consensusDatabase "github.com/kaspanet/kaspad/domain/consensus/database"
+	"github.com/kaspanet/kaspad/domain/consensus/datastructures/ghostdagdatastore"
+	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/dagconfig"
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
@@ -14,11 +17,21 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Conse
 		return nil, err
 	}
 
-	return &Consensus{kaspadConsensus: kaspadConsensusInstance}, nil
+	dbManager := consensusDatabase.New(databaseContext)
+	pruningWindowSizeForCaches := int(dagParams.PruningDepth())
+	ghostdagDataStore := ghostdagdatastore.New(pruningWindowSizeForCaches, true)
+
+	return &Consensus{
+		dbManager:         dbManager,
+		kaspadConsensus:   kaspadConsensusInstance,
+		ghostdagDataStore: ghostdagDataStore,
+	}, nil
 }
 
 type Consensus struct {
-	kaspadConsensus externalapi.Consensus
+	dbManager         model.DBManager
+	kaspadConsensus   externalapi.Consensus
+	ghostdagDataStore model.GHOSTDAGDataStore
 
 	onAddingBlockListener OnAddingBlockListener
 	onBlockAddedListener  OnBlockAddedListener
@@ -60,4 +73,8 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock) (*ext
 	}
 
 	return blockInsertionResult, nil
+}
+
+func (c *Consensus) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
+	return c.ghostdagDataStore.Get(c.dbManager, blockHash)
 }

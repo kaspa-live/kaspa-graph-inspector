@@ -23,6 +23,22 @@ func (db *Database) InsertBlock(block *model.Block) error {
 	return err
 }
 
+func (db *Database) UpdateBlockSelectedParent(blockID uint64, selectedParentID uint64) error {
+	_, err := db.database.Exec("UPDATE blocks SET selected_parent_id = ? WHERE id = ?", selectedParentID, blockID)
+	return err
+}
+
+func (db *Database) BlockIDByHash(blockHash *externalapi.DomainHash) (uint64, error) {
+	var result struct {
+		Id uint64
+	}
+	_, err := db.database.QueryOne(&result, "SELECT id FROM blocks WHERE block_hash = ?", blockHash.String())
+	if err != nil {
+		return 0, err
+	}
+	return result.Id, nil
+}
+
 func (db *Database) BlockIDsByHashes(blockHashes []*externalapi.DomainHash) ([]uint64, error) {
 	blockHashStrings := make([]string, len(blockHashes))
 	for i, blockHash := range blockHashes {

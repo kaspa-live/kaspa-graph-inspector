@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/dagconfig"
 	"github.com/kaspanet/kaspad/domain/miningmanager"
@@ -32,6 +33,10 @@ func (d *Domain) SetOnAddingBlockListener(listener consensusPackage.OnAddingBloc
 
 func (d *Domain) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
 	d.consensus.SetOnBlockAddedListener(listener)
+}
+
+func (d *Domain) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
+	return d.consensus.BlockGHOSTDAGData(blockHash)
 }
 
 func (d *Domain) MiningManager() miningmanager.MiningManager {

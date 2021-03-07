@@ -2,6 +2,8 @@ package kaspad
 
 import (
 	"github.com/kaspanet/kaspad/app/protocol"
+	"github.com/kaspanet/kaspad/domain/consensus/model"
+	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	kaspadConfigPackage "github.com/kaspanet/kaspad/infrastructure/config"
 	"github.com/kaspanet/kaspad/infrastructure/network/addressmanager"
 	"github.com/kaspanet/kaspad/infrastructure/network/connmanager"
@@ -67,6 +69,10 @@ func (n *Kaspad) SetOnAddingBlockListener(listener consensusPackage.OnAddingBloc
 
 func (n *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
 	n.domain.SetOnBlockAddedListener(listener)
+}
+
+func (n *Kaspad) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
+	return n.domain.BlockGHOSTDAGData(blockHash)
 }
 
 func (n *Kaspad) Start() error {
