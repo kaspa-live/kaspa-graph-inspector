@@ -30,6 +30,19 @@ func (db *Database) UpdateBlockSelectedParent(blockID uint64, selectedParentID u
 	return err
 }
 
+func (db *Database) UpdateBlockIsInVirtualSelectedParentChain(
+	blockIDsToIsInVirtualSelectedParentChain map[uint64]bool) error {
+
+	for blockID, isInVirtualSelectedParentChain := range blockIDsToIsInVirtualSelectedParentChain {
+		_, err := db.database.Exec("UPDATE blocks SET is_in_virtual_selected_parent_chain = ? WHERE id = ?",
+			isInVirtualSelectedParentChain, blockID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (db *Database) UpdateBlockColors(blockIDsToColors map[uint64]string) error {
 	for blockID, color := range blockIDsToColors {
 		_, err := db.database.Exec("UPDATE blocks SET color = ? WHERE id = ?", color, blockID)

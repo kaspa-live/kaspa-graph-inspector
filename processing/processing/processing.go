@@ -137,6 +137,7 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 	}
 
 	blockColors := make(map[uint64]string)
+	blockIsInVirtualSelectedParentChain := make(map[uint64]bool)
 	removedBlockHashes := blockInsertionResult.VirtualSelectedParentChainChanges.Removed
 	if len(removedBlockHashes) > 0 {
 		removedBlockIDs, err := p.database.BlockIDsByHashes(removedBlockHashes)
@@ -145,10 +146,25 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 		}
 		for _, removedBlockID := range removedBlockIDs {
 			blockColors[removedBlockID] = model.ColorGray
+			blockIsInVirtualSelectedParentChain[removedBlockID] = false
 		}
 	}
 
 	addedBlockHashes := blockInsertionResult.VirtualSelectedParentChainChanges.Added
+	if len(addedBlockHashes) > 0 {
+		addedBlockIDs, err := p.database.BlockIDsByHashes(addedBlockHashes)
+		if err != nil {
+			return err
+		}
+		for _, addedBlockID := range addedBlockIDs {
+			blockIsInVirtualSelectedParentChain[addedBlockID] = true
+		}
+	}
+	err = p.database.UpdateBlockIsInVirtualSelectedParentChain(blockIsInVirtualSelectedParentChain)
+	if err != nil {
+		return err
+	}
+
 	for _, addedBlockHash := range addedBlockHashes {
 		addedBlockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(addedBlockHash)
 		if err != nil {
