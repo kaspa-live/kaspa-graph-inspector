@@ -152,7 +152,6 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 	for _, addedBlockHash := range addedBlockHashes {
 		addedBlockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(addedBlockHash)
 		if err != nil {
-			addedBlockGHOSTDAGData.MergeSetReds()
 			return errors.Wrapf(err, "Could not get GHOSTDAG data for added block %s", blockHash)
 		}
 
