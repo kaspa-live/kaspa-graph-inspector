@@ -80,12 +80,12 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	defer log.Debugf("Finished preprocessing block %s", blockHash)
 
 	parentHashes := block.Header.ParentHashes()
-	parentIDs, err := p.blockHashesToIDs(parentHashes)
+	parentIDs, err := p.database.BlockIDsByHashes(parentHashes)
 	if err != nil {
 		return errors.Wrapf(err, "Could not resolve parent IDs for block %s", blockHash)
 	}
 
-	highestParentHeight, err := p.highestBlockHeight(parentIDs)
+	highestParentHeight, err := p.database.HighestBlockHeight(parentIDs)
 	if err != nil {
 		return errors.Wrapf(err, "Could not resolve highest parent height for block %s", blockHash)
 	}
@@ -107,7 +107,9 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	return nil
 }
 
-func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock) error {
+func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
+	blockInsertionResult *externalapi.BlockInsertionResult) error {
+
 	blockHash := consensushashing.BlockHash(block)
 	log.Debugf("Processing added block %s", blockHash)
 	defer log.Debugf("Finished processing added block %s", blockHash)
@@ -116,31 +118,53 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock) error {
 	if err != nil {
 		return errors.Wrapf(err, "Could not get block ID for block %s", blockHash)
 	}
-
 	blockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(blockHash)
 	if err != nil {
 		return errors.Wrapf(err, "Could not get GHOSTDAG data for block %s", blockHash)
 	}
-
 	selectedParentID, err := p.database.BlockIDByHash(blockGHOSTDAGData.SelectedParent())
 	if err != nil {
-		return errors.Wrapf(err, "Could not get selected parent block ID for block %s", blockHash)
+		return errors.Wrapf(err, "Could not get selected parent block ID for block %s",
+			blockGHOSTDAGData.SelectedParent())
 	}
-
-	return p.database.UpdateBlockSelectedParent(blockID, selectedParentID)
-}
-
-func (p *Processing) blockHashesToIDs(blockHashes []*externalapi.DomainHash) ([]uint64, error) {
-	blockIDs, err := p.database.BlockIDsByHashes(blockHashes)
+	err = p.database.UpdateBlockSelectedParent(blockID, selectedParentID)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if len(blockHashes) != len(blockIDs) {
-		return nil, errors.Errorf("Some block hashes out of (%s) are missing in the database", blockHashes)
-	}
-	return blockIDs, nil
-}
 
-func (p *Processing) highestBlockHeight(blockIDs []uint64) (uint64, error) {
-	return p.database.HighestBlockHeight(blockIDs)
+	if blockInsertionResult.VirtualSelectedParentChainChanges == nil {
+		return nil
+	}
+
+	blockColors := make(map[uint64]string)
+	removedBlockHashes := blockInsertionResult.VirtualSelectedParentChainChanges.Removed
+	removedBlockIDs, err := p.database.BlockIDsByHashes(removedBlockHashes)
+	if err != nil {
+		return err
+	}
+	for _, removedBlockID := range removedBlockIDs {
+		blockColors[removedBlockID] = model.ColorGray
+	}
+	addedBlockHashes := blockInsertionResult.VirtualSelectedParentChainChanges.Added
+	for _, addedBlockHash := range addedBlockHashes {
+		addedBlockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(addedBlockHash)
+		if err != nil {
+			return errors.Wrapf(err, "Could not get GHOSTDAG data for added block %s", blockHash)
+		}
+		blueBlockIDs, err := p.database.BlockIDsByHashes(addedBlockGHOSTDAGData.MergeSetBlues())
+		if err != nil {
+			return errors.Wrapf(err, "Could not get blue block IDs for added block %s", addedBlockHash)
+		}
+		for _, blueBlockID := range blueBlockIDs {
+			blockColors[blueBlockID] = model.ColorBlue
+		}
+		redBlockIDs, err := p.database.BlockIDsByHashes(addedBlockGHOSTDAGData.MergeSetReds())
+		if err != nil {
+			return errors.Wrapf(err, "Could not get red block IDs for added block %s", addedBlockHash)
+		}
+		for _, redBlockID := range redBlockIDs {
+			blockColors[redBlockID] = model.ColorRed
+		}
+	}
+	return p.database.UpdateBlockColors(blockColors)
 }

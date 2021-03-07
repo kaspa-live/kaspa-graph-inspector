@@ -38,7 +38,7 @@ type Consensus struct {
 }
 
 type OnAddingBlockListener func(*externalapi.DomainBlock) error
-type OnBlockAddedListener func(*externalapi.DomainBlock)
+type OnBlockAddedListener func(*externalapi.DomainBlock, *externalapi.BlockInsertionResult)
 
 func (c *Consensus) SetOnAddingBlockListener(listener OnAddingBlockListener) {
 	c.onAddingBlockListener = listener
@@ -69,7 +69,7 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock) (*ext
 	}
 
 	if c.onBlockAddedListener != nil {
-		c.onBlockAddedListener(block)
+		c.onBlockAddedListener(block, blockInsertionResult)
 	}
 
 	return blockInsertionResult, nil

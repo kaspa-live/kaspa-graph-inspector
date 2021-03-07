@@ -3,6 +3,7 @@ package database
 import (
 	"github.com/go-pg/pg/v10"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
+	"github.com/pkg/errors"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database/model"
 )
 
@@ -11,11 +12,12 @@ type Database struct {
 }
 
 func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, error) {
-	blockIds, err := db.BlockIDsByHashes([]*externalapi.DomainHash{blockHash})
+	var ids []uint64
+	_, err := db.database.Query(&ids, "SELECT id FROM blocks WHERE block_hash = ?", blockHash)
 	if err != nil {
 		return false, err
 	}
-	return len(blockIds) == 1, nil
+	return len(ids) == 1, nil
 }
 
 func (db *Database) InsertBlock(block *model.Block) error {
@@ -26,6 +28,16 @@ func (db *Database) InsertBlock(block *model.Block) error {
 func (db *Database) UpdateBlockSelectedParent(blockID uint64, selectedParentID uint64) error {
 	_, err := db.database.Exec("UPDATE blocks SET selected_parent_id = ? WHERE id = ?", selectedParentID, blockID)
 	return err
+}
+
+func (db *Database) UpdateBlockColors(blockIDsToColors map[uint64]string) error {
+	for blockID, color := range blockIDsToColors {
+		_, err := db.database.Exec("UPDATE blocks SET color = ? WHERE id = ?", color, blockID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (db *Database) BlockIDByHash(blockHash *externalapi.DomainHash) (uint64, error) {
@@ -49,6 +61,9 @@ func (db *Database) BlockIDsByHashes(blockHashes []*externalapi.DomainHash) ([]u
 	_, err := db.database.Query(&ids, "SELECT id FROM blocks WHERE block_hash IN (?)", pg.In(blockHashStrings))
 	if err != nil {
 		return nil, err
+	}
+	if len(blockHashes) != len(ids) {
+		return nil, errors.Errorf("Some block hashes out of (%s) are missing in the database", blockHashes)
 	}
 	return ids, nil
 }
