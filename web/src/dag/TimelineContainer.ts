@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js'
 import {Block} from "./model/Block";
 import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
-import {Tween, Ease} from "@createjs/tweenjs";
+import {Ease, Tween} from "@createjs/tweenjs";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly maxBlocksPerHeightGroup = 20;
@@ -13,11 +13,11 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly edgeContainer: PIXI.Container;
     private readonly blockContainer: PIXI.Container;
 
-    private readonly blockIdsToBlocks: { [id: number]: Block } = {};
-    private readonly heightGroups: { [height: number]: number[] } = {};
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
     private readonly blockIdsToEdgeSprites: { [id: number]: EdgeSprite[] } = {};
 
+    private blockIdsToBlocks: { [id: number]: Block } = {};
+    private heightGroups: { [height: number]: number[] } = {};
     private targetHeight: number = 0;
 
     constructor(application: PIXI.Application) {
@@ -32,21 +32,46 @@ export default class TimelineContainer extends PIXI.Container {
         this.addChild(this.blockContainer);
     }
 
-    insertOrIgnoreBlocks = (blocks: Block[]) => {
-        let shouldRecalculateBlockSpritePositions = false;
+    setBlocks = (blocks: Block[]) => {
+        // Update the blocks-by-ids map with the new blocks
+        this.blockIdsToBlocks = {};
+        for (let block of blocks) {
+            this.blockIdsToBlocks[block.id] = block;
+        }
+
+        // Rebuild the block "height group" collection--an
+        // ordered set of blocks with the same height
+        this.heightGroups = {};
+        for (let block of blocks) {
+            if (!this.heightGroups[block.height]) {
+                this.heightGroups[block.height] = [];
+            }
+            this.heightGroups[block.height].push(block.id);
+        }
+
+        // Remove no-longer relevant block sprites
+        Object.entries(this.blockIdsToBlockSprites)
+            .filter(([blockId, _]) => !this.blockIdsToBlocks[parseInt(blockId)])
+            .forEach(([blockId, sprite]) => {
+                delete this.blockIdsToBlockSprites[parseInt(blockId)]
+                this.blockContainer.removeChild(sprite);
+            });
+
+
+        // Remove no-longer relevant edge sprites
+        Object.entries(this.blockIdsToEdgeSprites)
+            .filter(([blockId, _]) => !this.blockIdsToBlocks[parseInt(blockId)])
+            .forEach(([blockId, sprites]) => {
+                delete this.blockIdsToEdgeSprites[parseInt(blockId)]
+                for (let sprite of sprites) {
+                    this.edgeContainer.removeChild(sprite);
+                }
+            });
+
+        // Add new block sprites
         for (let block of blocks) {
             if (!this.blockIdsToBlockSprites[block.id]) {
-                // Add this block to block-by-id map
-                this.blockIdsToBlocks[block.id] = block;
-
-                // Add the block to its "height group"--an ordered set of
-                // blocks with the same height
-                if (!this.heightGroups[block.height]) {
-                    this.heightGroups[block.height] = [];
-                }
-                this.heightGroups[block.height].push(block.id);
-
-                // Add the block to the block-by-ID map
+                // Add the block to the blockSprite-by-ID map
                 const blockSprite = new BlockSprite(this.application, block.id);
                 this.blockIdsToBlockSprites[block.id] = blockSprite;
 
@@ -56,7 +81,12 @@ export default class TimelineContainer extends PIXI.Container {
                 // Animate the block sprite as it's created
                 blockSprite.alpha = 0.0;
                 Tween.get(blockSprite).to({alpha: 1.0}, 500);
+            }
+        }
 
+        // Add new edge sprites
+        for (let block of blocks) {
+            if (!this.blockIdsToEdgeSprites[block.id]) {
                 // Create edges between the block and all its
                 // parents and add them to the appropriate
                 // collections
@@ -73,15 +103,10 @@ export default class TimelineContainer extends PIXI.Container {
                         Tween.get(edgeSprite).to({alpha: 1.0}, 500);
                     }
                 }
-
-                // The timeline container changed so the block
-                // sprite positions needs to be recalculated
-                shouldRecalculateBlockSpritePositions = true;
             }
         }
-        if (shouldRecalculateBlockSpritePositions) {
-            this.recalculateSpritePositions();
-        }
+
+        this.recalculateSpritePositions();
     }
 
     private recalculateSpritePositions = () => {
