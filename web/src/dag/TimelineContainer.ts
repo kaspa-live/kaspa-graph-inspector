@@ -93,6 +93,18 @@ export default class TimelineContainer extends PIXI.Container {
             }
         }
 
+        // Update existing edge sprites
+        for (let block of blocks) {
+            if (this.blockIdsToEdgeSprites[block.id]) {
+                const edgeSprites = this.blockIdsToEdgeSprites[block.id];
+                for (let edgeSprite of edgeSprites) {
+                    if (edgeSprite.getToBlockId() === block.selectedParentId) {
+                        edgeSprite.setIsInVirtualSelectedParentChain(block.isInVirtualSelectedParentChain);
+                    }
+                }
+            }
+        }
+
         // Add new edge sprites
         for (let block of blocks) {
             if (!this.blockIdsToEdgeSprites[block.id]) {
@@ -103,6 +115,9 @@ export default class TimelineContainer extends PIXI.Container {
                 if (block.parentIds) {
                     for (let parentId of block.parentIds) {
                         const edgeSprite = new EdgeSprite(this.application, block.id, parentId);
+                        if (parentId === block.selectedParentId) {
+                            edgeSprite.setIsInVirtualSelectedParentChain(block.isInVirtualSelectedParentChain)
+                        }
                         this.blockIdsToEdgeSprites[block.id].push(edgeSprite);
 
                         this.edgeContainer.addChild(edgeSprite);
