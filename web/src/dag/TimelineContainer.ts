@@ -68,6 +68,14 @@ export default class TimelineContainer extends PIXI.Container {
                 }
             });
 
+        // Update existing block sprites
+        for (let block of blocks) {
+            if (this.blockIdsToBlockSprites[block.id]) {
+                const blockSprite = this.blockIdsToBlockSprites[block.id];
+                blockSprite.setColor(block.color);
+            }
+        }
+
         // Add new block sprites
         for (let block of blocks) {
             if (!this.blockIdsToBlockSprites[block.id]) {

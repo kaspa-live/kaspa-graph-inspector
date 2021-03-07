@@ -1,14 +1,15 @@
 import * as PIXI from "pixi.js";
+import {Tween} from "@createjs/tweenjs";
 
 const blockColors: { [color: string]: number } = {"gray": 0xaaaaaa, "red": 0xffaaaa, "blue": 0xaaaaff};
 const blockRoundingRadius = 10;
 const blockTextures: { [key: string]: PIXI.RenderTexture } = {};
 
-const blockTexture = (application: PIXI.Application, blockSize: number, color: string): PIXI.RenderTexture => {
-    const key = `${blockSize},${color}`
+const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.RenderTexture => {
+    const key = `${blockSize}`
     if (!blockTextures[key]) {
         const graphics = new PIXI.Graphics();
-        graphics.beginFill(blockColors[color]);
+        graphics.beginFill(0xffffff);
         graphics.drawRoundedRect(0, 0, blockSize, blockSize, blockRoundingRadius);
         graphics.endFill();
 
@@ -23,7 +24,7 @@ export default class BlockSprite extends PIXI.Sprite {
     private readonly blockId: number;
 
     private blockSize: number = 0;
-    private color: string = "";
+    private color: string = "gray";
 
     constructor(application: PIXI.Application, blockId: number) {
         super();
@@ -32,12 +33,13 @@ export default class BlockSprite extends PIXI.Sprite {
         this.blockId = blockId;
 
         this.anchor.set(0.5, 0.5);
+        this.tint = blockColors[this.color]
     }
 
     resize = (blockSize: number) => {
         if (!this.texture || this.blockSize !== blockSize) {
             this.blockSize = blockSize;
-            this.texture = blockTexture(this.application, blockSize, this.color);
+            this.texture = blockTexture(this.application, blockSize);
         }
     }
 
@@ -46,9 +48,9 @@ export default class BlockSprite extends PIXI.Sprite {
     }
 
     setColor = (color: string) => {
-        if (!this.texture || this.color !== color) {
+        if (this.color !== color) {
             this.color = color;
-            this.texture = blockTexture(this.application, this.blockSize, color);
+            Tween.get(this).to({tint: blockColors[color]}, 500);
         }
     }
 };
