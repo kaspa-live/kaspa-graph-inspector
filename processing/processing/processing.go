@@ -51,11 +51,13 @@ func (p *Processing) insertGenesisIfRequired() error {
 		return err
 	}
 	databaseGenesisBlock := &model.Block{
-		BlockHash: genesisHash.String(),
-		Timestamp: genesisBlock.Header.TimeInMilliseconds(),
-		ParentIDs: nil,
-		Height:    0,
-		Color:     model.ColorGray,
+		BlockHash:                      genesisHash.String(),
+		Timestamp:                      genesisBlock.Header.TimeInMilliseconds(),
+		ParentIDs:                      nil,
+		Height:                         0,
+		SelectedParentID:               nil,
+		Color:                          model.ColorGray,
+		IsInVirtualSelectedParentChain: true,
 	}
 	err = p.database.InsertBlock(databaseGenesisBlock)
 	if err != nil {
@@ -90,11 +92,13 @@ func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
 	blockHeight := highestParentHeight + 1
 
 	databaseBlock := &model.Block{
-		BlockHash: blockHash.String(),
-		Timestamp: block.Header.TimeInMilliseconds(),
-		ParentIDs: parentIDs,
-		Height:    blockHeight,
-		Color:     model.ColorGray,
+		BlockHash:                      blockHash.String(),
+		Timestamp:                      block.Header.TimeInMilliseconds(),
+		ParentIDs:                      parentIDs,
+		Height:                         blockHeight,
+		SelectedParentID:               nil,
+		Color:                          model.ColorGray,
+		IsInVirtualSelectedParentChain: false,
 	}
 	err = p.database.InsertBlock(databaseBlock)
 	if err != nil {
