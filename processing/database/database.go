@@ -19,7 +19,7 @@ func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, err
 }
 
 func (db *Database) InsertBlock(block *model.Block) error {
-	_, err := db.database.Model(block).Insert()
+	_, err := db.database.Model(block).OnConflict("(block_hash) DO NOTHING").Insert()
 	return err
 }
 
