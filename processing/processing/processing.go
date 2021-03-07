@@ -138,32 +138,44 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 
 	blockColors := make(map[uint64]string)
 	removedBlockHashes := blockInsertionResult.VirtualSelectedParentChainChanges.Removed
-	removedBlockIDs, err := p.database.BlockIDsByHashes(removedBlockHashes)
-	if err != nil {
-		return err
+	if len(removedBlockHashes) > 0 {
+		removedBlockIDs, err := p.database.BlockIDsByHashes(removedBlockHashes)
+		if err != nil {
+			return err
+		}
+		for _, removedBlockID := range removedBlockIDs {
+			blockColors[removedBlockID] = model.ColorGray
+		}
 	}
-	for _, removedBlockID := range removedBlockIDs {
-		blockColors[removedBlockID] = model.ColorGray
-	}
+
 	addedBlockHashes := blockInsertionResult.VirtualSelectedParentChainChanges.Added
 	for _, addedBlockHash := range addedBlockHashes {
 		addedBlockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(addedBlockHash)
 		if err != nil {
+			addedBlockGHOSTDAGData.MergeSetReds()
 			return errors.Wrapf(err, "Could not get GHOSTDAG data for added block %s", blockHash)
 		}
-		blueBlockIDs, err := p.database.BlockIDsByHashes(addedBlockGHOSTDAGData.MergeSetBlues())
-		if err != nil {
-			return errors.Wrapf(err, "Could not get blue block IDs for added block %s", addedBlockHash)
+
+		blueHashes := addedBlockGHOSTDAGData.MergeSetBlues()
+		if len(blueHashes) > 0 {
+			blueBlockIDs, err := p.database.BlockIDsByHashes(blueHashes)
+			if err != nil {
+				return errors.Wrapf(err, "Could not get blue block IDs for added block %s", addedBlockHash)
+			}
+			for _, blueBlockID := range blueBlockIDs {
+				blockColors[blueBlockID] = model.ColorBlue
+			}
 		}
-		for _, blueBlockID := range blueBlockIDs {
-			blockColors[blueBlockID] = model.ColorBlue
-		}
-		redBlockIDs, err := p.database.BlockIDsByHashes(addedBlockGHOSTDAGData.MergeSetReds())
-		if err != nil {
-			return errors.Wrapf(err, "Could not get red block IDs for added block %s", addedBlockHash)
-		}
-		for _, redBlockID := range redBlockIDs {
-			blockColors[redBlockID] = model.ColorRed
+
+		redHashes := addedBlockGHOSTDAGData.MergeSetReds()
+		if len(redHashes) > 0 {
+			redBlockIDs, err := p.database.BlockIDsByHashes(redHashes)
+			if err != nil {
+				return errors.Wrapf(err, "Could not get red block IDs for added block %s", addedBlockHash)
+			}
+			for _, redBlockID := range redBlockIDs {
+				blockColors[redBlockID] = model.ColorRed
+			}
 		}
 	}
 	return p.database.UpdateBlockColors(blockColors)
