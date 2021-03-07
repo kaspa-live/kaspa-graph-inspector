@@ -80,7 +80,7 @@ export default class TimelineContainer extends PIXI.Container {
         for (let block of blocks) {
             if (!this.blockIdsToBlockSprites[block.id]) {
                 // Add the block to the blockSprite-by-ID map
-                const blockSprite = new BlockSprite(this.application, block.id);
+                const blockSprite = new BlockSprite(this.application);
                 blockSprite.setColor(block.color);
                 this.blockIdsToBlockSprites[block.id] = blockSprite;
 
@@ -132,7 +132,7 @@ export default class TimelineContainer extends PIXI.Container {
             for (let i = 0; i < blockIds.length; i++) {
                 const blockId = blockIds[i];
                 const blockSprite = this.blockIdsToBlockSprites[blockId];
-                blockSprite.resize(blockSize);
+                blockSprite.setSize(blockSize);
 
                 const block = this.blockIdsToBlocks[blockId];
                 blockSprite.x = block.height * (blockSize + margin);

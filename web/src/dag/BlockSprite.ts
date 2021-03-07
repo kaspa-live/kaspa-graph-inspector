@@ -19,38 +19,50 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
     return blockTextures[key];
 };
 
-export default class BlockSprite extends PIXI.Sprite {
+export default class BlockSprite extends PIXI.Container {
     private readonly application: PIXI.Application;
-    private readonly blockId: number;
 
     private blockSize: number = 0;
-    private color: string = "gray";
+    private blockColor: string = "gray";
+    private currentSprite: PIXI.Sprite;
 
-    constructor(application: PIXI.Application, blockId: number) {
+    constructor(application: PIXI.Application) {
         super();
 
         this.application = application;
-        this.blockId = blockId;
 
-        this.anchor.set(0.5, 0.5);
-        this.tint = blockColors[this.color]
+        this.currentSprite = this.buildSprite();
+        this.addChild(this.currentSprite)
     }
 
-    resize = (blockSize: number) => {
-        if (!this.texture || this.blockSize !== blockSize) {
+    private buildSprite = () => {
+        const sprite = new PIXI.Sprite();
+        sprite.anchor.set(0.5, 0.5);
+        sprite.tint = blockColors[this.blockColor];
+        return sprite;
+    }
+
+    setSize = (blockSize: number) => {
+        if (!this.currentSprite.texture || this.blockSize !== blockSize) {
             this.blockSize = blockSize;
-            this.texture = blockTexture(this.application, blockSize);
+            this.currentSprite.texture = blockTexture(this.application, blockSize);
         }
     }
 
-    getBlockId = (): number => {
-        return this.blockId;
-    }
-
     setColor = (color: string) => {
-        if (this.color !== color) {
-            this.color = color;
-            Tween.get(this).to({tint: blockColors[color]}, 500);
+        if (this.blockColor !== color) {
+            this.blockColor = color;
+
+            const oldSprite = this.currentSprite;
+
+            this.currentSprite = this.buildSprite();
+            this.currentSprite.texture = blockTexture(this.application, this.blockSize);
+            this.currentSprite.alpha = 0.0;
+            this.addChild(this.currentSprite);
+
+            Tween.get(this.currentSprite)
+                .to({alpha: 1.0}, 500)
+                .call(() => this.removeChild(oldSprite));
         }
     }
 };
