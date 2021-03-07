@@ -3,5 +3,8 @@ export type Block = {
     blockHash: string,
     timestamp: number,
     parentIds: number[],
-    height: number
+    height: number,
+    selectedParentId: number | null,
+    color: string,
+    isInVirtualSelectedParentChain: boolean,
 };

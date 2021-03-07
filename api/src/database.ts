@@ -21,6 +21,9 @@ export default class Database {
                 timestamp: parseInt(item.timestamp),
                 parentIds: item.parent_ids,
                 height: parseInt(item.height),
+                selectedParentId: item.selected_parent_id ? parseInt(item.selected_parent_id) : null,
+                color: item.color,
+                isInVirtualSelectedParentChain: item.is_in_virtual_selected_parent_chain,
             };
         });
     }
@@ -39,5 +42,8 @@ export type Block = {
     blockHash: string,
     timestamp: number,
     parentIds: number[],
-    height: number
+    height: number,
+    selectedParentId: number | null,
+    color: string,
+    isInVirtualSelectedParentChain: boolean,
 };
