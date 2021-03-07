@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	databasePackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database"
 	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/config"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
@@ -37,12 +36,7 @@ func main() {
 	if err != nil {
 		logErrorAndExit("Could not initialize processing: %s", err)
 	}
-	kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock) {
-		err := processing.ProcessBlock(block)
-		if err != nil {
-			logErrorAndExit("Could not process block: %s", err)
-		}
-	})
+	kaspad.SetOnAddingBlockListener(processing.ProcessBlock)
 
 	<-make(chan struct{})
 }

@@ -25,6 +25,7 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 		Flags: &kaspadConfigPackage.Flags{
 			ConnectPeers: []string{config.P2PServerAddress},
 			NetworkFlags: config.NetworkFlags,
+			LogLevel:     "debug",
 		},
 	}
 	databaseContext, err := database.Open()
@@ -58,6 +59,10 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 		connectionManager: connectionManager,
 		protocolManager:   protocolManager,
 	}, nil
+}
+
+func (n *Kaspad) SetOnAddingBlockListener(listener consensusPackage.OnAddingBlockListener) {
+	n.domain.SetOnAddingBlockListener(listener)
 }
 
 func (n *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {

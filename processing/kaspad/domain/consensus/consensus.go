@@ -20,22 +20,44 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Conse
 type Consensus struct {
 	kaspadConsensus externalapi.Consensus
 
-	onBlockAddedListener OnBlockAddedListener
+	onAddingBlockListener OnAddingBlockListener
+	onBlockAddedListener  OnBlockAddedListener
 }
 
+type OnAddingBlockListener func(*externalapi.DomainBlock) error
 type OnBlockAddedListener func(*externalapi.DomainBlock)
+
+func (c *Consensus) SetOnAddingBlockListener(listener OnAddingBlockListener) {
+	c.onAddingBlockListener = listener
+}
 
 func (c *Consensus) SetOnBlockAddedListener(listener OnBlockAddedListener) {
 	c.onBlockAddedListener = listener
 }
 
 func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock) (*externalapi.BlockInsertionResult, error) {
+	var addingBlockError error
+	if c.onAddingBlockListener != nil {
+		addingBlockError = c.onAddingBlockListener(block)
+	}
+
 	blockInsertionResult, err := c.kaspadConsensus.ValidateAndInsertBlock(block)
 	if err != nil {
 		return nil, err
 	}
+	if addingBlockError != nil {
+		// onAddingBlockListener may correctly return errors when there's
+		// something wrong with the block itself (most commonly missing
+		// parents).
+		// If we received an error from onAddingBlockListener but not from
+		// ValidateAndInsertBlock it means that something actually is
+		// wrong and we should abort.
+		return nil, addingBlockError
+	}
 
-	c.onBlockAddedListener(block)
+	if c.onBlockAddedListener != nil {
+		c.onBlockAddedListener(block)
+	}
 
 	return blockInsertionResult, nil
 }
