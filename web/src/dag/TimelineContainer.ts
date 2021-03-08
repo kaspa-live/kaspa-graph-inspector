@@ -20,10 +20,16 @@ export default class TimelineContainer extends PIXI.Container {
     private blockIdsToBlocks: { [id: number]: Block } = {};
     private targetHeight: number = 0;
 
+    private blockClickedListener: (block: Block) => void;
+
     constructor(application: PIXI.Application) {
         super();
 
         this.application = application;
+
+        this.blockClickedListener = () => {
+            // Do nothing
+        };
 
         this.edgeContainer = new PIXI.Container();
         this.addChild(this.edgeContainer);
@@ -96,8 +102,9 @@ export default class TimelineContainer extends PIXI.Container {
         for (let block of blocks) {
             if (!this.blockIdsToBlockSprites[block.id]) {
                 // Add the block to the blockSprite-by-ID map
-                const blockSprite = new BlockSprite(this.application, block.blockHash);
+                const blockSprite = new BlockSprite(this.application, block);
                 blockSprite.setColor(block.color);
+                blockSprite.setBlockClickedListener(this.blockClickedListener);
                 this.blockIdsToBlockSprites[block.id] = blockSprite;
 
                 // Add the block sprite to the block container
@@ -295,5 +302,9 @@ export default class TimelineContainer extends PIXI.Container {
     setTargetHeight = (targetHeight: number) => {
         this.targetHeight = targetHeight;
         this.moveTimelineContainer();
+    }
+
+    setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
+        this.blockClickedListener = blockClickedListener;
     }
 }

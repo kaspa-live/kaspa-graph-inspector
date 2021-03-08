@@ -27,6 +27,7 @@ export default class Dag {
         });
 
         this.timelineContainer = new TimelineContainer(this.application);
+        this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
         this.application.ticker.add(this.resizeIfRequired);
         this.application.stage.addChild(this.timelineContainer);
 
@@ -104,6 +105,10 @@ export default class Dag {
 
         this.timelineContainer.setTargetHeight(targetHeight);
         this.timelineContainer.setBlocks(blocks);
+    }
+
+    private handleBlockClicked = (block: Block) => {
+        console.log(block.blockHash);
     }
 
     stop = () => {

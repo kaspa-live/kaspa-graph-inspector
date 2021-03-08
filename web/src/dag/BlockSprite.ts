@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js";
 import {Ease, Tween} from "@createjs/tweenjs";
+import {Block} from "./model/Block";
 
 const blockColors: { [color: string]: number } = {"gray": 0xaaaaaa, "red": 0xffaaaa, "blue": 0xaaaaff};
 const blockRoundingRadius = 10;
@@ -25,19 +26,24 @@ export default class BlockSprite extends PIXI.Container {
     private readonly focusedScale = 1.0;
 
     private readonly application: PIXI.Application;
-    private readonly blockHash: string;
+    private readonly block: Block;
     private readonly spriteContainer: PIXI.Container;
     private readonly textContainer: PIXI.Container;
 
     private blockSize: number = 0;
     private blockColor: string = "gray";
     private currentSprite: PIXI.Sprite;
+    private blockClickedListener: (block: Block) => void;
 
-    constructor(application: PIXI.Application, blockHash: string) {
+    constructor(application: PIXI.Application, block: Block) {
         super();
 
         this.application = application;
-        this.blockHash = blockHash;
+        this.block = block;
+
+        this.blockClickedListener = () => {
+            // Do nothing
+        };
 
         this.spriteContainer = new PIXI.Container();
         this.addChild(this.spriteContainer);
@@ -67,6 +73,7 @@ export default class BlockSprite extends PIXI.Container {
         sprite.on("pointerout", () => {
             Tween.get(this.scale).to({x: this.unfocusedScale, y: this.unfocusedScale}, 200, Ease.quadOut);
         });
+        sprite.on("pointertap", () => this.blockClickedListener(this.block));
 
         return sprite;
     }
@@ -81,7 +88,7 @@ export default class BlockSprite extends PIXI.Container {
             strokeThickness: 4,
         });
 
-        const displayHash = this.blockHash.substring(48).toUpperCase();
+        const displayHash = this.block.blockHash.substring(48).toUpperCase();
         const text = new PIXI.Text(displayHash, style);
         text.anchor.set(0.5, 0.5);
         return text;
@@ -109,5 +116,9 @@ export default class BlockSprite extends PIXI.Container {
                 .to({alpha: 1.0}, 500)
                 .call(() => this.removeChild(oldSprite));
         }
+    }
+
+    setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
+        this.blockClickedListener = blockClickedListener;
     }
 };
