@@ -261,9 +261,14 @@ export default class TimelineContainer extends PIXI.Container {
 
         this.y = rendererHeight / 2;
 
-        // Animate the x
+        // Animate the timeline if it moved for less than a
+        // screen-length. Otherwise, just set it the x
         const targetX = rendererWidth / 2 - blockSpriteXForTargetHeight;
-        Tween.get(this).to({x: targetX}, 500, Ease.quadOut);
+        if (Math.abs(this.x - targetX) < rendererWidth) {
+            Tween.get(this).to({x: targetX}, 500, Ease.quadOut);
+            return;
+        }
+        this.x = targetX;
     }
 
     getVisibleHeightRange = (targetHeight: number): [fromHeight: number, toHeight: number] => {
