@@ -1,27 +1,6 @@
 .container {
   min-height: 100vh;
   min-width: 100vw;
-}
-
-.header {
   display: flex;
-  padding-left: 4rem;
-  padding-top: 2rem;
-}
-
-.logo {
-  background-image: url("./kaspa_logo.svg");
-  background-size: 100% 100%;
-  width: 32px;
-  height: 32px;
-  align-self: center;
-}
-
-.title {
-  font-family: Roboto, Ariel, Helvetica, sans-serif;
-  font-size: 2.5rem;
-  text-transform: uppercase;
-  align-self: center;
-  margin-left: 1rem;
-  margin-top: 0.5rem;
+  flex-direction: column;
 }
