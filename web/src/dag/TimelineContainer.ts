@@ -13,11 +13,11 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly edgeContainer: PIXI.Container;
     private readonly blockContainer: PIXI.Container;
 
+    private readonly heightGroups: { [height: number]: number[] } = {};
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
     private readonly blockIdsToEdgeSprites: { [id: number]: EdgeSprite[] } = {};
 
     private blockIdsToBlocks: { [id: number]: Block } = {};
-    private heightGroups: { [height: number]: number[] } = {};
     private targetHeight: number = 0;
 
     constructor(application: PIXI.Application) {
@@ -39,15 +39,14 @@ export default class TimelineContainer extends PIXI.Container {
             this.blockIdsToBlocks[block.id] = block;
         }
 
-        // Rebuild the block "height group" collection--an
-        // ordered set of blocks with the same height
-        this.heightGroups = {};
+        // Remove no-longer relevant height groups
+        const heightsInBlocks: { [height: number]: boolean } = {};
         for (let block of blocks) {
-            if (!this.heightGroups[block.height]) {
-                this.heightGroups[block.height] = [];
-            }
-            this.heightGroups[block.height].push(block.id);
+            heightsInBlocks[block.height] = true;
         }
+        Object.keys(this.heightGroups)
+            .filter(height => !heightsInBlocks[parseInt(height)])
+            .forEach(height => delete this.heightGroups[parseInt(height)]);
 
         // Remove no-longer relevant block sprites
         Object.entries(this.blockIdsToBlockSprites)
@@ -73,6 +72,23 @@ export default class TimelineContainer extends PIXI.Container {
             if (this.blockIdsToBlockSprites[block.id]) {
                 const blockSprite = this.blockIdsToBlockSprites[block.id];
                 blockSprite.setColor(block.color);
+            }
+        }
+
+        // Add new blocks to their appropriate height groups
+        for (let block of blocks) {
+            if (!this.heightGroups[block.height]) {
+                this.heightGroups[block.height] = [];
+            }
+            let exists = false;
+            for (let blockId of this.heightGroups[block.height]) {
+                if (blockId === block.id) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                this.heightGroups[block.height].push(block.id);
             }
         }
 
