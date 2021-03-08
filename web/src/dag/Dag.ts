@@ -48,11 +48,11 @@ export default class Dag {
 
     private resolveInitialTickFunction = () => {
         const urlParams = new URLSearchParams(window.location.search);
-        const targetHeightString = urlParams.get("targetHeight");
-        if (targetHeightString) {
-            const targetHeight = parseInt(targetHeightString);
-            if (targetHeight || targetHeight === 0) {
-                this.targetHeight = targetHeight;
+        const heightString = urlParams.get("height");
+        if (heightString) {
+            const height = parseInt(heightString);
+            if (height || height === 0) {
+                this.targetHeight = height;
                 this.currentTickFunction = this.trackTargetHeight;
                 return;
             }
