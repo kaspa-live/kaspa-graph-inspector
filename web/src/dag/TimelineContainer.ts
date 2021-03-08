@@ -5,7 +5,7 @@ import EdgeSprite from "./EdgeSprite";
 import {Ease, Tween} from "@createjs/tweenjs";
 
 export default class TimelineContainer extends PIXI.Container {
-    private readonly maxBlocksPerHeightGroup = 20;
+    private readonly maxBlocksPerHeightGroup = 12;
     private readonly marginMultiplier = 2.0;
     private readonly visibleHeightRangePadding: number = 2;
 

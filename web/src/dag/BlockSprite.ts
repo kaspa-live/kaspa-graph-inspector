@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import {Tween} from "@createjs/tweenjs";
+import {Ease, Tween} from "@createjs/tweenjs";
 
 const blockColors: { [color: string]: number } = {"gray": 0xaaaaaa, "red": 0xffaaaa, "blue": 0xaaaaff};
 const blockRoundingRadius = 10;
@@ -9,6 +9,7 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
     const key = `${blockSize}`
     if (!blockTextures[key]) {
         const graphics = new PIXI.Graphics();
+        graphics.lineStyle(2, 0x222222)
         graphics.beginFill(0xffffff);
         graphics.drawRoundedRect(0, 0, blockSize, blockSize, blockRoundingRadius);
         graphics.endFill();
@@ -20,6 +21,9 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
 };
 
 export default class BlockSprite extends PIXI.Container {
+    private readonly unfocusedScale = 0.75;
+    private readonly focusedScale = 1.0;
+
     private readonly application: PIXI.Application;
 
     private blockSize: number = 0;
@@ -30,6 +34,16 @@ export default class BlockSprite extends PIXI.Container {
         super();
 
         this.application = application;
+
+        this.interactive = true;
+        this.buttonMode = true;
+        this.on("pointerover", () => {
+            Tween.get(this.scale).to({x: this.focusedScale, y: this.focusedScale}, 200, Ease.quadOut);
+        });
+        this.on("pointerout", () => {
+            Tween.get(this.scale).to({x: this.unfocusedScale, y: this.unfocusedScale}, 200, Ease.quadOut);
+        });
+        this.scale.set(this.unfocusedScale, this.unfocusedScale);
 
         this.currentSprite = this.buildSprite();
         this.addChild(this.currentSprite)
