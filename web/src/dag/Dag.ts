@@ -14,10 +14,6 @@ export default class Dag {
 
     private targetHeight: number | null = null;
 
-    private currentTickFunction: () => Promise<void> = async () => {
-        // Do nothing
-    };
-
     constructor(canvas: HTMLCanvasElement) {
         this.application = new PIXI.Application({
             transparent: false,
@@ -33,7 +29,6 @@ export default class Dag {
 
         this.application.start();
 
-        this.resolveInitialTickFunction();
         this.start();
     }
 
@@ -47,26 +42,26 @@ export default class Dag {
         }
     }
 
-    private resolveInitialTickFunction = () => {
+    private start = () => {
+        this.tick();
+    }
+
+    private tick = () => {
+        const currentTickFunction = this.resolveTickFunction();
+        currentTickFunction().then(this.scheduleNextTick);
+    }
+
+    private resolveTickFunction = (): (() => Promise<void>) => {
         const urlParams = new URLSearchParams(window.location.search);
         const heightString = urlParams.get("height");
         if (heightString) {
             const height = parseInt(heightString);
             if (height || height === 0) {
                 this.targetHeight = height;
-                this.currentTickFunction = this.trackTargetHeight;
-                return;
+                return this.trackTargetHeight;
             }
         }
-        this.currentTickFunction = this.trackHead;
-    }
-
-    private start = () => {
-        this.tick();
-    }
-
-    private tick = () => {
-        this.currentTickFunction().then(this.scheduleNextTick);
+        return this.trackHead;
     }
 
     private scheduleNextTick = () => {
@@ -108,7 +103,9 @@ export default class Dag {
     }
 
     private handleBlockClicked = (block: Block) => {
-        console.log(block.blockHash);
+        const urlParams = new URLSearchParams();
+        urlParams.set("height", `${block.height}`);
+        window.history.pushState(null, "", `?${urlParams}`)
     }
 
     stop = () => {
