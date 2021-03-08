@@ -11,6 +11,7 @@ export default class Dag {
 
     private currentWidth: number = 0;
     private currentHeight: number = 0;
+    private currentTickId: number | undefined = undefined;
 
     private targetHeight: number | null = null;
 
@@ -29,7 +30,7 @@ export default class Dag {
 
         this.application.start();
 
-        this.start();
+        this.run();
     }
 
     private resizeIfRequired = () => {
@@ -42,13 +43,19 @@ export default class Dag {
         }
     }
 
-    private start = () => {
+    private run = () => {
+        window.clearTimeout(this.currentTickId);
         this.tick();
     }
 
     private tick = () => {
+        const currentTickId = this.currentTickId;
         const currentTickFunction = this.resolveTickFunction();
-        currentTickFunction().then(this.scheduleNextTick);
+        currentTickFunction().then(() => {
+            if (this.currentTickId === currentTickId) {
+                this.scheduleNextTick();
+            }
+        });
     }
 
     private resolveTickFunction = (): (() => Promise<void>) => {
@@ -65,7 +72,7 @@ export default class Dag {
     }
 
     private scheduleNextTick = () => {
-        window.setTimeout(this.tick, this.tickInternalInMilliseconds);
+        this.currentTickId = window.setTimeout(this.tick, this.tickInternalInMilliseconds);
     }
 
     private trackTargetHeight = async () => {
@@ -105,7 +112,8 @@ export default class Dag {
     private handleBlockClicked = (block: Block) => {
         const urlParams = new URLSearchParams();
         urlParams.set("height", `${block.height}`);
-        window.history.pushState(null, "", `?${urlParams}`)
+        window.history.pushState(null, "", `?${urlParams}`);
+        this.run();
     }
 
     stop = () => {
