@@ -96,7 +96,7 @@ export default class TimelineContainer extends PIXI.Container {
         for (let block of blocks) {
             if (!this.blockIdsToBlockSprites[block.id]) {
                 // Add the block to the blockSprite-by-ID map
-                const blockSprite = new BlockSprite(this.application);
+                const blockSprite = new BlockSprite(this.application, block.blockHash);
                 blockSprite.setColor(block.color);
                 this.blockIdsToBlockSprites[block.id] = blockSprite;
 
