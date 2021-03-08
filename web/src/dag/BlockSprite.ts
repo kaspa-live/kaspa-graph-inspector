@@ -21,7 +21,7 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
 };
 
 export default class BlockSprite extends PIXI.Container {
-    private readonly unfocusedScale = 0.75;
+    private readonly unfocusedScale = 0.9;
     private readonly focusedScale = 1.0;
 
     private readonly application: PIXI.Application;
