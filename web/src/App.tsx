@@ -12,7 +12,7 @@ const App = () => {
                 <Toolbar>
                     <Logo/>
                     <Typography variant="h6" className={classes.title}>
-                        Kaspa Grapher
+                        Kaspa Graph Inspector
                     </Typography>
                 </Toolbar>
             </AppBar>
