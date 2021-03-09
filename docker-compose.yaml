@@ -48,14 +48,9 @@ services:
       - postgres
       - processing
       - api
-    environment:
-      - REACT_APP_API_ADDRESS=localhost:${API_PORT}
     command:
-      - "npm"
-      - "run"
-      - "--prefix"
-      - "/app"
-      - "start"
+      - "serve"
+      - "--listen=${WEB_PORT}"
     network_mode: host
     user: root
     restart: always
