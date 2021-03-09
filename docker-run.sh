@@ -45,19 +45,9 @@ docker-compose up -d postgres
 # Wait for postgres to finish initializing
 sleep 10s
 
-# Start processing
+# Start processing, api, and web
 docker-compose up -d processing
-
-# Wait for processing to finish initializing
-sleep 10s
-
-# Start api
 docker-compose up -d api
-
-# Wait for api to finish initializing
-sleep 10s
-
-# Start web
 docker-compose up -d web
 
 # Print logs for all services
