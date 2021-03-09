@@ -31,6 +31,7 @@ services:
       - PGUSER=${POSTGRES_USER}
       - PGPASSWORD=${POSTGRES_PASSWORD}
       - PGDATABASE=${POSTGRES_DB}
+      - API_PORT=${API_PORT}
     command:
       - "npm"
       - "run"

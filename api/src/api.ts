@@ -2,6 +2,12 @@ import express from 'express';
 import Database from "./database.js";
 import cors from 'cors';
 
+const port = process.env.API_PORT;
+if (!port) {
+    console.log("The API_PORT environment variable is required")
+    process.exit(1);
+}
+
 const database = new Database();
 
 const server = express();
@@ -51,7 +57,6 @@ server.get('/head', async (request, response) => {
     }
 });
 
-const port = 3001;
 server.listen(port, () => {
     console.log(`API server listening on port ${port}...`);
 });
