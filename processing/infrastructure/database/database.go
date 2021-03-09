@@ -3,8 +3,8 @@ package database
 import (
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
 	"github.com/kaspanet/kaspad/infrastructure/db/database/ldb"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/config"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
 	"path/filepath"
 )
 

@@ -6,7 +6,7 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/pkg/errors"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
 	"strings"
 )
 

@@ -4,11 +4,11 @@ import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/pkg/errors"
-	databasePackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database/model"
-	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/config"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
-	kaspadPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/kaspad"
+	databasePackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/database"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/model"
+	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
+	kaspadPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad"
 )
 
 var log = logging.Logger()

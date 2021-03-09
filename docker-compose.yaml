@@ -10,7 +10,7 @@ services:
     network_mode: host
 
   processing:
-    image: "kaspa-dag-visualizer-processing:latest"
+    image: "kaspa-graph-inspector-processing:latest"
     depends_on:
       - postgres
     command:
@@ -23,7 +23,7 @@ services:
     restart: always
 
   api:
-    image: "kaspa-dag-visualizer-api:latest"
+    image: "kaspa-graph-inspector-api:latest"
     depends_on:
       - postgres
       - processing
@@ -43,7 +43,7 @@ services:
     restart: always
 
   web:
-    image: "kaspa-dag-visualizer-web:latest"
+    image: "kaspa-graph-inspector-web:latest"
     depends_on:
       - postgres
       - processing

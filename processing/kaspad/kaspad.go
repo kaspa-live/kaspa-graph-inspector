@@ -9,10 +9,10 @@ import (
 	"github.com/kaspanet/kaspad/infrastructure/network/connmanager"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter/router"
-	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/config"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/database"
-	domainPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/kaspad/domain"
-	consensusPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/kaspad/domain/consensus"
+	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/database"
+	domainPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain"
+	consensusPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 )
 
 type Kaspad struct {

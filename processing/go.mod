@@ -1,4 +1,4 @@
-module github.com/stasatdaglabs/kaspa-dag-visualizer/processing
+module github.com/stasatdaglabs/kaspa-graph-inspector/processing
 
 go 1.15
 

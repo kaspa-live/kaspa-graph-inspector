@@ -3,7 +3,7 @@ package database
 import (
 	"github.com/go-pg/pg/v10"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database/model"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/model"
 )
 
 type Database struct {

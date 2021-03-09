@@ -30,14 +30,14 @@ if [ true = "${REQUIRED_VARIABLE_NOT_SET}" ]; then
 fi
 
 # Build processing
-docker build -f processing/Dockerfile -t kaspa-dag-visualizer-processing:latest processing
+docker build -f processing/Dockerfile -t kaspa-graph-inspector-processing:latest processing
 
 # Build api
-docker build -f api/Dockerfile -t kaspa-dag-visualizer-api:latest api
+docker build -f api/Dockerfile -t kaspa-graph-inspector-api:latest api
 
 # Build web
 REACT_APP_API_ADDRESS="${API_ADDRESS}:${API_PORT}"
-docker build -f web/Dockerfile --build-arg REACT_APP_API_ADDRESS=${REACT_APP_API_ADDRESS} -t kaspa-dag-visualizer-web:latest web
+docker build -f web/Dockerfile --build-arg REACT_APP_API_ADDRESS=${REACT_APP_API_ADDRESS} -t kaspa-graph-inspector-web:latest web
 
 # Start postgres
 docker-compose up -d postgres

@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	databasePackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database"
-	configPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/config"
-	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
-	kaspadPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/kaspad"
-	processingPackage "github.com/stasatdaglabs/kaspa-dag-visualizer/processing/processing"
+	databasePackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/database"
+	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
+	kaspadPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad"
+	processingPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/processing"
 	"os"
 )
 

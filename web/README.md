@@ -1,2 +1,2 @@
-kaspa-dag-visualizer-web
+kaspa-graph-inspector-web
 ========================
