@@ -3,26 +3,40 @@ package database
 import (
 	"github.com/go-pg/pg/v10"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	"github.com/pkg/errors"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/database/model"
 )
 
 type Database struct {
-	database *pg.DB
+	database         *pg.DB
+	blockHashesToIDs map[externalapi.DomainHash]uint64
 }
 
 func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, error) {
+	if _, ok := db.blockHashesToIDs[*blockHash]; ok {
+		return true, nil
+	}
+
 	var ids []uint64
 	_, err := db.database.Query(&ids, "SELECT id FROM blocks WHERE block_hash = ?", blockHash)
 	if err != nil {
 		return false, err
 	}
-	return len(ids) == 1, nil
+	if len(ids) != 1 {
+		return false, nil
+	}
+
+	db.blockHashesToIDs[*blockHash] = ids[0]
+	return true, nil
 }
 
-func (db *Database) InsertBlock(block *model.Block) error {
+func (db *Database) InsertBlock(blockHash *externalapi.DomainHash, block *model.Block) error {
 	_, err := db.database.Model(block).OnConflict("(block_hash) DO NOTHING").Insert()
-	return err
+	if err != nil {
+		return err
+	}
+
+	db.blockHashesToIDs[*blockHash] = block.ID
+	return nil
 }
 
 func (db *Database) UpdateBlockSelectedParent(blockID uint64, selectedParentID uint64) error {
@@ -54,6 +68,10 @@ func (db *Database) UpdateBlockColors(blockIDsToColors map[uint64]string) error 
 }
 
 func (db *Database) BlockIDByHash(blockHash *externalapi.DomainHash) (uint64, error) {
+	if cachedBlockID, ok := db.blockHashesToIDs[*blockHash]; ok {
+		return cachedBlockID, nil
+	}
+
 	var result struct {
 		Id uint64
 	}
@@ -61,24 +79,21 @@ func (db *Database) BlockIDByHash(blockHash *externalapi.DomainHash) (uint64, er
 	if err != nil {
 		return 0, err
 	}
+
+	db.blockHashesToIDs[*blockHash] = result.Id
 	return result.Id, nil
 }
 
 func (db *Database) BlockIDsByHashes(blockHashes []*externalapi.DomainHash) ([]uint64, error) {
-	blockHashStrings := make([]string, len(blockHashes))
+	blockIDs := make([]uint64, len(blockHashes))
 	for i, blockHash := range blockHashes {
-		blockHashStrings[i] = blockHash.String()
+		blockID, err := db.BlockIDByHash(blockHash)
+		if err != nil {
+			return nil, err
+		}
+		blockIDs[i] = blockID
 	}
-
-	var ids []uint64
-	_, err := db.database.Query(&ids, "SELECT id FROM blocks WHERE block_hash IN (?)", pg.In(blockHashStrings))
-	if err != nil {
-		return nil, err
-	}
-	if len(blockHashes) != len(ids) {
-		return nil, errors.Errorf("Some block hashes out of (%s) are missing in the database", blockHashes)
-	}
-	return ids, nil
+	return blockIDs, nil
 }
 
 func (db *Database) HighestBlockHeight(blockIDs []uint64) (uint64, error) {

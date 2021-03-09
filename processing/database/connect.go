@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/extra/pgdebug"
 	"github.com/go-pg/pg/v10"
+	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/pkg/errors"
 	"github.com/stasatdaglabs/kaspa-dag-visualizer/processing/infrastructure/logging"
 	"strings"
@@ -51,7 +52,8 @@ func Connect(connectionString string) (*Database, error) {
 	}
 
 	return &Database{
-		database: pgDB,
+		database:         pgDB,
+		blockHashesToIDs: make(map[externalapi.DomainHash]uint64),
 	}, nil
 }
 

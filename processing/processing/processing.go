@@ -59,7 +59,7 @@ func (p *Processing) insertGenesisIfRequired() error {
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: true,
 	}
-	err = p.database.InsertBlock(databaseGenesisBlock)
+	err = p.database.InsertBlock(genesisHash, databaseGenesisBlock)
 	if err != nil {
 		return errors.Wrapf(err, "Could not insert genesis block %s", genesisHash)
 	}
@@ -67,14 +67,6 @@ func (p *Processing) insertGenesisIfRequired() error {
 }
 
 func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
-	// TODO: To resolve gray/red/blue:
-	// Go over the chainChanged
-	// For every block in the Removed set:
-	//   Get its merge set and set it to gray
-	// For every block in the Added set:
-	//   Get its merge set blues and set it to blue
-	//   Get its merge set reds and set it to red
-
 	blockHash := consensushashing.BlockHash(block)
 	log.Debugf("Preprocessing block %s", blockHash)
 	defer log.Debugf("Finished preprocessing block %s", blockHash)
@@ -100,7 +92,7 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: false,
 	}
-	err = p.database.InsertBlock(databaseBlock)
+	err = p.database.InsertBlock(blockHash, databaseBlock)
 	if err != nil {
 		return errors.Wrapf(err, "Could not insert block %s", blockHash)
 	}
