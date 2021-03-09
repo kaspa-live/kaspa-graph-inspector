@@ -48,6 +48,8 @@ services:
       - postgres
       - processing
       - api
+    environment:
+      - REACT_APP_API_ADDRESS=localhost:${API_PORT}
     command:
       - "npm"
       - "run"

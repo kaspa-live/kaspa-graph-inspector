@@ -8,6 +8,7 @@ export default class Dag {
 
     private readonly application: PIXI.Application;
     private readonly timelineContainer: TimelineContainer;
+    private readonly apiAddress: string;
 
     private currentWidth: number = 0;
     private currentHeight: number = 0;
@@ -23,6 +24,8 @@ export default class Dag {
             resizeTo: canvas,
         });
 
+        this.apiAddress = this.resolveApiAddress();
+
         this.timelineContainer = new TimelineContainer(this.application);
         this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
         this.application.ticker.add(this.resizeIfRequired);
@@ -31,6 +34,14 @@ export default class Dag {
         this.application.start();
 
         this.run();
+    }
+
+    private resolveApiAddress = (): string => {
+        const apiAddress = process.env.REACT_APP_API_ADDRESS;
+        if (!apiAddress) {
+            throw new Error("The REACT_APP_API_ADDRESS environment variable is required");
+        }
+        return apiAddress;
     }
 
     private resizeIfRequired = () => {
@@ -80,7 +91,7 @@ export default class Dag {
         this.timelineContainer.setTargetHeight(targetHeight);
 
         const [startHeight, endHeight] = this.timelineContainer.getVisibleHeightRange(targetHeight);
-        const response = await fetch(`http://localhost:3001/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
+        const response = await fetch(`http://${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
         const blocks = await response.json();
         this.timelineContainer.setBlocks(blocks);
     }
@@ -90,7 +101,7 @@ export default class Dag {
         const headMargin = Math.floor(maxBlockAmountOnHalfTheScreen * this.headHeightMarginMultiplier);
         const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
 
-        const response = await fetch(`http://localhost:3001/head?heightDifference=${heightDifference}`);
+        const response = await fetch(`http://${this.apiAddress}/head?heightDifference=${heightDifference}`);
         const blocks: Block[] = await response.json();
 
         let maxHeight = 0;

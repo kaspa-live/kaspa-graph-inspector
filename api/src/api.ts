@@ -4,7 +4,7 @@ import cors from 'cors';
 
 const port = process.env.API_PORT;
 if (!port) {
-    console.log("The API_PORT environment variable is required")
+    console.log("The API_PORT environment variable is required");
     process.exit(1);
 }
 
