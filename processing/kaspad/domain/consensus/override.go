@@ -105,3 +105,7 @@ func (c *Consensus) GetHeadersSelectedTip() (*externalapi.DomainHash, error) {
 func (c *Consensus) Anticone(blockHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
 	return c.kaspadConsensus.Anticone(blockHash)
 }
+
+func (c *Consensus) GetBlockChildren(blockHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
+	return c.kaspadConsensus.GetBlockChildren(blockHash)
+}
