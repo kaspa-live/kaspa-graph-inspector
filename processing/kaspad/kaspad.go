@@ -1,12 +1,14 @@
 package kaspad
 
 import (
+	"github.com/kaspanet/kaspad/app/appmessage"
 	"github.com/kaspanet/kaspad/app/protocol"
 	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	kaspadConfigPackage "github.com/kaspanet/kaspad/infrastructure/config"
 	"github.com/kaspanet/kaspad/infrastructure/network/addressmanager"
 	"github.com/kaspanet/kaspad/infrastructure/network/connmanager"
+	"github.com/kaspanet/kaspad/infrastructure/network/dnsseed"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter/router"
 	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
@@ -14,23 +16,27 @@ import (
 	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
 	domainPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain"
 	consensusPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain/consensus"
+	"net"
 )
 
 type Kaspad struct {
+	config            *configPackage.Config
 	domain            *domainPackage.Domain
 	netAdapter        *netadapter.NetAdapter
+	addressManager    *addressmanager.AddressManager
 	connectionManager *connmanager.ConnectionManager
 	protocolManager   *protocol.Manager
 }
 
 func New(config *configPackage.Config) (*Kaspad, error) {
-	kaspadConfig := &kaspadConfigPackage.Config{
-		Flags: &kaspadConfigPackage.Flags{
-			ConnectPeers: []string{config.P2PServerAddress},
-			NetworkFlags: config.NetworkFlags,
-		},
-	}
+	kaspadConfig := kaspadConfigPackage.DefaultConfig()
+	kaspadConfig.ConnectPeers = config.ConnectPeers
+	kaspadConfig.DNSSeed = config.DNSSeed
+	kaspadConfig.GRPCSeed = config.GRPCSeed
+	kaspadConfig.NetworkFlags = config.NetworkFlags
+
 	logging.UpdateLogLevels()
+
 	databaseContext, err := database.Open()
 	if err != nil {
 		return nil, err
@@ -57,34 +63,49 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 		return nil, err
 	}
 	return &Kaspad{
+		config:            config,
 		domain:            domain,
 		netAdapter:        netAdapter,
+		addressManager:    addressManager,
 		connectionManager: connectionManager,
 		protocolManager:   protocolManager,
 	}, nil
 }
 
-func (n *Kaspad) SetOnAddingBlockListener(listener consensusPackage.OnAddingBlockListener) {
-	n.domain.SetOnAddingBlockListener(listener)
+func (k *Kaspad) SetOnAddingBlockListener(listener consensusPackage.OnAddingBlockListener) {
+	k.domain.SetOnAddingBlockListener(listener)
 }
 
-func (n *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
-	n.domain.SetOnBlockAddedListener(listener)
+func (k *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
+	k.domain.SetOnBlockAddedListener(listener)
 }
 
-func (n *Kaspad) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
-	return n.domain.BlockGHOSTDAGData(blockHash)
+func (k *Kaspad) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
+	return k.domain.BlockGHOSTDAGData(blockHash)
 }
 
-func (n *Kaspad) Start() error {
-	err := n.netAdapter.Start()
+func (k *Kaspad) Start() error {
+	err := k.netAdapter.Start()
 	if err != nil {
 		return err
 	}
-	n.connectionManager.Start()
+	k.connectionManager.Start()
+	k.seedFromDNS()
 	return nil
 }
 
-func (n *Kaspad) Domain() *domainPackage.Domain {
-	return n.domain
+func (k *Kaspad) seedFromDNS() {
+	dnsseed.SeedFromDNS(k.config.NetParams(), k.config.DNSSeed, appmessage.SFNodeNetwork, false, nil,
+		net.LookupIP, func(addresses []*appmessage.NetAddress) {
+			_ = k.addressManager.AddAddresses(addresses...)
+		})
+
+	dnsseed.SeedFromGRPC(k.config.NetParams(), k.config.GRPCSeed, appmessage.SFNodeNetwork, false, nil,
+		func(addresses []*appmessage.NetAddress) {
+			_ = k.addressManager.AddAddresses(addresses...)
+		})
+}
+
+func (k *Kaspad) Domain() *domainPackage.Domain {
+	return k.domain
 }

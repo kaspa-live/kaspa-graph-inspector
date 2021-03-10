@@ -2,7 +2,7 @@ package config
 
 import (
 	"github.com/jessevdk/go-flags"
-	"github.com/kaspanet/kaspad/infrastructure/config"
+	kaspaConfigPackage "github.com/kaspanet/kaspad/infrastructure/config"
 	"github.com/kaspanet/kaspad/util"
 	"github.com/pkg/errors"
 )
@@ -16,9 +16,11 @@ var (
 )
 
 type Config struct {
-	P2PServerAddress         string `long:"p2p-server" description:"Kaspad P2P server to connect to. Should be of the form: <host>:<port>"`
-	DatabaseConnectionString string `long:"connection-string" description:"Connection string for PostgrSQL database to connect to. Should be of the form: postgres://<username>:<password>@<host>:<port>/<database name>"`
-	config.NetworkFlags
+	DatabaseConnectionString string   `long:"connection-string" description:"Connection string for PostgrSQL database to connect to. Should be of the form: postgres://<username>:<password>@<host>:<port>/<database name>"`
+	ConnectPeers             []string `long:"connect" description:"Connect only to the specified peers at startup"`
+	DNSSeed                  string   `long:"dnsseed" description:"Override DNS seeds with specified hostname (Only 1 hostname allowed)"`
+	GRPCSeed                 string   `long:"grpcseed" description:"Hostname of gRPC server for seeding peers"`
+	kaspaConfigPackage.NetworkFlags
 }
 
 func Parse() (*Config, error) {
@@ -29,9 +31,6 @@ func Parse() (*Config, error) {
 		return nil, err
 	}
 
-	if config.P2PServerAddress == "" {
-		return nil, errors.Errorf("--p2p-server is required.")
-	}
 	if config.DatabaseConnectionString == "" {
 		return nil, errors.Errorf("--connection-string is required.")
 	}

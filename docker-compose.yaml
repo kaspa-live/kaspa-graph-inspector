@@ -16,7 +16,6 @@ services:
     command:
       - "/app/processing"
       - "--testnet"
-      - "--p2p-server=${KASPAD_ADDRESS}"
       - "--connection-string=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=disable"
     network_mode: host
     user: root
