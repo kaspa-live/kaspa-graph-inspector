@@ -1,6 +1,7 @@
-import * as PIXI from 'pixi.js'
+import * as PIXI from 'pixi.js';
 import TimelineContainer from "./TimelineContainer";
 import {Block} from "./model/Block";
+import {Ticker} from "@createjs/core";
 
 export default class Dag {
     private readonly tickInternalInMilliseconds = 1000;
@@ -33,6 +34,11 @@ export default class Dag {
         this.isTrackingChangedListener = () => {
             // Do nothing
         }
+
+        // This sets TweenJS to use requestAnimationFrame.
+        // Without it, it uses setTimeout, which makes
+        // animations not as smooth as they should be
+        Ticker.timingMode = Ticker.RAF;
 
         this.apiAddress = this.resolveApiAddress();
 
