@@ -25,7 +25,6 @@ services:
     image: "kaspa-graph-inspector-api:latest"
     depends_on:
       - postgres
-      - processing
     environment:
       - PGUSER=${POSTGRES_USER}
       - PGPASSWORD=${POSTGRES_PASSWORD}
@@ -47,8 +46,6 @@ services:
     image: "kaspa-graph-inspector-web:latest"
     depends_on:
       - postgres
-      - processing
-      - api
     command:
       - "serve"
       - "--listen=${WEB_PORT}"
