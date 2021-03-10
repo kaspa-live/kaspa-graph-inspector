@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js";
 import {Ease, Tween} from "@createjs/tweenjs";
 import {Block} from "./model/Block";
 
-const blockColors: { [color: string]: number } = {"gray": 0xaaaaaa, "red": 0xffaaaa, "blue": 0xaaaaff};
+const blockColors: { [color: string]: number } = {"gray": 0xf5faff, "red": 0xd62839, "blue": 0x175676};
 const blockRoundingRadius = 10;
 const blockTextures: { [key: string]: PIXI.RenderTexture } = {};
 
@@ -10,7 +10,7 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
     const key = `${blockSize}`
     if (!blockTextures[key]) {
         const graphics = new PIXI.Graphics();
-        graphics.lineStyle(2, 0x222222)
+        graphics.lineStyle(2, 0x222222);
         graphics.beginFill(0xffffff);
         graphics.drawRoundedRect(0, 0, blockSize, blockSize, blockRoundingRadius);
         graphics.endFill();
@@ -24,6 +24,7 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
 export default class BlockSprite extends PIXI.Container {
     private readonly unfocusedScale = 0.9;
     private readonly focusedScale = 1.0;
+    private readonly textSizeMultiplier = 0.25;
 
     private readonly application: PIXI.Application;
     private readonly block: Block;
@@ -54,9 +55,6 @@ export default class BlockSprite extends PIXI.Container {
         this.currentSprite = this.buildSprite();
         this.spriteContainer.addChild(this.currentSprite);
 
-        const text = this.buildText();
-        this.textContainer.addChild(text);
-
         this.scale.set(this.unfocusedScale, this.unfocusedScale);
     }
 
@@ -78,10 +76,10 @@ export default class BlockSprite extends PIXI.Container {
         return sprite;
     }
 
-    private buildText = (): PIXI.Text => {
+    private buildText = (blockSize: number): PIXI.Text => {
         const style = new PIXI.TextStyle({
             fontFamily: '"Lucida Console", "Courier", monospace',
-            fontSize: 16,
+            fontSize: blockSize * this.textSizeMultiplier,
             fontWeight: "bold",
             fill: 0x222222,
             stroke: 0xffffff,
@@ -98,6 +96,10 @@ export default class BlockSprite extends PIXI.Container {
         if (!this.currentSprite.texture || this.blockSize !== blockSize) {
             this.blockSize = blockSize;
             this.currentSprite.texture = blockTexture(this.application, blockSize);
+
+            const text = this.buildText(blockSize);
+            this.textContainer.removeChildren();
+            this.textContainer.addChild(text);
         }
     }
 

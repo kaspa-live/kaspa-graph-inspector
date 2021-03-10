@@ -24,6 +24,7 @@ export default class Dag {
             backgroundColor: 0xffffff,
             view: canvas,
             resizeTo: canvas,
+            antialias: true,
         });
 
         this.currentTickFunction = async () => {
