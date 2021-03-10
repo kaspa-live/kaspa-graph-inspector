@@ -148,6 +148,7 @@ export default class Dag {
 
     private handleBlockClicked = (block: Block) => {
         this.setStateTrackTargetHeight(block.height);
+        window.open(`http://testnet.katnip.sh/#/block/${block.blockHash}`, "'_blank'");
     }
 
     setStateTrackTargetHeight = (targetHeight: number) => {
