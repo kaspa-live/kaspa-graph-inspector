@@ -4,24 +4,15 @@ import {useState} from "react";
 import Header from "./Header";
 
 const App = () => {
-    const [appState, setAppState] = useState(newAppState())
+    const [isTrackingState, setTrackingState] = useState(true);
+    const [dag, setDag] = useState();
 
     return (
         <div className="container">
-            <Header appState={appState} setAppState={setAppState}/>
-            <Canvas appState={appState} setAppState={setAppState}/>
+            <Header isTrackingState={isTrackingState} dag={dag}/>
+            <Canvas setTrackingState={setTrackingState} setDag={setDag}/>
         </div>
     );
-}
-
-export type AppState = {
-    isTracking: boolean,
-};
-
-const newAppState = (): AppState => {
-    return {
-        isTracking: true,
-    };
 }
 
 export default App;

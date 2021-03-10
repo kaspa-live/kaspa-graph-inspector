@@ -133,9 +133,18 @@ export default class Dag {
     }
 
     private handleBlockClicked = (block: Block) => {
+        this.setStateTrackTargetHeight(block.height);
+    }
+
+    setStateTrackTargetHeight = (targetHeight: number) => {
         const urlParams = new URLSearchParams();
-        urlParams.set("height", `${block.height}`);
+        urlParams.set("height", `${targetHeight}`);
         window.history.pushState(null, "", `?${urlParams}`);
+        this.run();
+    }
+
+    setStateTrackHead = () => {
+        window.history.pushState(null, "", "?");
         this.run();
     }
 
