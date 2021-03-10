@@ -8,6 +8,7 @@ import (
 	kaspadPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad"
 	processingPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/processing"
 	"os"
+	"time"
 )
 
 var log = logging.Logger()
@@ -51,5 +52,16 @@ func main() {
 
 func logErrorAndExit(errorLog string, logParameters ...interface{}) {
 	log.Errorf(errorLog, logParameters...)
+
+	exitHandlerDone := make(chan struct{})
+	go func() {
+		log.Backend().Close()
+		close(exitHandlerDone)
+	}()
+	select {
+	case <-time.After(1 * time.Second):
+	case <-exitHandlerDone:
+	}
+
 	os.Exit(1)
 }
