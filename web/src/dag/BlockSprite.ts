@@ -81,14 +81,20 @@ export default class BlockSprite extends PIXI.Container {
             fontFamily: '"Lucida Console", "Courier", monospace',
             fontSize: blockSize * this.textSizeMultiplier,
             fontWeight: "bold",
-            fill: 0x222222,
+            fill: 0x666666,
             stroke: 0xffffff,
             strokeThickness: 4,
         });
 
-        const displayHash = this.block.blockHash.substring(48).toUpperCase();
+        const blockHashLength = this.block.blockHash.length;
+        const lastEightBlockHashCharacters = this.block.blockHash.substring(blockHashLength - 8).toUpperCase();
+        const firstFourDisplayCharacters = lastEightBlockHashCharacters.substring(0, 4);
+        const lastFourDisplayCharacter = lastEightBlockHashCharacters.substring(4);
+        const displayHash = `${firstFourDisplayCharacters}\n${lastFourDisplayCharacter}`;
+
         const text = new PIXI.Text(displayHash, style);
         text.anchor.set(0.5, 0.5);
+        text.tint = blockColors[this.blockColor];
         return text;
     }
 
