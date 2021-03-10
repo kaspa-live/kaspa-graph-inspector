@@ -44,11 +44,38 @@ server.get('/head', async (request, response) => {
     try {
         const heightDifference = parseInt(request.query.heightDifference as string);
         const endHeight = await database.getMaxHeight();
-        let startHeight = endHeight - heightDifference
+        let startHeight = endHeight - heightDifference;
         if (startHeight < 0) {
             startHeight = 0;
         }
-        const blocks = await database.getBlocks(startHeight, endHeight)
+        const blocks = await database.getBlocks(startHeight, endHeight);
+        response.send(JSON.stringify(blocks));
+        return;
+    } catch (error) {
+        response.status(400).send(`invalid input: ${error}`);
+        return;
+    }
+});
+
+server.get('/blockHash', async (request, response) => {
+    if (!request.query.blockHash) {
+        response.status(400).send("missing parameter: blockHash");
+        return;
+    }
+    if (!request.query.heightDifference) {
+        response.status(400).send("missing parameter: heightDifference");
+        return;
+    }
+
+    try {
+        const height = await database.getBlockHeight(request.query.blockHash as string);
+        const heightDifference = parseInt(request.query.heightDifference as string);
+        let startHeight = height - heightDifference;
+        if (startHeight < 0) {
+            startHeight = 0;
+        }
+        const endHeight = height + heightDifference;
+        const blocks = await database.getBlocks(startHeight, endHeight);
         response.send(JSON.stringify(blocks));
         return;
     } catch (error) {

@@ -17,6 +17,7 @@ export default class Dag {
     private currentTickFunction: () => Promise<void>;
 
     private targetHeight: number | null = null;
+    private targetHash: string | null = null;
     private isTrackingChangedListener: (isTracking: boolean) => void;
 
     constructor(canvas: HTMLCanvasElement) {
@@ -89,6 +90,10 @@ export default class Dag {
 
     private resolveTickFunction = () => {
         const urlParams = new URLSearchParams(window.location.search);
+
+        this.targetHeight = null;
+        this.targetHash = null;
+
         const heightString = urlParams.get("height");
         if (heightString) {
             const height = parseInt(heightString);
@@ -98,6 +103,14 @@ export default class Dag {
                 return;
             }
         }
+
+        const hash = urlParams.get("hash");
+        if (hash) {
+            this.targetHash = hash;
+            this.currentTickFunction = this.trackTargetHash;
+            return
+        }
+
         this.currentTickFunction = this.trackHead;
     }
 
@@ -112,6 +125,23 @@ export default class Dag {
         const [startHeight, endHeight] = this.timelineContainer.getVisibleHeightRange(targetHeight);
         const response = await fetch(`http://${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
         const blocks = await response.json();
+        this.timelineContainer.setBlocks(blocks);
+    }
+
+    private trackTargetHash = async () => {
+        const targetHash = this.targetHash as string;
+
+        const heightDifference = this.timelineContainer.getMaxBlockAmountOnHalfTheScreen();
+        const response = await fetch(`http://${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
+        const blocks: Block[] = await response.json();
+
+        for (let block of blocks) {
+            if (block.blockHash === targetHash) {
+                this.timelineContainer.setTargetHeight(block.height);
+                break;
+            }
+        }
+
         this.timelineContainer.setBlocks(blocks);
     }
 
@@ -147,8 +177,19 @@ export default class Dag {
     }
 
     private handleBlockClicked = (block: Block) => {
-        this.setStateTrackTargetHeight(block.height);
+        this.timelineContainer.setTargetHeight(block.height);
+        if (this.targetHash !== block.blockHash) {
+            this.setStateTrackTargetBlock(block);
+            return;
+        }
         window.open(`http://testnet.katnip.sh/#/block/${block.blockHash}`, "'_blank'");
+    }
+
+    setStateTrackTargetBlock = (targetBlock: Block) => {
+        const urlParams = new URLSearchParams();
+        urlParams.set("hash", `${targetBlock.blockHash}`);
+        window.history.pushState(null, "", `?${urlParams}`);
+        this.run();
     }
 
     setStateTrackTargetHeight = (targetHeight: number) => {

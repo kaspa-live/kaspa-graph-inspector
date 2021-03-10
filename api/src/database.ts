@@ -35,6 +35,15 @@ export default class Database {
         }
         return parseInt(result.rows[0].max_height);
     }
+
+    async getBlockHeight(blockHash: string): Promise<number> {
+        const result = await this.client.query('SELECT height FROM blocks ' +
+            'WHERE block_hash = $1', [blockHash])
+        if (result.rows.length === 0) {
+            throw new Error(`Block ${blockHash} does not exist`);
+        }
+        return parseInt(result.rows[0].height);
+    }
 }
 
 export type Block = {
