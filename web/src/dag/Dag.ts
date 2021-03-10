@@ -13,6 +13,7 @@ export default class Dag {
     private currentWidth: number = 0;
     private currentHeight: number = 0;
     private currentTickId: number | undefined = undefined;
+    private currentTickFunction: () => Promise<void>;
 
     private targetHeight: number | null = null;
 
@@ -23,6 +24,10 @@ export default class Dag {
             view: canvas,
             resizeTo: canvas,
         });
+
+        this.currentTickFunction = async () => {
+            // Do nothing
+        }
 
         this.apiAddress = this.resolveApiAddress();
 
@@ -61,25 +66,25 @@ export default class Dag {
 
     private tick = () => {
         const currentTickId = this.currentTickId;
-        const currentTickFunction = this.resolveTickFunction();
-        currentTickFunction().then(() => {
+        this.resolveTickFunction();
+        this.currentTickFunction().then(() => {
             if (this.currentTickId === currentTickId) {
                 this.scheduleNextTick();
             }
         });
     }
 
-    private resolveTickFunction = (): (() => Promise<void>) => {
+    private resolveTickFunction = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const heightString = urlParams.get("height");
         if (heightString) {
             const height = parseInt(heightString);
             if (height || height === 0) {
                 this.targetHeight = height;
-                return this.trackTargetHeight;
+                this.currentTickFunction = this.trackTargetHeight;
             }
         }
-        return this.trackHead;
+        this.currentTickFunction = this.trackHead;
     }
 
     private scheduleNextTick = () => {
