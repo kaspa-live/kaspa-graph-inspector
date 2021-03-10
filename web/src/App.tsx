@@ -1,32 +1,27 @@
 import './App.css';
 import Canvas from "./Canvas";
-import {AppBar, makeStyles, Toolbar, Typography} from "@material-ui/core";
-import Logo from "./Logo";
+import {useState} from "react";
+import Header from "./Header";
 
 const App = () => {
-    const classes = useStyles();
+    const [appState, setAppState] = useState(newAppState())
 
     return (
         <div className="container">
-            <AppBar position="static">
-                <Toolbar>
-                    <Logo/>
-                    <Typography variant="h6" className={classes.title}>
-                        Kaspa Graph Inspector
-                    </Typography>
-                </Toolbar>
-            </AppBar>
-            <Canvas/>
+            <Header appState={appState} setAppState={setAppState}/>
+            <Canvas appState={appState} setAppState={setAppState}/>
         </div>
     );
 }
 
-const useStyles = makeStyles((theme) => ({
-    title: {
-        flexGrow: 1,
-        marginTop: 5,
-        marginLeft: 10,
-    },
-}));
+export type AppState = {
+    isTracking: boolean,
+};
+
+const newAppState = (): AppState => {
+    return {
+        isTracking: true,
+    };
+}
 
 export default App;

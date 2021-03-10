@@ -16,6 +16,7 @@ export default class Dag {
     private currentTickFunction: () => Promise<void>;
 
     private targetHeight: number | null = null;
+    private isTrackingChangedListener: (isTracking: boolean) => void;
 
     constructor(canvas: HTMLCanvasElement) {
         this.application = new PIXI.Application({
@@ -26,6 +27,9 @@ export default class Dag {
         });
 
         this.currentTickFunction = async () => {
+            // Do nothing
+        }
+        this.isTrackingChangedListener = () => {
             // Do nothing
         }
 
@@ -72,6 +76,8 @@ export default class Dag {
                 this.scheduleNextTick();
             }
         });
+
+        this.notifyIsTrackingChanged();
     }
 
     private resolveTickFunction = () => {
@@ -82,6 +88,7 @@ export default class Dag {
             if (height || height === 0) {
                 this.targetHeight = height;
                 this.currentTickFunction = this.trackTargetHeight;
+                return;
             }
         }
         this.currentTickFunction = this.trackHead;
@@ -130,6 +137,15 @@ export default class Dag {
         urlParams.set("height", `${block.height}`);
         window.history.pushState(null, "", `?${urlParams}`);
         this.run();
+    }
+
+    setIsTrackingChangedListener = (isTrackingChangedListener: (isTracking: boolean) => void) => {
+        this.isTrackingChangedListener = isTrackingChangedListener;
+    }
+
+    private notifyIsTrackingChanged = () => {
+        const isTracking = this.currentTickFunction === this.trackHead
+        this.isTrackingChangedListener(isTracking);
     }
 
     stop = () => {
