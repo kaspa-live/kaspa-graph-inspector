@@ -20,6 +20,10 @@ func init() {
 	errorLogFile := filepath.Join(config.HomeDir, errorLogFileName)
 
 	logger.InitLog(logFile, errorLogFile)
+	UpdateLogLevels()
+}
+
+func UpdateLogLevels() {
 	logger.SetLogLevels(logger.LevelInfo)
 }
 

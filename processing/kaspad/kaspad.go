@@ -11,6 +11,7 @@ import (
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter/router"
 	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/database"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
 	domainPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain"
 	consensusPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 )
@@ -27,9 +28,9 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 		Flags: &kaspadConfigPackage.Flags{
 			ConnectPeers: []string{config.P2PServerAddress},
 			NetworkFlags: config.NetworkFlags,
-			LogLevel:     "debug",
 		},
 	}
+	logging.UpdateLogLevels()
 	databaseContext, err := database.Open()
 	if err != nil {
 		return nil, err
