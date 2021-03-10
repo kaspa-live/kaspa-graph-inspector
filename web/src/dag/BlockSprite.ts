@@ -10,7 +10,7 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
     const key = `${blockSize}`
     if (!blockTextures[key]) {
         const graphics = new PIXI.Graphics();
-        graphics.lineStyle(2, 0x222222);
+        graphics.lineStyle(3, 0xaaaaaa);
         graphics.beginFill(0xffffff);
         graphics.drawRoundedRect(0, 0, blockSize, blockSize, blockRoundingRadius);
         graphics.endFill();

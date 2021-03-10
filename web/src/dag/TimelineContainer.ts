@@ -246,7 +246,7 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private calculateBlockSize = (rendererHeight: number): number => {
-        return rendererHeight / this.maxBlocksPerHeightGroup;
+        return Math.floor(rendererHeight / this.maxBlocksPerHeightGroup);
     }
 
     private calculateMargin = (blockSize: number): number => {
