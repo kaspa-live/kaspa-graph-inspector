@@ -82,8 +82,6 @@ export default class BlockSprite extends PIXI.Container {
             fontSize: blockSize * this.textSizeMultiplier,
             fontWeight: "bold",
             fill: 0x666666,
-            stroke: 0xffffff,
-            strokeThickness: 4,
         });
 
         const blockHashLength = this.block.blockHash.length;
