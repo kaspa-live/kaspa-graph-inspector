@@ -3,6 +3,7 @@ import {Block} from "./model/Block";
 import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
 import {Ease, Tween} from "@createjs/tweenjs";
+import HeightSprite from "./HeightSprite";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly maxBlocksPerHeightGroup = 12;
@@ -10,10 +11,12 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly visibleHeightRangePadding: number = 2;
 
     private readonly application: PIXI.Application;
+    private readonly heightContainer: PIXI.Container;
     private readonly edgeContainer: PIXI.Container;
     private readonly blockContainer: PIXI.Container;
 
     private readonly heightGroups: { [height: number]: number[] } = {};
+    private readonly heightsToHeightSprites: { [height: number]: HeightSprite } = {};
     private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
     private readonly blockIdsToEdgeSprites: { [id: number]: EdgeSprite[] } = {};
 
@@ -21,6 +24,7 @@ export default class TimelineContainer extends PIXI.Container {
     private targetHeight: number = 0;
 
     private blockClickedListener: (block: Block) => void;
+    private heightClickedListener: (height: number) => void;
 
     constructor(application: PIXI.Application) {
         super();
@@ -30,6 +34,12 @@ export default class TimelineContainer extends PIXI.Container {
         this.blockClickedListener = () => {
             // Do nothing
         };
+        this.heightClickedListener = () => {
+            // Do nothing
+        };
+
+        this.heightContainer = new PIXI.Container();
+        this.addChild(this.heightContainer);
 
         this.edgeContainer = new PIXI.Container();
         this.addChild(this.edgeContainer);
@@ -54,11 +64,19 @@ export default class TimelineContainer extends PIXI.Container {
             .filter(height => !heightsInBlocks[parseInt(height)])
             .forEach(height => delete this.heightGroups[parseInt(height)]);
 
+        // Remove no-longer relevant height sprites
+        Object.entries(this.heightsToHeightSprites)
+            .filter(([height, _]) => !heightsInBlocks[parseInt(height)])
+            .forEach(([height, sprite]) => {
+                delete this.heightsToHeightSprites[parseInt(height)];
+                this.heightContainer.removeChild(sprite);
+            });
+
         // Remove no-longer relevant block sprites
         Object.entries(this.blockIdsToBlockSprites)
             .filter(([blockId, _]) => !this.blockIdsToBlocks[parseInt(blockId)])
             .forEach(([blockId, sprite]) => {
-                delete this.blockIdsToBlockSprites[parseInt(blockId)]
+                delete this.blockIdsToBlockSprites[parseInt(blockId)];
                 this.blockContainer.removeChild(sprite);
             });
 
@@ -67,7 +85,7 @@ export default class TimelineContainer extends PIXI.Container {
         Object.entries(this.blockIdsToEdgeSprites)
             .filter(([blockId, _]) => !this.blockIdsToBlocks[parseInt(blockId)])
             .forEach(([blockId, sprites]) => {
-                delete this.blockIdsToEdgeSprites[parseInt(blockId)]
+                delete this.blockIdsToEdgeSprites[parseInt(blockId)];
                 for (let sprite of sprites) {
                     this.edgeContainer.removeChild(sprite);
                 }
@@ -97,6 +115,19 @@ export default class TimelineContainer extends PIXI.Container {
                 this.heightGroups[block.height].push(block.id);
             }
         }
+
+        // Add new height sprites
+        Object.keys(heightsInBlocks)
+            .filter(height => !this.heightsToHeightSprites[parseInt(height)])
+            .forEach(height => {
+                // Add the height to the heightSprite-by-height map
+                const heightSprite = new HeightSprite(this.application, parseInt(height));
+                heightSprite.setHeightClickedListener(this.heightClickedListener);
+                this.heightsToHeightSprites[parseInt(height)] = heightSprite;
+
+                // Add the height sprite to the height container
+                this.heightContainer.addChild(heightSprite);
+            });
 
         // Add new block sprites
         for (let block of blocks) {
@@ -157,8 +188,23 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private recalculateSpritePositions = () => {
+        this.recalculateHeightSpritePositions();
         this.recalculateBlockSpritePositions();
         this.recalculateEdgeSpritePositions();
+    }
+
+    private recalculateHeightSpritePositions = () => {
+        const rendererHeight = this.application.renderer.height;
+        const blockSize = this.calculateBlockSize(rendererHeight);
+        const margin = this.calculateMargin(blockSize);
+
+        Object.entries(this.heightsToHeightSprites)
+            .forEach(([height, sprite]) => {
+                sprite.setSize(blockSize + margin, rendererHeight);
+
+                sprite.x = this.calculateBlockSpriteX(parseInt(height), blockSize, margin);
+                sprite.y = 0;
+            });
     }
 
     private recalculateBlockSpritePositions = () => {
@@ -173,7 +219,6 @@ export default class TimelineContainer extends PIXI.Container {
                 blockSprite.setSize(blockSize);
 
                 const block = this.blockIdsToBlocks[blockId];
-                blockSprite.x = block.height * (blockSize + margin);
                 blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
                 blockSprite.y = this.calculateBlockSpriteY(i, blockIds.length, rendererHeight);
             }
@@ -306,5 +351,9 @@ export default class TimelineContainer extends PIXI.Container {
 
     setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
         this.blockClickedListener = blockClickedListener;
+    }
+
+    setHeightClickedListener = (heightClickedListener: (height: number) => void) => {
+        this.heightClickedListener = heightClickedListener;
     }
 }
