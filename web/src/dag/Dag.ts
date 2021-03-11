@@ -45,6 +45,7 @@ export default class Dag {
 
         this.timelineContainer = new TimelineContainer(this.application);
         this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
+        this.timelineContainer.setHeightClickedListener(this.handleHeightClicked);
         this.application.ticker.add(this.resizeIfRequired);
         this.application.stage.addChild(this.timelineContainer);
 
@@ -185,6 +186,11 @@ export default class Dag {
             return;
         }
         window.open(`http://testnet.katnip.sh/#/block/${block.blockHash}`, "'_blank'");
+    }
+
+    private handleHeightClicked = (height: number) => {
+        this.timelineContainer.setTargetHeight(height);
+        this.setStateTrackTargetHeight(height);
     }
 
     setStateTrackTargetBlock = (targetBlock: Block) => {

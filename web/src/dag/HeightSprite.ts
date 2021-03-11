@@ -62,7 +62,7 @@ export default class HeightSprite extends PIXI.Container {
         sprite.on("pointerout", () => {
             Tween.get(sprite).to({alpha: 0.0}, 200, Ease.linear);
         });
-        sprite.on("pointertap", () => this.heightClickedListener(this.height));
+        sprite.on("pointertap", () => this.heightClickedListener(this.blockHeight));
 
         return sprite;
     }
@@ -76,7 +76,7 @@ export default class HeightSprite extends PIXI.Container {
     }
 
     getHeight = (): number => {
-        return this.height;
+        return this.blockHeight;
     }
 
     setHeightClickedListener = (heightClickedListener: (height: number) => void) => {
