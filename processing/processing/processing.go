@@ -59,7 +59,7 @@ func (p *Processing) insertGenesisIfRequired() error {
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: true,
 	}
-	err = p.database.InsertBlock(genesisHash, databaseGenesisBlock)
+	err = p.database.UpsertBlock(genesisHash, databaseGenesisBlock)
 	if err != nil {
 		return errors.Wrapf(err, "Could not insert genesis block %s", genesisHash)
 	}
@@ -92,7 +92,7 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: false,
 	}
-	err = p.database.InsertBlock(blockHash, databaseBlock)
+	err = p.database.UpsertBlock(blockHash, databaseBlock)
 	if err != nil {
 		return errors.Wrapf(err, "Could not insert block %s", blockHash)
 	}

@@ -29,8 +29,22 @@ func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, err
 	return true, nil
 }
 
-func (db *Database) InsertBlock(blockHash *externalapi.DomainHash, block *model.Block) error {
-	_, err := db.database.Model(block).OnConflict("(block_hash) DO NOTHING").Insert()
+func (db *Database) UpsertBlock(blockHash *externalapi.DomainHash, block *model.Block) error {
+	blockExists, err := db.DoesBlockExist(blockHash)
+	if err != nil {
+		return err
+	}
+	if blockExists {
+		blockID, err := db.BlockIDByHash(blockHash)
+		if err != nil {
+			return err
+		}
+		block.ID = blockID
+		_, err = db.database.Model(block).Update()
+		return err
+	}
+
+	_, err = db.database.Model(block).Insert()
 	if err != nil {
 		return err
 	}
