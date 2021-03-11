@@ -135,10 +135,12 @@ export default class Dag {
         const response = await fetch(`http://${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
         const blocks: Block[] = await response.json();
 
-        for (let block of blocks) {
-            if (block.blockHash === targetHash) {
-                this.timelineContainer.setTargetHeight(block.height);
-                break;
+        if (this.targetHash === targetHash) {
+            for (let block of blocks) {
+                if (block.blockHash === targetHash) {
+                    this.timelineContainer.setTargetHeight(block.height);
+                    break;
+                }
             }
         }
 
