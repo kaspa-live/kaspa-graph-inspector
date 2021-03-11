@@ -200,7 +200,7 @@ export default class TimelineContainer extends PIXI.Container {
 
         Object.entries(this.heightsToHeightSprites)
             .forEach(([height, sprite]) => {
-                sprite.setSize(blockSize + margin, rendererHeight);
+                sprite.setSize(blockSize + margin, rendererHeight, blockSize);
 
                 sprite.x = this.calculateBlockSpriteX(parseInt(height), blockSize, margin);
                 sprite.y = 0;

@@ -18,6 +18,9 @@ const heightTexture = (application: PIXI.Application, width: number, height: num
 };
 
 export default class HeightSprite extends PIXI.Container {
+    private readonly textSizeMultiplier = 0.15;
+    private readonly textBottomMarginMultiplier = 0.5;
+
     private readonly application: PIXI.Application;
     private readonly blockHeight: number;
     private readonly spriteContainer: PIXI.Container;
@@ -67,11 +70,29 @@ export default class HeightSprite extends PIXI.Container {
         return sprite;
     }
 
-    setSize = (width: number, height: number) => {
+    private buildText = (spriteHeight: number, blockSize: number): PIXI.Text => {
+        const style = new PIXI.TextStyle({
+            fontFamily: '"Verdana", "Arial", "Helvetica", sans-serif',
+            fontSize: blockSize * this.textSizeMultiplier,
+            fill: 0xffffff,
+        });
+
+        const text = new PIXI.Text(this.blockHeight.toLocaleString("en-US"), style);
+        text.anchor.set(0.5, 0.5);
+        text.tint = 0x777777;
+        text.y = (spriteHeight / 2) - (blockSize * this.textBottomMarginMultiplier);
+        return text;
+    }
+
+    setSize = (width: number, height: number, blockSize: number) => {
         if (!this.currentSprite.texture || this.spriteWidth !== width || this.spriteHeight !== height) {
             this.spriteWidth = width;
             this.spriteHeight = height;
             this.currentSprite.texture = heightTexture(this.application, width, height);
+
+            const text = this.buildText(height, blockSize);
+            this.textContainer.removeChildren();
+            this.textContainer.addChild(text);
         }
     }
 
