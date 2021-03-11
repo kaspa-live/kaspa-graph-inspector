@@ -17,7 +17,7 @@ func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, err
 	}
 
 	var ids []uint64
-	_, err := db.database.Query(&ids, "SELECT id FROM blocks WHERE block_hash = ?", blockHash)
+	_, err := db.database.Query(&ids, "SELECT id FROM blocks WHERE block_hash = ?", blockHash.String())
 	if err != nil {
 		return false, err
 	}
@@ -40,7 +40,7 @@ func (db *Database) UpsertBlock(blockHash *externalapi.DomainHash, block *model.
 			return err
 		}
 		block.ID = blockID
-		_, err = db.database.Model(block).Update()
+		_, err = db.database.Model(block).WherePK().Update()
 		return err
 	}
 

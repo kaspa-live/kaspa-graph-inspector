@@ -14,5 +14,5 @@ type Block struct {
 	Height                         uint64   `pg:"height,use_zero"`
 	SelectedParentID               *uint64  `pg:"selected_parent_id"`
 	Color                          string   `pg:"color"`
-	IsInVirtualSelectedParentChain bool     `pg:"is_in_virtual_selected_parent_chain"`
+	IsInVirtualSelectedParentChain bool     `pg:"is_in_virtual_selected_parent_chain,use_zero"`
 }
