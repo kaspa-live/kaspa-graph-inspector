@@ -4,7 +4,7 @@ import {Tween} from "@createjs/tweenjs";
 export default class EdgeSprite extends PIXI.Container {
     private readonly normalColor = 0xaaaaaa;
     private readonly normalLineWidth = 2;
-    private readonly selectedColor = 0xaaaaff;
+    private readonly selectedColor = 0xb4cfed;
     private readonly selectedLineWidth = 4;
 
     private readonly application: PIXI.Application;

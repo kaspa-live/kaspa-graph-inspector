@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js";
 import {Ease, Tween} from "@createjs/tweenjs";
 import {Block} from "./model/Block";
 
-const blockColors: { [color: string]: number } = {"gray": 0xf5faff, "red": 0xd62839, "blue": 0x175676};
+const blockColors: { [color: string]: number } = {"gray": 0xf5faff, "red": 0xfc606f, "blue": 0xb4cfed};
 const blockRoundingRadius = 10;
 const blockTextures: { [key: string]: PIXI.RenderTexture } = {};
 
