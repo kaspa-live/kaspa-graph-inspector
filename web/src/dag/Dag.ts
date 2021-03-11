@@ -126,6 +126,13 @@ export default class Dag {
         const [startHeight, endHeight] = this.timelineContainer.getVisibleHeightRange(targetHeight);
         const response = await fetch(`http://${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
         const blocks = await response.json();
+
+        // Exit early if the track function or the target
+        // height changed while we were busy fetching data
+        if (this.currentTickFunction !== this.trackTargetHeight || this.targetHeight !== targetHeight) {
+            return;
+        }
+
         this.timelineContainer.setBlocks(blocks);
     }
 
@@ -136,15 +143,18 @@ export default class Dag {
         const response = await fetch(`http://${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
         const blocks: Block[] = await response.json();
 
-        if (this.targetHash === targetHash) {
-            for (let block of blocks) {
-                if (block.blockHash === targetHash) {
-                    this.timelineContainer.setTargetHeight(block.height);
-                    break;
-                }
-            }
+        // Exit early if the track function or the target
+        // hash changed while we were busy fetching data
+        if (this.currentTickFunction !== this.trackTargetHash || this.targetHash !== targetHash) {
+            return;
         }
 
+        for (let block of blocks) {
+            if (block.blockHash === targetHash) {
+                this.timelineContainer.setTargetHeight(block.height);
+                break;
+            }
+        }
         this.timelineContainer.setBlocks(blocks);
     }
 
@@ -162,6 +172,12 @@ export default class Dag {
 
         const response = await fetch(`http://${this.apiAddress}/head?heightDifference=${heightDifference}`);
         const blocks: Block[] = await response.json();
+
+        // Exit early if the track function changed while we
+        // were busy fetching data
+        if (this.currentTickFunction !== this.trackHead) {
+            return
+        }
 
         let maxHeight = 0;
         for (let block of blocks) {
