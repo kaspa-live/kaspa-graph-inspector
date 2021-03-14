@@ -225,8 +225,8 @@ github.com/k0kubun/pp v2.3.0+incompatible/go.mod h1:GWse8YhT0p8pT4ir3ZgBbfZild3t
 github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0/go.mod h1:1NbS8ALrpOvjt0rHPNLyCIeMtbizbir8U//inJ+zuB8=
 github.com/kaspanet/go-secp256k1 v0.0.3 h1:zvrKddgUm/sZ0capLUZVcn2tKoAvQaXytZYrOzLZWx4=
 github.com/kaspanet/go-secp256k1 v0.0.3/go.mod h1:cFbxhxKkxqHX5eIwUGKARkph19PehipDPJejWB+H0jM=
-github.com/kaspanet/kaspad v0.9.0 h1:5VXbsOcUK0Q4MiNTC7m5uAfnRPLChgZg4zPi1R8tv98=
-github.com/kaspanet/kaspad v0.9.0/go.mod h1:N3RaL6MZYLsRHiXrK/fl9fbRbqG66lNC9MlHBr0Nw84=
+github.com/kaspanet/kaspad v0.9.1 h1:qd6sRPDeV7zkcd49Q1AwemUJQek2xQSHkRo528wXV0k=
+github.com/kaspanet/kaspad v0.9.1/go.mod h1:N3RaL6MZYLsRHiXrK/fl9fbRbqG66lNC9MlHBr0Nw84=
 github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQLJ+jE2L00=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
