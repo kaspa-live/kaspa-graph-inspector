@@ -10,6 +10,7 @@ export default class Dag {
     private readonly application: PIXI.Application;
     private readonly timelineContainer: TimelineContainer;
     private readonly apiAddress: string;
+    private readonly katnipAddress: string;
 
     private currentWidth: number = 0;
     private currentHeight: number = 0;
@@ -42,6 +43,7 @@ export default class Dag {
         Ticker.timingMode = Ticker.RAF;
 
         this.apiAddress = this.resolveApiAddress();
+        this.katnipAddress = this.resolveKatnipAddress();
 
         this.timelineContainer = new TimelineContainer(this.application);
         this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
@@ -60,6 +62,14 @@ export default class Dag {
             throw new Error("The REACT_APP_API_ADDRESS environment variable is required");
         }
         return apiAddress;
+    }
+
+    private resolveKatnipAddress = (): string => {
+        const katnipAddress = process.env.REACT_APP_KATNIP_ADDRESS;
+        if (!katnipAddress) {
+            throw new Error("The REACT_APP_KATNIP_ADDRESS environment variable is required");
+        }
+        return katnipAddress;
     }
 
     private resizeIfRequired = () => {
@@ -201,7 +211,7 @@ export default class Dag {
             this.setStateTrackTargetBlock(block);
             return;
         }
-        window.open(`http://testnet.katnip.sh/#/block/${block.blockHash}`, "'_blank'");
+        window.open(`http://${this.katnipAddress}/#/block/${block.blockHash}`, "'_blank'");
     }
 
     private handleHeightClicked = (height: number) => {

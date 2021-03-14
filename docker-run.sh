@@ -8,6 +8,7 @@ REQUIRED_VARIABLES["POSTGRES_USER"]="${POSTGRES_USER}"
 REQUIRED_VARIABLES["POSTGRES_PASSWORD"]="${POSTGRES_PASSWORD}"
 REQUIRED_VARIABLES["POSTGRES_DB"]="${POSTGRES_DB}"
 REQUIRED_VARIABLES["API_ADDRESS"]="${API_ADDRESS}"
+REQUIRED_VARIABLES["KATNIP_ADDRESS"]="${KATNIP_ADDRESS}"
 REQUIRED_VARIABLES["API_PORT"]="${API_PORT}"
 REQUIRED_VARIABLES["WEB_PORT"]="${WEB_PORT}"
 
@@ -36,7 +37,8 @@ docker build -f api/Dockerfile -t kaspa-graph-inspector-api:latest api
 
 # Build web
 REACT_APP_API_ADDRESS="${API_ADDRESS}:${API_PORT}"
-docker build -f web/Dockerfile --build-arg REACT_APP_API_ADDRESS=${REACT_APP_API_ADDRESS} -t kaspa-graph-inspector-web:latest web
+REACT_APP_KATNIP_ADDRESS="${KATNIP_ADDRESS}"
+docker build -f web/Dockerfile --build-arg REACT_APP_API_ADDRESS="${REACT_APP_API_ADDRESS}" --build-arg REACT_APP_KATNIP_ADDRESS="${REACT_APP_KATNIP_ADDRESS}" -t kaspa-graph-inspector-web:latest web
 
 # Start postgres
 docker-compose up -d postgres
