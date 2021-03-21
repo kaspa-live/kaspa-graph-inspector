@@ -2,16 +2,12 @@ import React, {useEffect, useRef} from 'react'
 import Dag from "./dag/Dag";
 import './Canvas.css'
 
-const Canvas = ({setTrackingState, setDag}: { setTrackingState: any, setDag: any }) => {
+const Canvas = ({dag}: { dag: Dag }) => {
     const canvasRef = useRef() as React.MutableRefObject<HTMLCanvasElement>;
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        const dag = new Dag(canvas);
-
-        setDag(dag);
-        dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
-        dag.setFetchFailedListener(error => console.log("aaaa", error));
+        dag.initialize(canvas);
 
         return () => {
             dag.stop();

@@ -6,11 +6,11 @@ import {Ticker} from "@createjs/core";
 export default class Dag {
     private readonly tickInternalInMilliseconds = 1000;
     private readonly headHeightMarginMultiplier = 0.25;
-
-    private readonly application: PIXI.Application;
-    private readonly timelineContainer: TimelineContainer;
     private readonly apiAddress: string;
     private readonly katnipAddress: string;
+
+    private application: PIXI.Application | undefined;
+    private timelineContainer: TimelineContainer | undefined;
 
     private currentWidth: number = 0;
     private currentHeight: number = 0;
@@ -22,15 +22,7 @@ export default class Dag {
     private isTrackingChangedListener: (isTracking: boolean) => void;
     private fetchFailedListener: (error: Error) => void;
 
-    constructor(canvas: HTMLCanvasElement) {
-        this.application = new PIXI.Application({
-            transparent: false,
-            backgroundColor: 0xffffff,
-            view: canvas,
-            resizeTo: canvas,
-            antialias: true,
-        });
-
+    constructor() {
         this.currentTickFunction = async () => {
             // Do nothing
         }
@@ -48,6 +40,16 @@ export default class Dag {
 
         this.apiAddress = this.resolveApiAddress();
         this.katnipAddress = this.resolveKatnipAddress();
+    }
+
+    initialize = (canvas: HTMLCanvasElement) => {
+        this.application = new PIXI.Application({
+            transparent: false,
+            backgroundColor: 0xffffff,
+            view: canvas,
+            resizeTo: canvas,
+            antialias: true,
+        });
 
         this.timelineContainer = new TimelineContainer(this.application);
         this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
@@ -77,12 +79,12 @@ export default class Dag {
     }
 
     private resizeIfRequired = () => {
-        if (this.currentWidth !== this.application.renderer.width
-            || this.currentHeight !== this.application.renderer.height) {
-            this.currentWidth = this.application.renderer.width;
-            this.currentHeight = this.application.renderer.height;
+        if (this.currentWidth !== this.application!.renderer.width
+            || this.currentHeight !== this.application!.renderer.height) {
+            this.currentWidth = this.application!.renderer.width;
+            this.currentHeight = this.application!.renderer.height;
 
-            this.timelineContainer.recalculatePositions();
+            this.timelineContainer!.recalculatePositions();
         }
     }
 
@@ -135,9 +137,9 @@ export default class Dag {
 
     private trackTargetHeight = async () => {
         const targetHeight = this.targetHeight as number;
-        this.timelineContainer.setTargetHeight(targetHeight);
+        this.timelineContainer!.setTargetHeight(targetHeight);
 
-        const [startHeight, endHeight] = this.timelineContainer.getVisibleHeightRange(targetHeight);
+        const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
         const response = await this.fetch(`http://${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
 
         // Exit early if the request failed
@@ -152,13 +154,13 @@ export default class Dag {
             return;
         }
 
-        this.timelineContainer.setBlocks(blocks);
+        this.timelineContainer!.setBlocks(blocks);
     }
 
     private trackTargetHash = async () => {
         const targetHash = this.targetHash as string;
 
-        const heightDifference = this.timelineContainer.getMaxBlockAmountOnHalfTheScreen();
+        const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
         const response = await this.fetch(`http://${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
 
         // Exit early if the request failed
@@ -175,19 +177,19 @@ export default class Dag {
 
         for (let block of blocks) {
             if (block.blockHash === targetHash) {
-                this.timelineContainer.setTargetHeight(block.height);
+                this.timelineContainer!.setTargetHeight(block.height);
                 break;
             }
         }
-        this.timelineContainer.setBlocks(blocks);
+        this.timelineContainer!.setBlocks(blocks);
     }
 
     private trackHead = async () => {
-        const maxBlockAmountOnHalfTheScreen = this.timelineContainer.getMaxBlockAmountOnHalfTheScreen();
+        const maxBlockAmountOnHalfTheScreen = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
 
         let headMargin = 0;
-        const rendererWidth = this.application.renderer.width;
-        const rendererHeight = this.application.renderer.height;
+        const rendererWidth = this.application!.renderer.width;
+        const rendererHeight = this.application!.renderer.height;
         if (rendererHeight < rendererWidth) {
             headMargin = Math.floor(maxBlockAmountOnHalfTheScreen * this.headHeightMarginMultiplier);
         }
@@ -220,12 +222,12 @@ export default class Dag {
             targetHeight = 0;
         }
 
-        this.timelineContainer.setTargetHeight(targetHeight);
-        this.timelineContainer.setBlocks(blocks);
+        this.timelineContainer!.setTargetHeight(targetHeight);
+        this.timelineContainer!.setBlocks(blocks);
     }
 
     private handleBlockClicked = (block: Block) => {
-        this.timelineContainer.setTargetHeight(block.height);
+        this.timelineContainer!.setTargetHeight(block.height);
         if (this.targetHash !== block.blockHash) {
             this.setStateTrackTargetBlock(block);
             return;
@@ -234,7 +236,7 @@ export default class Dag {
     }
 
     private handleHeightClicked = (height: number) => {
-        this.timelineContainer.setTargetHeight(height);
+        this.timelineContainer!.setTargetHeight(height);
         this.setStateTrackTargetHeight(height);
     }
 

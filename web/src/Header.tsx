@@ -2,9 +2,14 @@ import {AppBar, IconButton, makeStyles, Toolbar, Typography} from "@material-ui/
 import Logo from "./Logo";
 import FastForwardIcon from '@material-ui/icons/FastForward';
 import Dag from "./dag/Dag";
+import {useState} from "react";
 
-const Header = ({isTrackingState, dag}: { isTrackingState: boolean, dag: Dag | undefined }) => {
+const Header = ({dag}: { dag: Dag }) => {
     const classes = useStyles();
+
+    const [isTrackingState, setTrackingState] = useState(true);
+
+    dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
 
     return (
         <AppBar position="static">

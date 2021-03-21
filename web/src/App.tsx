@@ -1,22 +1,19 @@
 import './App.css';
 import Canvas from "./Canvas";
-import {useState} from "react";
 import Header from "./Header";
 import {createMuiTheme, ThemeProvider} from '@material-ui/core';
+import Dag from "./dag/Dag";
 
 const App = () => {
-    const [isTrackingState, setTrackingState] = useState(true);
-    const [dag, setDag] = useState();
-
     return (
         <ThemeProvider theme={theme}>
             <div className="container">
-                <Header isTrackingState={isTrackingState} dag={dag}/>
-                <Canvas setTrackingState={setTrackingState} setDag={setDag}/>
+                <Header dag={dag}/>
+                <Canvas dag={dag}/>
             </div>
         </ThemeProvider>
     );
-}
+};
 
 const theme = createMuiTheme({
     palette: {
@@ -28,5 +25,7 @@ const theme = createMuiTheme({
         }
     }
 });
+
+const dag = new Dag();
 
 export default App;
