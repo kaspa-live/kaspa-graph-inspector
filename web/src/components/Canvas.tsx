@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react'
-import Dag from "./dag/Dag";
+import Dag from "../dag/Dag";
 import './Canvas.css'
 
 const Canvas = ({dag}: { dag: Dag }) => {

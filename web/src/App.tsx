@@ -1,6 +1,6 @@
 import './App.css';
-import Canvas from "./Canvas";
-import Header from "./Header";
+import Canvas from "./components/Canvas";
+import Header from "./components/Header";
 import {createMuiTheme, ThemeProvider} from '@material-ui/core';
 import Dag from "./dag/Dag";
 

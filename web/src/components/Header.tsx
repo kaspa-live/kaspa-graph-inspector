@@ -1,9 +1,9 @@
 import {AppBar, makeStyles, Toolbar, Typography} from "@material-ui/core";
 import Logo from "./Logo";
-import Dag from "./dag/Dag";
+import Dag from "../dag/Dag";
 import {useState} from "react";
-import TrackButton from "./components/TrackButton";
-import ConnectionIssuesIndicator from "./components/ConnectionIssuesIndicator";
+import TrackButton from "./TrackButton";
+import ConnectionIssuesIndicator from "./ConnectionIssuesIndicator";
 
 const Header = ({dag}: { dag: Dag }) => {
     const classes = useStyles();
