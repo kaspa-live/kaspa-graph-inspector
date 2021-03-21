@@ -11,6 +11,7 @@ const Canvas = ({setTrackingState, setDag}: { setTrackingState: any, setDag: any
 
         setDag(dag);
         dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
+        dag.setFetchFailedListener(error => console.log("aaaa", error));
 
         return () => {
             dag.stop();

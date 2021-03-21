@@ -20,6 +20,7 @@ export default class Dag {
     private targetHeight: number | null = null;
     private targetHash: string | null = null;
     private isTrackingChangedListener: (isTracking: boolean) => void;
+    private fetchFailedListener: (error: Error) => void;
 
     constructor(canvas: HTMLCanvasElement) {
         this.application = new PIXI.Application({
@@ -34,6 +35,9 @@ export default class Dag {
             // Do nothing
         }
         this.isTrackingChangedListener = () => {
+            // Do nothing
+        }
+        this.fetchFailedListener = () => {
             // Do nothing
         }
 
@@ -134,7 +138,12 @@ export default class Dag {
         this.timelineContainer.setTargetHeight(targetHeight);
 
         const [startHeight, endHeight] = this.timelineContainer.getVisibleHeightRange(targetHeight);
-        const response = await fetch(`http://${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
+        const response = await this.fetch(`http://${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
+
+        // Exit early if the request failed
+        if (!response) {
+            return;
+        }
         const blocks = await response.json();
 
         // Exit early if the track function or the target
@@ -150,7 +159,12 @@ export default class Dag {
         const targetHash = this.targetHash as string;
 
         const heightDifference = this.timelineContainer.getMaxBlockAmountOnHalfTheScreen();
-        const response = await fetch(`http://${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
+        const response = await this.fetch(`http://${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
+
+        // Exit early if the request failed
+        if (!response) {
+            return;
+        }
         const blocks: Block[] = await response.json();
 
         // Exit early if the track function or the target
@@ -180,7 +194,12 @@ export default class Dag {
 
         const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
 
-        const response = await fetch(`http://${this.apiAddress}/head?heightDifference=${heightDifference}`);
+        const response = await this.fetch(`http://${this.apiAddress}/head?heightDifference=${heightDifference}`);
+
+        // Exit early if the request failed
+        if (!response) {
+            return;
+        }
         const blocks: Block[] = await response.json();
 
         // Exit early if the track function changed while we
@@ -240,6 +259,14 @@ export default class Dag {
 
     setIsTrackingChangedListener = (isTrackingChangedListener: (isTracking: boolean) => void) => {
         this.isTrackingChangedListener = isTrackingChangedListener;
+    }
+
+    setFetchFailedListener = (fetchFailedListener: (error: Error) => void) => {
+        this.fetchFailedListener = fetchFailedListener;
+    }
+
+    private fetch = (url: string): Promise<Response | void> => {
+        return fetch(url).catch(error => this.fetchFailedListener(new Error(error)));
     }
 
     private notifyIsTrackingChanged = () => {
