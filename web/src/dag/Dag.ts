@@ -20,7 +20,7 @@ export default class Dag {
     private targetHeight: number | null = null;
     private targetHash: string | null = null;
     private isTrackingChangedListener: (isTracking: boolean) => void;
-    private fetchFailedListener: (error: any) => void;
+    private isFetchFailingListener: (isFailing: boolean) => void;
 
     constructor() {
         this.currentTickFunction = async () => {
@@ -29,7 +29,7 @@ export default class Dag {
         this.isTrackingChangedListener = () => {
             // Do nothing
         }
-        this.fetchFailedListener = () => {
+        this.isFetchFailingListener = () => {
             // Do nothing
         }
 
@@ -263,12 +263,19 @@ export default class Dag {
         this.isTrackingChangedListener = isTrackingChangedListener;
     }
 
-    setFetchFailedListener = (fetchFailedListener: (error: any) => void) => {
-        this.fetchFailedListener = fetchFailedListener;
+    setIsFetchFailingListener = (isFetchFailingListener: (isFailing: boolean) => void) => {
+        this.isFetchFailingListener = isFetchFailingListener;
     }
 
     private fetch = (url: string): Promise<Response | void> => {
-        return fetch(url).catch(this.fetchFailedListener);
+        return fetch(url)
+            .catch(_ => {
+                // Do nothing
+            })
+            .then(response => {
+                this.isFetchFailingListener(!response);
+                return response;
+            });
     }
 
     private notifyIsTrackingChanged = () => {

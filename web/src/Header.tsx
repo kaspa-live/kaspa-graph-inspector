@@ -11,10 +11,7 @@ const Header = ({dag}: { dag: Dag }) => {
     const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
 
     dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
-    dag.setFetchFailedListener(error => {
-        console.log("aaaa", error);
-        setHavingConnectionIssuesState(true);
-    });
+    dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
 
     return (
         <AppBar position="static">
