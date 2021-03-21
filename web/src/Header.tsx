@@ -1,4 +1,4 @@
-import {AppBar, IconButton, makeStyles, Toolbar, Typography} from "@material-ui/core";
+import {AppBar, CircularProgress, IconButton, makeStyles, Toolbar, Typography} from "@material-ui/core";
 import Logo from "./Logo";
 import FastForwardIcon from '@material-ui/icons/FastForward';
 import Dag from "./dag/Dag";
@@ -8,8 +8,13 @@ const Header = ({dag}: { dag: Dag }) => {
     const classes = useStyles();
 
     const [isTrackingState, setTrackingState] = useState(true);
+    const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
 
     dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
+    dag.setFetchFailedListener(error => {
+        console.log("aaaa", error);
+        setHavingConnectionIssuesState(true);
+    });
 
     return (
         <AppBar position="static">
@@ -19,6 +24,9 @@ const Header = ({dag}: { dag: Dag }) => {
                     Kaspa Graph Inspector
                 </Typography>
                 <div className={classes.grow}/>
+                {!isHavingConnectionIssuesState ? undefined :
+                    <CircularProgress color="inherit" thickness={6.0} size="24px"/>
+                }
                 {isTrackingState ? undefined :
                     <IconButton color="inherit" onClick={() => (dag as Dag).setStateTrackHead()}>
                         <FastForwardIcon/>
@@ -37,7 +45,7 @@ const useStyles = makeStyles((theme) => ({
     },
     grow: {
         flexGrow: 1,
-    }
+    },
 }));
 
 export default Header;
