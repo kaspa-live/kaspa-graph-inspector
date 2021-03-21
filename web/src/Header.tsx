@@ -1,4 +1,4 @@
-import {AppBar, CircularProgress, IconButton, makeStyles, Toolbar, Typography} from "@material-ui/core";
+import {AppBar, Box, CircularProgress, IconButton, makeStyles, Toolbar, Typography} from "@material-ui/core";
 import Logo from "./Logo";
 import FastForwardIcon from '@material-ui/icons/FastForward';
 import Dag from "./dag/Dag";
@@ -22,7 +22,13 @@ const Header = ({dag}: { dag: Dag }) => {
                 </Typography>
                 <div className={classes.grow}/>
                 {!isHavingConnectionIssuesState ? undefined :
-                    <CircularProgress color="inherit" thickness={6.0} size="24px"/>
+                    <Box position="relative" display="inline-flex">
+                        <CircularProgress color="inherit" thickness={6.0} size="24px"/>
+                        <Box top={3} left={0} bottom={0} right={0} position="absolute" display="flex"
+                             alignItems="center" justifyContent="center" fontWeight="fontWeightBold">
+                            <Typography variant="button" component="div" color="inherit">!</Typography>
+                        </Box>
+                    </Box>
                 }
                 {isTrackingState ? undefined :
                     <IconButton color="inherit" onClick={() => (dag as Dag).setStateTrackHead()}>
