@@ -11,6 +11,10 @@ func New() miningmanager.MiningManager {
 
 type miningManager struct{}
 
+func (mm *miningManager) TransactionCount() int {
+	panic("implement me")
+}
+
 func (mm *miningManager) GetBlockTemplate(coinbaseData *externalapi.DomainCoinbaseData) (*externalapi.DomainBlock, error) {
 	panic("unimplemented")
 }

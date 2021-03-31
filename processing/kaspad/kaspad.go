@@ -95,12 +95,12 @@ func (k *Kaspad) Start() error {
 }
 
 func (k *Kaspad) seedFromDNS() {
-	dnsseed.SeedFromDNS(k.config.NetParams(), k.config.DNSSeed, appmessage.SFNodeNetwork, false, nil,
+	dnsseed.SeedFromDNS(k.config.NetParams(), k.config.DNSSeed, false, nil,
 		net.LookupIP, func(addresses []*appmessage.NetAddress) {
 			_ = k.addressManager.AddAddresses(addresses...)
 		})
 
-	dnsseed.SeedFromGRPC(k.config.NetParams(), k.config.GRPCSeed, appmessage.SFNodeNetwork, false, nil,
+	dnsseed.SeedFromGRPC(k.config.NetParams(), k.config.GRPCSeed,  false, nil,
 		func(addresses []*appmessage.NetAddress) {
 			_ = k.addressManager.AddAddresses(addresses...)
 		})
