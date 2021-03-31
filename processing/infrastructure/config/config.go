@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	HomeDir = util.AppDataDir(appDataDirectory, false)
+	HomeDir = util.AppDir(appDataDirectory, false)
 )
 
 type Config struct {

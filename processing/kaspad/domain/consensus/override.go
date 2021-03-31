@@ -26,7 +26,9 @@ func (c *Consensus) GetBlockAcceptanceData(blockHash *externalapi.DomainHash) (e
 	return c.kaspadConsensus.GetBlockAcceptanceData(blockHash)
 }
 
-func (c *Consensus) GetHashesBetween(lowHash, highHash *externalapi.DomainHash, maxBlueScoreDifference uint64) ([]*externalapi.DomainHash, error) {
+func (c *Consensus) GetHashesBetween(lowHash, highHash *externalapi.DomainHash, maxBlueScoreDifference uint64) (
+	[]*externalapi.DomainHash, *externalapi.DomainHash, error) {
+
 	return c.kaspadConsensus.GetHashesBetween(lowHash, highHash, maxBlueScoreDifference)
 }
 
@@ -106,6 +108,8 @@ func (c *Consensus) Anticone(blockHash *externalapi.DomainHash) ([]*externalapi.
 	return c.kaspadConsensus.Anticone(blockHash)
 }
 
-func (c *Consensus) GetBlockChildren(blockHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
-	return c.kaspadConsensus.GetBlockChildren(blockHash)
+func (c *Consensus) GetBlockRelations(blockHash *externalapi.DomainHash) (
+	parents []*externalapi.DomainHash, selectedParent *externalapi.DomainHash, children []*externalapi.DomainHash, err error) {
+
+	return c.kaspadConsensus.GetBlockRelations(blockHash)
 }

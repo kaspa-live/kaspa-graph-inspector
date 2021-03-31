@@ -76,5 +76,5 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock) (*ext
 }
 
 func (c *Consensus) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
-	return c.ghostdagDataStore.Get(c.dbManager, blockHash)
+	return c.ghostdagDataStore.Get(c.dbManager, model.NewStagingArea(), blockHash)
 }
