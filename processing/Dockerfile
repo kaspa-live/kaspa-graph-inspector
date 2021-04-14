@@ -11,10 +11,12 @@ COPY ./go.mod .
 COPY ./go.sum .
 
 ARG KASPAD_VERSION
-RUN if [ -n "${KASPAD_VERSION}" ]; then \
-        # use replace instead of require - to propagate into nested dependancies
-        go mod edit -replace github.com/kaspanet/kaspad=github.com/kaspanet/kaspad@$KASPAD_VERSION ;\
-    fi
+
+# Exit if KASPAD_VERSION is not set
+RUN if [ -z "${KASPAD_VERSION}" ]; then exit 1; fi
+
+# Replace the kaspad version in go.mod
+RUN go mod edit -replace github.com/kaspanet/kaspad=github.com/kaspanet/kaspad@$KASPAD_VERSION
 
 RUN go mod download
 
