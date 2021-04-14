@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/extra/pgdebug"
 	"github.com/go-pg/pg/v10"
-	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/pkg/errors"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
 	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
 	"strings"
 )
@@ -53,7 +53,7 @@ func Connect(connectionString string) (*Database, error) {
 
 	return &Database{
 		database:         pgDB,
-		blockHashesToIDs: make(map[externalapi.DomainHash]uint64),
+		blockHashesToIDs: block_hashes_to_ids.New(),
 	}, nil
 }
 

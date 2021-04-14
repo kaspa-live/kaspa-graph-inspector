@@ -3,16 +3,17 @@ package database
 import (
 	"github.com/go-pg/pg/v10"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
 	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/model"
 )
 
 type Database struct {
 	database         *pg.DB
-	blockHashesToIDs map[externalapi.DomainHash]uint64
+	blockHashesToIDs *block_hashes_to_ids.BlockHashesToIDs
 }
 
 func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, error) {
-	if _, ok := db.blockHashesToIDs[*blockHash]; ok {
+	if db.blockHashesToIDs.Has(blockHash) {
 		return true, nil
 	}
 
@@ -25,7 +26,7 @@ func (db *Database) DoesBlockExist(blockHash *externalapi.DomainHash) (bool, err
 		return false, nil
 	}
 
-	db.blockHashesToIDs[*blockHash] = ids[0]
+	db.blockHashesToIDs.Set(blockHash, ids[0])
 	return true, nil
 }
 
@@ -49,7 +50,7 @@ func (db *Database) UpsertBlock(blockHash *externalapi.DomainHash, block *model.
 		return err
 	}
 
-	db.blockHashesToIDs[*blockHash] = block.ID
+	db.blockHashesToIDs.Set(blockHash, block.ID)
 	return nil
 }
 
@@ -82,7 +83,7 @@ func (db *Database) UpdateBlockColors(blockIDsToColors map[uint64]string) error 
 }
 
 func (db *Database) BlockIDByHash(blockHash *externalapi.DomainHash) (uint64, error) {
-	if cachedBlockID, ok := db.blockHashesToIDs[*blockHash]; ok {
+	if cachedBlockID, ok := db.blockHashesToIDs.Get(blockHash); ok {
 		return cachedBlockID, nil
 	}
 
@@ -94,7 +95,7 @@ func (db *Database) BlockIDByHash(blockHash *externalapi.DomainHash) (uint64, er
 		return 0, err
 	}
 
-	db.blockHashesToIDs[*blockHash] = result.Id
+	db.blockHashesToIDs.Set(blockHash, result.Id)
 	return result.Id, nil
 }
 
