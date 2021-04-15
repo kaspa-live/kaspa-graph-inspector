@@ -49,13 +49,27 @@ export default class EdgeSprite extends PIXI.Container {
         const color = this.isInVirtualSelectedParentChain ? this.selectedColor : this.normalColor;
 
         // Compensate for line width in clip vectors
-        const clipVectorX = this.clipVectorX - lineWidth;
-        const clipVectorY = this.clipVectorY;
+        let clipVectorX = this.clipVectorX;
+        if (clipVectorX < 0) {
+            clipVectorX += lineWidth;
+        }
+        if (clipVectorX > 0) {
+            clipVectorX -= lineWidth;
+        }
+        let clipVectorY = this.clipVectorY;
+        if (clipVectorY < 0) {
+            // noinspection JSSuspiciousNameCombination
+            clipVectorY += lineWidth;
+        }
+        if (clipVectorY > 0) {
+            // noinspection JSSuspiciousNameCombination
+            clipVectorY -= lineWidth;
+        }
 
         this.currentGraphics.clear();
         this.currentGraphics.lineStyle(lineWidth, color);
-        this.currentGraphics.moveTo(-clipVectorX, -clipVectorY);
-        this.currentGraphics.lineTo(this.vectorX + clipVectorX, this.vectorY + clipVectorY);
+        this.currentGraphics.moveTo(clipVectorX, clipVectorY);
+        this.currentGraphics.lineTo(this.vectorX - clipVectorX, this.vectorY - clipVectorY);
     }
 
     setIsInVirtualSelectedParentChain = (isInVirtualSelectedParentChain: boolean) => {

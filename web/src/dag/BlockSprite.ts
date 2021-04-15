@@ -131,8 +131,31 @@ export default class BlockSprite extends PIXI.Container {
     clipEdgeVector = (vectorX: number, vectorY: number): { clipVectorX: number, clipVectorY: number } => {
         const halfBlockSize = Math.floor(this.blockSize / 2);
         if (vectorY === 0) {
-            return {clipVectorX: halfBlockSize, clipVectorY: 0};
+            return {
+                clipVectorX: vectorX >= 0 ? halfBlockSize : -halfBlockSize,
+                clipVectorY: 0,
+            };
         }
+
+        const cornerSize = Math.floor(blockRoundingRadius / 2);
+        const halfBlockSizeMinusCorner = halfBlockSize - cornerSize;
+
+        const angleRadians = Math.atan2(vectorX, vectorY);
+        const yForHalfBlockSize = Math.abs(halfBlockSize / Math.tan(angleRadians));
+        if (yForHalfBlockSize <= halfBlockSizeMinusCorner) {
+            return {
+                clipVectorX: vectorX >= 0 ? halfBlockSize : -halfBlockSize,
+                clipVectorY: vectorY >= 0 ? yForHalfBlockSize : -yForHalfBlockSize,
+            };
+        }
+        const xForHalfBlockSize = Math.abs(halfBlockSize * Math.tan(angleRadians));
+        if (xForHalfBlockSize <= halfBlockSizeMinusCorner) {
+            return {
+                clipVectorX: vectorX >= 0 ? xForHalfBlockSize : -xForHalfBlockSize,
+                clipVectorY: vectorY >= 0 ? halfBlockSize : -halfBlockSize
+            };
+        }
+
         return {clipVectorX: 0, clipVectorY: 0};
     }
 };
