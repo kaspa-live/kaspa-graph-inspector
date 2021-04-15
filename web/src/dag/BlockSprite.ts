@@ -127,4 +127,12 @@ export default class BlockSprite extends PIXI.Container {
     setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
         this.blockClickedListener = blockClickedListener;
     }
+
+    clipEdgeVector = (vectorX: number, vectorY: number): { clipVectorX: number, clipVectorY: number } => {
+        const halfBlockSize = Math.floor(this.blockSize / 2);
+        if (vectorY === 0) {
+            return {clipVectorX: halfBlockSize, clipVectorY: 0};
+        }
+        return {clipVectorX: 0, clipVectorY: 0};
+    }
 };

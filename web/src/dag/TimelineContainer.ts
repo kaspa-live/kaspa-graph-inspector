@@ -252,7 +252,8 @@ export default class TimelineContainer extends PIXI.Container {
 
                 const vectorX = toX - fromX;
                 const vectorY = toY - fromY;
-                edgeSprite.setVector(vectorX, vectorY);
+                const {clipVectorX, clipVectorY} = fromBlockSprite.clipEdgeVector(vectorX, vectorY);
+                edgeSprite.setVector(vectorX, vectorY, clipVectorX, clipVectorY);
 
                 edgeSprite.x = fromX;
                 edgeSprite.y = fromY;

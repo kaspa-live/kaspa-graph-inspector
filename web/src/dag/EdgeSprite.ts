@@ -13,6 +13,8 @@ export default class EdgeSprite extends PIXI.Container {
 
     private vectorX: number = 0;
     private vectorY: number = 0;
+    private clipVectorX: number = 0;
+    private clipVectorY: number = 0;
     private isInVirtualSelectedParentChain: boolean = false;
     private currentGraphics: PIXI.Graphics;
 
@@ -31,10 +33,12 @@ export default class EdgeSprite extends PIXI.Container {
         return new PIXI.Graphics();
     }
 
-    setVector = (vectorX: number, vectorY: number) => {
+    setVector = (vectorX: number, vectorY: number, clipVectorX: number, clipVectorY: number) => {
         if (this.vectorX !== vectorX || this.vectorY !== vectorY) {
             this.vectorX = vectorX;
             this.vectorY = vectorY;
+            this.clipVectorX = clipVectorX;
+            this.clipVectorY = clipVectorY;
 
             this.renderGraphics()
         }
@@ -44,10 +48,14 @@ export default class EdgeSprite extends PIXI.Container {
         const lineWidth = this.isInVirtualSelectedParentChain ? this.selectedLineWidth : this.normalLineWidth;
         const color = this.isInVirtualSelectedParentChain ? this.selectedColor : this.normalColor;
 
+        // Compensate for line width in clip vectors
+        const clipVectorX = this.clipVectorX - lineWidth;
+        const clipVectorY = this.clipVectorY;
+
         this.currentGraphics.clear();
         this.currentGraphics.lineStyle(lineWidth, color);
-        this.currentGraphics.moveTo(0, 0);
-        this.currentGraphics.lineTo(this.vectorX, this.vectorY);
+        this.currentGraphics.moveTo(-clipVectorX, -clipVectorY);
+        this.currentGraphics.lineTo(this.vectorX + clipVectorX, this.vectorY + clipVectorY);
     }
 
     setIsInVirtualSelectedParentChain = (isInVirtualSelectedParentChain: boolean) => {
