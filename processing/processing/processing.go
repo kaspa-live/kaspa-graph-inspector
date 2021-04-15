@@ -9,6 +9,7 @@ import (
 	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
 	kaspadPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad"
+	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/processing_errors"
 )
 
 var log = logging.Logger()
@@ -59,7 +60,7 @@ func (p *Processing) insertGenesisIfRequired() error {
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: true,
 	}
-	err = p.database.UpsertBlock(genesisHash, databaseGenesisBlock)
+	err = p.database.InsertOrIgnoreBlock(genesisHash, databaseGenesisBlock)
 	if err != nil {
 		return errors.Wrapf(err, "Could not insert genesis block %s", genesisHash)
 	}
@@ -74,7 +75,8 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	parentHashes := block.Header.ParentHashes()
 	parentIDs, err := p.database.BlockIDsByHashes(parentHashes)
 	if err != nil {
-		return errors.Wrapf(err, "Could not resolve parent IDs for block %s", blockHash)
+		return errors.Wrapf(processing_errors.ErrMissingParents, "Could not resolve "+
+			"parent IDs for block %s: %s", blockHash, err)
 	}
 
 	highestParentHeight, err := p.database.HighestBlockHeight(parentIDs)
@@ -92,7 +94,7 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: false,
 	}
-	err = p.database.UpsertBlock(blockHash, databaseBlock)
+	err = p.database.InsertOrIgnoreBlock(blockHash, databaseBlock)
 	if err != nil {
 		return errors.Wrapf(err, "Could not insert block %s", blockHash)
 	}
