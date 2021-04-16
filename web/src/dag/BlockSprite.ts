@@ -144,12 +144,11 @@ export default class BlockSprite extends PIXI.Container {
 
         // Abs the x and y vectors for the angle between them
         // so that it's a bit easier to reason about
-        const angleRadians = Math.atan2(Math.abs(vectorX), Math.abs(vectorY));
-        const tangentOfAngle = Math.tan(angleRadians);
+        const tangentOfAngle = Math.abs(vectorY) / Math.abs(vectorX);
 
         // Is the vector passing through the vertical lines of
         // the block?
-        const yForHalfBlockSize = halfBlockSize / tangentOfAngle;
+        const yForHalfBlockSize = halfBlockSize * tangentOfAngle;
         if (yForHalfBlockSize <= halfBlockSizeMinusCorner) {
             return {
                 clipVectorX: vectorX >= 0 ? halfBlockSize : -halfBlockSize,
@@ -159,7 +158,7 @@ export default class BlockSprite extends PIXI.Container {
 
         // Is the vector passing through the horizontal lines of
         // the block?
-        const xForHalfBlockSize = halfBlockSize * tangentOfAngle;
+        const xForHalfBlockSize = halfBlockSize / tangentOfAngle;
         if (xForHalfBlockSize <= halfBlockSizeMinusCorner) {
             return {
                 clipVectorX: vectorX >= 0 ? xForHalfBlockSize : -xForHalfBlockSize,
@@ -183,8 +182,8 @@ export default class BlockSprite extends PIXI.Container {
         const y = x * tangentOfAngle;
 
         return {
-            clipVectorX: vectorX >= 0 ? y : -y,
-            clipVectorY: vectorY >= 0 ? x : -x,
+            clipVectorX: vectorX >= 0 ? x : -x,
+            clipVectorY: vectorY >= 0 ? y : -y,
         };
     }
 };
