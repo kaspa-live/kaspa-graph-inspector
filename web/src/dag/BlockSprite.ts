@@ -130,6 +130,9 @@ export default class BlockSprite extends PIXI.Container {
 
     clipEdgeVector = (vectorX: number, vectorY: number): { clipVectorX: number, clipVectorY: number } => {
         const halfBlockSize = Math.floor(this.blockSize / 2);
+
+        // Don't bother with any fancy calculations if the y
+        // coordinate is exactly 0
         if (vectorY === 0) {
             return {
                 clipVectorX: vectorX >= 0 ? halfBlockSize : -halfBlockSize,
@@ -140,15 +143,24 @@ export default class BlockSprite extends PIXI.Container {
         const cornerSize = Math.floor(blockRoundingRadius / 2);
         const halfBlockSizeMinusCorner = halfBlockSize - cornerSize;
 
-        const angleRadians = Math.atan2(vectorX, vectorY);
-        const yForHalfBlockSize = Math.abs(halfBlockSize / Math.tan(angleRadians));
+        // Abs the x and y vectors for the angle between them
+        // so that it's a bit easier to reason about
+        const angleRadians = Math.atan2(Math.abs(vectorX), Math.abs(vectorY));
+        const tangentOfAngle = Math.tan(angleRadians);
+
+        // Is the vector passing through the vertical lines of
+        // the block?
+        const yForHalfBlockSize = halfBlockSize / tangentOfAngle;
         if (yForHalfBlockSize <= halfBlockSizeMinusCorner) {
             return {
                 clipVectorX: vectorX >= 0 ? halfBlockSize : -halfBlockSize,
                 clipVectorY: vectorY >= 0 ? yForHalfBlockSize : -yForHalfBlockSize,
             };
         }
-        const xForHalfBlockSize = Math.abs(halfBlockSize * Math.tan(angleRadians));
+
+        // Is the vector passing through the horizontal lines of
+        // the block?
+        const xForHalfBlockSize = halfBlockSize * tangentOfAngle;
         if (xForHalfBlockSize <= halfBlockSizeMinusCorner) {
             return {
                 clipVectorX: vectorX >= 0 ? xForHalfBlockSize : -xForHalfBlockSize,
