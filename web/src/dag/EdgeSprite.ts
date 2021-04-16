@@ -4,8 +4,10 @@ import {Tween} from "@createjs/tweenjs";
 export default class EdgeSprite extends PIXI.Container {
     private readonly normalColor = 0xaaaaaa;
     private readonly normalLineWidth = 2;
+    private readonly normalArrowRadius = 4;
     private readonly selectedColor = 0xb4cfed;
     private readonly selectedLineWidth = 4;
+    private readonly selectedArrowRadius = 6;
 
     private readonly application: PIXI.Application;
     private readonly fromBlockId: number;
@@ -47,6 +49,7 @@ export default class EdgeSprite extends PIXI.Container {
     private renderGraphics = () => {
         const lineWidth = this.isInVirtualSelectedParentChain ? this.selectedLineWidth : this.normalLineWidth;
         const color = this.isInVirtualSelectedParentChain ? this.selectedColor : this.normalColor;
+        const arrowRadius = this.isInVirtualSelectedParentChain ? this.selectedArrowRadius : this.normalArrowRadius;
 
         // Compensate for line width in clip vectors
         let clipVectorX = this.clipVectorX;
@@ -66,10 +69,21 @@ export default class EdgeSprite extends PIXI.Container {
             clipVectorY -= lineWidth;
         }
 
+        // Draw the edge
+        const fromX = clipVectorX;
+        const fromY = clipVectorY;
+        const toX = this.vectorX - clipVectorX;
+        const toY = this.vectorY - clipVectorY;
         this.currentGraphics.clear();
         this.currentGraphics.lineStyle(lineWidth, color);
-        this.currentGraphics.moveTo(clipVectorX, clipVectorY);
-        this.currentGraphics.lineTo(this.vectorX - clipVectorX, this.vectorY - clipVectorY);
+        this.currentGraphics.moveTo(fromX, fromY);
+        this.currentGraphics.lineTo(toX, toY);
+
+        // Draw the arrow head
+        const angleRadians = Math.atan2(this.vectorY, this.vectorX) + (Math.PI / 2);
+        this.currentGraphics.beginFill(color);
+        this.currentGraphics.drawStar(toX, toY, 3, arrowRadius, undefined, angleRadians);
+        this.currentGraphics.endFill();
     }
 
     setIsInVirtualSelectedParentChain = (isInVirtualSelectedParentChain: boolean) => {
