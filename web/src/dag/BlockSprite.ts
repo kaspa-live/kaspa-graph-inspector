@@ -179,12 +179,12 @@ export default class BlockSprite extends PIXI.Container {
         const a = (tangentOfAngle ** 2) + 1;
         const b = -(2 * halfBlockSizeMinusCorner * (tangentOfAngle + 1));
         const c = (2 * (halfBlockSizeMinusCorner ** 2)) - (blockRoundingRadius ** 2);
-        const x = (-b + Math.sqrt(b ** 2 - 4 * a * c)) / (2 * a);
+        const x = (-b + Math.sqrt((b ** 2) - (4 * a * c))) / (2 * a);
         const y = x * tangentOfAngle;
 
         return {
-            clipVectorX: vectorX >= 0 ? x : -x,
-            clipVectorY: vectorY >= 0 ? y : -y,
+            clipVectorX: vectorX >= 0 ? y : -y,
+            clipVectorY: vectorY >= 0 ? x : -x,
         };
     }
 };
