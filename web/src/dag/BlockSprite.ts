@@ -129,7 +129,7 @@ export default class BlockSprite extends PIXI.Container {
     }
 
     clipEdgeVector = (vectorX: number, vectorY: number): { clipVectorX: number, clipVectorY: number } => {
-        const halfBlockSize = Math.floor(this.blockSize / 2);
+        const halfBlockSize = this.blockSize / 2;
 
         // Don't bother with any fancy calculations if the y
         // coordinate is exactly 0
@@ -140,8 +140,7 @@ export default class BlockSprite extends PIXI.Container {
             };
         }
 
-        const cornerSize = Math.floor(blockRoundingRadius / 2);
-        const halfBlockSizeMinusCorner = halfBlockSize - cornerSize;
+        const halfBlockSizeMinusCorner = halfBlockSize - blockRoundingRadius;
 
         // Abs the x and y vectors for the angle between them
         // so that it's a bit easier to reason about
@@ -168,6 +167,24 @@ export default class BlockSprite extends PIXI.Container {
             };
         }
 
-        return {clipVectorX: 0, clipVectorY: 0};
+        // If we reached here, the vector is certainly passing
+        // through a corner.
+        // The following calculation is derived from solving:
+        //   (x-m)^2 + (y-n)^2 = r^2
+        //   tan(α) = y/x
+        // Where:
+        //   m and n are `halfBlockSizeMinusCorner`
+        //   tan(α) is `tangentOfAngle`
+        //   r is `blockRoundingRadius`
+        const a = (tangentOfAngle ** 2) + 1;
+        const b = -(2 * halfBlockSizeMinusCorner * (tangentOfAngle + 1));
+        const c = (2 * (halfBlockSizeMinusCorner ** 2)) - (blockRoundingRadius ** 2);
+        const x = (-b + Math.sqrt(b ** 2 - 4 * a * c)) / (2 * a);
+        const y = x * tangentOfAngle;
+
+        return {
+            clipVectorX: vectorX >= 0 ? x : -x,
+            clipVectorY: vectorY >= 0 ? y : -y,
+        };
     }
 };
