@@ -81,8 +81,13 @@ export default class EdgeSprite extends PIXI.Container {
 
         // Draw the arrow head
         const angleRadians = Math.atan2(this.vectorY, this.vectorX) + (Math.PI / 2);
+        const toVectorMagnitude = Math.sqrt(toX ** 2 + toY **2);
+        const arrowOffsetX = -toX * (arrowRadius + lineWidth) / toVectorMagnitude;
+        const arrowOffsetY = -toY * (arrowRadius + lineWidth) / toVectorMagnitude;
+        const arrowX = toX + arrowOffsetX;
+        const arrowY = toY + arrowOffsetY;
         this.currentGraphics.beginFill(color);
-        this.currentGraphics.drawStar(toX, toY, 3, arrowRadius, undefined, angleRadians);
+        this.currentGraphics.drawStar(arrowX, arrowY, 3, arrowRadius, undefined, angleRadians);
         this.currentGraphics.endFill();
     }
 
