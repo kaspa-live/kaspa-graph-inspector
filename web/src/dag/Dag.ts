@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import TimelineContainer from "./TimelineContainer";
 import {Block} from "./model/Block";
 import {Ticker} from "@createjs/core";
+import {BlocksAndEdges} from "./model/BlocksAndEdges";
 
 export default class Dag {
     private readonly tickInternalInMilliseconds = 1000;
@@ -146,8 +147,8 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocksAndEdges = await response.json();
-        const blocks: Block[] = blocksAndEdges.blocks;
+        const blocksAndEdges: BlocksAndEdges = await response.json();
+        const blocks = blocksAndEdges.blocks;
 
         // Exit early if the track function or the target
         // height changed while we were busy fetching data
@@ -168,8 +169,8 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocksAndEdges = await response.json();
-        const blocks: Block[] = blocksAndEdges.blocks;
+        const blocksAndEdges: BlocksAndEdges = await response.json();
+        const blocks = blocksAndEdges.blocks;
 
         // Exit early if the track function or the target
         // hash changed while we were busy fetching data
@@ -204,8 +205,8 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocksAndEdges = await response.json();
-        const blocks: Block[] = blocksAndEdges.blocks;
+        const blocksAndEdges: BlocksAndEdges = await response.json();
+        const blocks = blocksAndEdges.blocks;
 
         // Exit early if the track function changed while we
         // were busy fetching data
