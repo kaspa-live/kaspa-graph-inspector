@@ -127,4 +127,65 @@ export default class BlockSprite extends PIXI.Container {
     setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
         this.blockClickedListener = blockClickedListener;
     }
+
+    // clampVectorToBounds clamps the given vector's magnitude
+    // to be fully within the block's shape
+    clampVectorToBounds = (vectorX: number, vectorY: number): { blockBoundsVectorX: number, blockBoundsVectorY: number } => {
+        const halfBlockSize = this.blockSize / 2;
+
+        // Don't bother with any fancy calculations if the y
+        // coordinate is exactly 0
+        if (vectorY === 0) {
+            return {
+                blockBoundsVectorX: vectorX >= 0 ? halfBlockSize : -halfBlockSize,
+                blockBoundsVectorY: 0,
+            };
+        }
+
+        const halfBlockSizeMinusCorner = halfBlockSize - blockRoundingRadius;
+
+        // Abs the vector's x and y before getting its tangent
+        // so that it's a bit easier to reason about
+        const tangentOfAngle = Math.abs(vectorY) / Math.abs(vectorX);
+
+        // Is the vector passing through the vertical lines of
+        // the block?
+        const yForHalfBlockSize = halfBlockSize * tangentOfAngle;
+        if (yForHalfBlockSize <= halfBlockSizeMinusCorner) {
+            return {
+                blockBoundsVectorX: vectorX >= 0 ? halfBlockSize : -halfBlockSize,
+                blockBoundsVectorY: vectorY >= 0 ? yForHalfBlockSize : -yForHalfBlockSize,
+            };
+        }
+
+        // Is the vector passing through the horizontal lines of
+        // the block?
+        const xForHalfBlockSize = halfBlockSize / tangentOfAngle;
+        if (xForHalfBlockSize <= halfBlockSizeMinusCorner) {
+            return {
+                blockBoundsVectorX: vectorX >= 0 ? xForHalfBlockSize : -xForHalfBlockSize,
+                blockBoundsVectorY: vectorY >= 0 ? halfBlockSize : -halfBlockSize
+            };
+        }
+
+        // If we reached here, the vector is certainly passing
+        // through a corner.
+        // The following calculation is derived from solving:
+        //   (x-m)^2 + (y-n)^2 = r^2
+        //   tan(α) = y/x
+        // Where:
+        //   m and n are `halfBlockSizeMinusCorner`
+        //   tan(α) is `tangentOfAngle`
+        //   r is `blockRoundingRadius`
+        const a = (tangentOfAngle ** 2) + 1;
+        const b = -(2 * halfBlockSizeMinusCorner * (tangentOfAngle + 1));
+        const c = (2 * (halfBlockSizeMinusCorner ** 2)) - (blockRoundingRadius ** 2);
+        const x = (-b + Math.sqrt((b ** 2) - (4 * a * c))) / (2 * a);
+        const y = x * tangentOfAngle;
+
+        return {
+            blockBoundsVectorX: vectorX >= 0 ? x : -x,
+            blockBoundsVectorY: vectorY >= 0 ? y : -y,
+        };
+    }
 };

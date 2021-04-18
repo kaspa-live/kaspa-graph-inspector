@@ -4,8 +4,10 @@ import {Tween} from "@createjs/tweenjs";
 export default class EdgeSprite extends PIXI.Container {
     private readonly normalColor = 0xaaaaaa;
     private readonly normalLineWidth = 2;
+    private readonly normalArrowRadius = 4;
     private readonly selectedColor = 0xb4cfed;
     private readonly selectedLineWidth = 4;
+    private readonly selectedArrowRadius = 6;
 
     private readonly application: PIXI.Application;
     private readonly fromBlockId: number;
@@ -13,6 +15,8 @@ export default class EdgeSprite extends PIXI.Container {
 
     private vectorX: number = 0;
     private vectorY: number = 0;
+    private blockBoundsVectorX: number = 0;
+    private blockBoundsVectorY: number = 0;
     private isInVirtualSelectedParentChain: boolean = false;
     private currentGraphics: PIXI.Graphics;
 
@@ -31,10 +35,16 @@ export default class EdgeSprite extends PIXI.Container {
         return new PIXI.Graphics();
     }
 
-    setVector = (vectorX: number, vectorY: number) => {
-        if (this.vectorX !== vectorX || this.vectorY !== vectorY) {
+    setVector = (vectorX: number, vectorY: number, blockBoundsVectorX: number, blockBoundsVectorY: number) => {
+        if (this.vectorX !== vectorX
+            || this.vectorY !== vectorY
+            || this.blockBoundsVectorX !== blockBoundsVectorX
+            || this.blockBoundsVectorY !== blockBoundsVectorY) {
+
             this.vectorX = vectorX;
             this.vectorY = vectorY;
+            this.blockBoundsVectorX = blockBoundsVectorX;
+            this.blockBoundsVectorY = blockBoundsVectorY;
 
             this.renderGraphics()
         }
@@ -43,11 +53,46 @@ export default class EdgeSprite extends PIXI.Container {
     private renderGraphics = () => {
         const lineWidth = this.isInVirtualSelectedParentChain ? this.selectedLineWidth : this.normalLineWidth;
         const color = this.isInVirtualSelectedParentChain ? this.selectedColor : this.normalColor;
+        const arrowRadius = this.isInVirtualSelectedParentChain ? this.selectedArrowRadius : this.normalArrowRadius;
 
+        // Compensate for line width in block bounds vectors
+        let blockBoundsVectorX = this.blockBoundsVectorX;
+        if (blockBoundsVectorX < 0) {
+            blockBoundsVectorX += lineWidth;
+        }
+        if (blockBoundsVectorX > 0) {
+            blockBoundsVectorX -= lineWidth;
+        }
+        let blockBoundsVectorY = this.blockBoundsVectorY;
+        if (blockBoundsVectorY < 0) {
+            // noinspection JSSuspiciousNameCombination
+            blockBoundsVectorY += lineWidth;
+        }
+        if (blockBoundsVectorY > 0) {
+            // noinspection JSSuspiciousNameCombination
+            blockBoundsVectorY -= lineWidth;
+        }
+
+        // Draw the edge
+        const fromX = blockBoundsVectorX;
+        const fromY = blockBoundsVectorY;
+        const toX = this.vectorX - blockBoundsVectorX;
+        const toY = this.vectorY - blockBoundsVectorY;
         this.currentGraphics.clear();
         this.currentGraphics.lineStyle(lineWidth, color);
-        this.currentGraphics.moveTo(0, 0);
-        this.currentGraphics.lineTo(this.vectorX, this.vectorY);
+        this.currentGraphics.moveTo(fromX, fromY);
+        this.currentGraphics.lineTo(toX, toY);
+
+        // Draw the arrow head
+        const angleRadians = Math.atan2(this.vectorY, this.vectorX) + (Math.PI / 2);
+        const toVectorMagnitude = Math.sqrt(toX ** 2 + toY ** 2);
+        const arrowOffsetX = -toX * (arrowRadius + lineWidth) / toVectorMagnitude;
+        const arrowOffsetY = -toY * (arrowRadius + lineWidth) / toVectorMagnitude;
+        const arrowX = toX + arrowOffsetX;
+        const arrowY = toY + arrowOffsetY;
+        this.currentGraphics.beginFill(color);
+        this.currentGraphics.drawStar(arrowX, arrowY, 3, arrowRadius, undefined, angleRadians);
+        this.currentGraphics.endFill();
     }
 
     setIsInVirtualSelectedParentChain = (isInVirtualSelectedParentChain: boolean) => {
