@@ -56,6 +56,7 @@ func (p *Processing) insertGenesisIfRequired() error {
 		Timestamp:                      genesisBlock.Header.TimeInMilliseconds(),
 		ParentIDs:                      nil,
 		Height:                         0,
+		HeightGroupIndex:               0,
 		SelectedParentID:               nil,
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: true,
@@ -85,11 +86,17 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	}
 	blockHeight := highestParentHeight + 1
 
+	blocksWithHeightCount, err := p.database.CountBlocksWithHeight(blockHeight)
+	if err != nil {
+		return err
+	}
+
 	databaseBlock := &model.Block{
 		BlockHash:                      blockHash.String(),
 		Timestamp:                      block.Header.TimeInMilliseconds(),
 		ParentIDs:                      parentIDs,
 		Height:                         blockHeight,
+		HeightGroupIndex:               blocksWithHeightCount,
 		SelectedParentID:               nil,
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: false,

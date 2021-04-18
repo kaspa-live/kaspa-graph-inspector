@@ -175,6 +175,24 @@ func (db *Database) highestBlockHeight(blockIDs []uint64) (uint64, error) {
 	return result.Highest, nil
 }
 
+func (db *Database) CountBlocksWithHeight(height uint64) (uint32, error) {
+	db.RLock()
+	defer db.RUnlock()
+
+	return db.countBlocksWithHeight(height)
+}
+
+func (db *Database) countBlocksWithHeight(height uint64) (uint32, error) {
+	var result struct {
+		Count uint32
+	}
+	_, err := db.database.Query(&result, "SELECT COUNT(*) AS count FROM blocks WHERE height = ?", height)
+	if err != nil {
+		return 0, err
+	}
+	return result.Count, nil
+}
+
 func (db *Database) Close() {
 	db.Lock()
 	defer db.Unlock()
