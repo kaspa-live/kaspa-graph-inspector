@@ -148,7 +148,6 @@ export default class Dag {
             return;
         }
         const blocksAndEdges: BlocksAndEdges = await response.json();
-        const blocks = blocksAndEdges.blocks;
 
         // Exit early if the track function or the target
         // height changed while we were busy fetching data
@@ -156,7 +155,7 @@ export default class Dag {
             return;
         }
 
-        this.timelineContainer!.setBlocks(blocks);
+        this.timelineContainer!.setBlocksAndEdges(blocksAndEdges);
     }
 
     private trackTargetHash = async () => {
@@ -170,7 +169,6 @@ export default class Dag {
             return;
         }
         const blocksAndEdges: BlocksAndEdges = await response.json();
-        const blocks = blocksAndEdges.blocks;
 
         // Exit early if the track function or the target
         // hash changed while we were busy fetching data
@@ -178,13 +176,13 @@ export default class Dag {
             return;
         }
 
-        for (let block of blocks) {
+        for (let block of blocksAndEdges.blocks) {
             if (block.blockHash === targetHash) {
                 this.timelineContainer!.setTargetHeight(block.height);
                 break;
             }
         }
-        this.timelineContainer!.setBlocks(blocks);
+        this.timelineContainer!.setBlocksAndEdges(blocksAndEdges);
     }
 
     private trackHead = async () => {
@@ -206,7 +204,6 @@ export default class Dag {
             return;
         }
         const blocksAndEdges: BlocksAndEdges = await response.json();
-        const blocks = blocksAndEdges.blocks;
 
         // Exit early if the track function changed while we
         // were busy fetching data
@@ -215,7 +212,7 @@ export default class Dag {
         }
 
         let maxHeight = 0;
-        for (let block of blocks) {
+        for (let block of blocksAndEdges.blocks) {
             if (block.height > maxHeight) {
                 maxHeight = block.height;
             }
@@ -227,7 +224,7 @@ export default class Dag {
         }
 
         this.timelineContainer!.setTargetHeight(targetHeight);
-        this.timelineContainer!.setBlocks(blocks);
+        this.timelineContainer!.setBlocksAndEdges(blocksAndEdges);
     }
 
     private handleBlockClicked = (block: Block) => {

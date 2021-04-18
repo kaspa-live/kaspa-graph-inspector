@@ -4,6 +4,7 @@ import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
 import {Ease, Tween} from "@createjs/tweenjs";
 import HeightSprite from "./HeightSprite";
+import {BlocksAndEdges} from "./model/BlocksAndEdges";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly maxBlocksPerHeightGroup = 12;
@@ -47,7 +48,9 @@ export default class TimelineContainer extends PIXI.Container {
         this.addChild(this.blockContainer);
     }
 
-    setBlocks = (blocks: Block[]) => {
+    setBlocksAndEdges = (blocksAndEdges: BlocksAndEdges) => {
+        const blocks = blocksAndEdges.blocks;
+
         // Update the blocks-by-ids map with the new blocks
         this.blockIdsToBlocks = {};
         for (let block of blocks) {
@@ -189,7 +192,7 @@ export default class TimelineContainer extends PIXI.Container {
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
-        const heightGroupSizes: {[height: number]: number} = {};
+        const heightGroupSizes: { [height: number]: number } = {};
         Object.values(this.blockIdsToBlocks).forEach(block => {
             if (!heightGroupSizes[block.height]) {
                 heightGroupSizes[block.height] = 0;
@@ -205,7 +208,7 @@ export default class TimelineContainer extends PIXI.Container {
                 const heightGroupSize = heightGroupSizes[block.height];
                 blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
                 blockSprite.y = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroupSize, rendererHeight);
-        });
+            });
     }
 
     private recalculateEdgeSpritePositions = () => {
