@@ -36,7 +36,11 @@ export default class EdgeSprite extends PIXI.Container {
     }
 
     setVector = (vectorX: number, vectorY: number, blockBoundsVectorX: number, blockBoundsVectorY: number) => {
-        if (this.vectorX !== vectorX || this.vectorY !== vectorY) {
+        if (this.vectorX !== vectorX
+            || this.vectorY !== vectorY
+            || this.blockBoundsVectorX !== blockBoundsVectorX
+            || this.blockBoundsVectorY !== blockBoundsVectorY) {
+
             this.vectorX = vectorX;
             this.vectorY = vectorY;
             this.blockBoundsVectorX = blockBoundsVectorX;
@@ -81,7 +85,7 @@ export default class EdgeSprite extends PIXI.Container {
 
         // Draw the arrow head
         const angleRadians = Math.atan2(this.vectorY, this.vectorX) + (Math.PI / 2);
-        const toVectorMagnitude = Math.sqrt(toX ** 2 + toY **2);
+        const toVectorMagnitude = Math.sqrt(toX ** 2 + toY ** 2);
         const arrowOffsetX = -toX * (arrowRadius + lineWidth) / toVectorMagnitude;
         const arrowOffsetY = -toY * (arrowRadius + lineWidth) / toVectorMagnitude;
         const arrowX = toX + arrowOffsetX;
