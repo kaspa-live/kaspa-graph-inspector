@@ -15,8 +15,8 @@ export default class EdgeSprite extends PIXI.Container {
 
     private vectorX: number = 0;
     private vectorY: number = 0;
-    private clipVectorX: number = 0;
-    private clipVectorY: number = 0;
+    private blockBoundsVectorX: number = 0;
+    private blockBoundsVectorY: number = 0;
     private isInVirtualSelectedParentChain: boolean = false;
     private currentGraphics: PIXI.Graphics;
 
@@ -35,12 +35,12 @@ export default class EdgeSprite extends PIXI.Container {
         return new PIXI.Graphics();
     }
 
-    setVector = (vectorX: number, vectorY: number, clipVectorX: number, clipVectorY: number) => {
+    setVector = (vectorX: number, vectorY: number, blockBoundsVectorX: number, blockBoundsVectorY: number) => {
         if (this.vectorX !== vectorX || this.vectorY !== vectorY) {
             this.vectorX = vectorX;
             this.vectorY = vectorY;
-            this.clipVectorX = clipVectorX;
-            this.clipVectorY = clipVectorY;
+            this.blockBoundsVectorX = blockBoundsVectorX;
+            this.blockBoundsVectorY = blockBoundsVectorY;
 
             this.renderGraphics()
         }
@@ -51,29 +51,29 @@ export default class EdgeSprite extends PIXI.Container {
         const color = this.isInVirtualSelectedParentChain ? this.selectedColor : this.normalColor;
         const arrowRadius = this.isInVirtualSelectedParentChain ? this.selectedArrowRadius : this.normalArrowRadius;
 
-        // Compensate for line width in clip vectors
-        let clipVectorX = this.clipVectorX;
-        if (clipVectorX < 0) {
-            clipVectorX += lineWidth;
+        // Compensate for line width in block bounds vectors
+        let blockBoundsVectorX = this.blockBoundsVectorX;
+        if (blockBoundsVectorX < 0) {
+            blockBoundsVectorX += lineWidth;
         }
-        if (clipVectorX > 0) {
-            clipVectorX -= lineWidth;
+        if (blockBoundsVectorX > 0) {
+            blockBoundsVectorX -= lineWidth;
         }
-        let clipVectorY = this.clipVectorY;
-        if (clipVectorY < 0) {
+        let blockBoundsVectorY = this.blockBoundsVectorY;
+        if (blockBoundsVectorY < 0) {
             // noinspection JSSuspiciousNameCombination
-            clipVectorY += lineWidth;
+            blockBoundsVectorY += lineWidth;
         }
-        if (clipVectorY > 0) {
+        if (blockBoundsVectorY > 0) {
             // noinspection JSSuspiciousNameCombination
-            clipVectorY -= lineWidth;
+            blockBoundsVectorY -= lineWidth;
         }
 
         // Draw the edge
-        const fromX = clipVectorX;
-        const fromY = clipVectorY;
-        const toX = this.vectorX - clipVectorX;
-        const toY = this.vectorY - clipVectorY;
+        const fromX = blockBoundsVectorX;
+        const fromY = blockBoundsVectorY;
+        const toX = this.vectorX - blockBoundsVectorX;
+        const toY = this.vectorY - blockBoundsVectorY;
         this.currentGraphics.clear();
         this.currentGraphics.lineStyle(lineWidth, color);
         this.currentGraphics.moveTo(fromX, fromY);
