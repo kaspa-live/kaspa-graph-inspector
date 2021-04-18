@@ -26,8 +26,8 @@ server.get('/blocksBetweenHeights', async (request, response) => {
     try {
         const startHeight = parseInt(request.query.startHeight as string);
         const endHeight = parseInt(request.query.endHeight as string);
-        const blocks = await database.getBlocks(startHeight, endHeight)
-        response.send(JSON.stringify(blocks));
+        const blocksAndEdges = await database.getBlocksAndEdges(startHeight, endHeight)
+        response.send(JSON.stringify(blocksAndEdges));
         return;
     } catch (error) {
         response.status(400).send(`invalid input: ${error}`);
@@ -48,8 +48,8 @@ server.get('/head', async (request, response) => {
         if (startHeight < 0) {
             startHeight = 0;
         }
-        const blocks = await database.getBlocks(startHeight, endHeight);
-        response.send(JSON.stringify(blocks));
+        const blocksAndEdges = await database.getBlocksAndEdges(startHeight, endHeight);
+        response.send(JSON.stringify(blocksAndEdges));
         return;
     } catch (error) {
         response.status(400).send(`invalid input: ${error}`);
@@ -75,8 +75,8 @@ server.get('/blockHash', async (request, response) => {
             startHeight = 0;
         }
         const endHeight = height + heightDifference;
-        const blocks = await database.getBlocks(startHeight, endHeight);
-        response.send(JSON.stringify(blocks));
+        const blocksAndEdges = await database.getBlocksAndEdges(startHeight, endHeight);
+        response.send(JSON.stringify(blocksAndEdges));
         return;
     } catch (error) {
         response.status(400).send(`invalid input: ${error}`);

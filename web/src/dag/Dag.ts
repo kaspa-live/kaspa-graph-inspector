@@ -146,7 +146,8 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocks = await response.json();
+        const blocksAndEdges = await response.json();
+        const blocks: Block[] = blocksAndEdges.blocks;
 
         // Exit early if the track function or the target
         // height changed while we were busy fetching data
@@ -167,7 +168,8 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocks: Block[] = await response.json();
+        const blocksAndEdges = await response.json();
+        const blocks: Block[] = blocksAndEdges.blocks;
 
         // Exit early if the track function or the target
         // hash changed while we were busy fetching data
@@ -202,7 +204,8 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocks: Block[] = await response.json();
+        const blocksAndEdges = await response.json();
+        const blocks: Block[] = blocksAndEdges.blocks;
 
         // Exit early if the track function changed while we
         // were busy fetching data
