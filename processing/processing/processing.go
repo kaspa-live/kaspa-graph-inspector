@@ -72,7 +72,7 @@ func (p *Processing) insertGenesisIfRequired() error {
 	}
 	err = p.database.InsertOrUpdateHeightGroup(heightGroup)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Could not insert genesis height group")
 	}
 	return nil
 }
