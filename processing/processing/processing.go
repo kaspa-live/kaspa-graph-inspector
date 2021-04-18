@@ -105,6 +105,34 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	if err != nil {
 		return errors.Wrapf(err, "Could not insert block %s", blockHash)
 	}
+
+	blockID, err := p.database.BlockIDByHash(blockHash)
+	if err != nil {
+		return err
+	}
+	for _, parentID := range parentIDs {
+		parentHeight, err := p.database.BlockHeight(parentID)
+		if err != nil {
+			return err
+		}
+		parentHeightGroupIndex, err := p.database.BlockHeightGroupIndex(parentID)
+		if err != nil {
+			return err
+		}
+		edge := &model.Edge{
+			FromBlockID:          blockID,
+			ToBlockID:            parentID,
+			FromHeight:           blockHeight,
+			ToHeight:             parentHeight,
+			FromHeightGroupIndex: blocksWithHeightCount,
+			ToHeightGroupIndex:   parentHeightGroupIndex,
+		}
+		err = p.database.InsertOrIgnoreEdge(edge)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

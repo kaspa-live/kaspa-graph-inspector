@@ -193,6 +193,57 @@ func (db *Database) countBlocksWithHeight(height uint64) (uint32, error) {
 	return result.Count, nil
 }
 
+func (db *Database) BlockHeight(blockID uint64) (uint64, error) {
+	db.RLock()
+	defer db.RUnlock()
+
+	return db.blockHeight(blockID)
+}
+
+func (db *Database) blockHeight(blockID uint64) (uint64, error) {
+	var result struct {
+		Height uint64
+	}
+	_, err := db.database.QueryOne(&result, "SELECT height FROM blocks WHERE id = ?", blockID)
+	if err != nil {
+		return 0, err
+	}
+	return result.Height, nil
+}
+
+func (db *Database) BlockHeightGroupIndex(blockID uint64) (uint32, error) {
+	db.RLock()
+	defer db.RUnlock()
+
+	return db.blockHeightGroupIndex(blockID)
+}
+
+func (db *Database) blockHeightGroupIndex(blockID uint64) (uint32, error) {
+	var result struct {
+		HeightGroupIndex uint32
+	}
+	_, err := db.database.QueryOne(&result, "SELECT height_group_index FROM blocks WHERE id = ?", blockID)
+	if err != nil {
+		return 0, err
+	}
+	return result.HeightGroupIndex, nil
+}
+
+func (db *Database) InsertOrIgnoreEdge(edge *model.Edge) error {
+	db.Lock()
+	defer db.Unlock()
+
+	return db.insertOrIgnoreEdge(edge)
+}
+
+func (db *Database) insertOrIgnoreEdge(edge *model.Edge) error {
+	_, err := db.database.Model(edge).OnConflict("DO NOTHING").Insert()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (db *Database) Close() {
 	db.Lock()
 	defer db.Unlock()
