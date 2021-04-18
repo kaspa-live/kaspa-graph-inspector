@@ -65,6 +65,15 @@ func (p *Processing) insertGenesisIfRequired() error {
 	if err != nil {
 		return errors.Wrapf(err, "Could not insert genesis block %s", genesisHash)
 	}
+
+	heightGroup := &model.HeightGroup{
+		Height: 0,
+		Size:   1,
+	}
+	err = p.database.InsertOrUpdateHeightGroup(heightGroup)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -86,17 +95,18 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	}
 	blockHeight := highestParentHeight + 1
 
-	blocksWithHeightCount, err := p.database.CountBlocksWithHeight(blockHeight)
+	heightGroupSize, err := p.database.HeightGroupSize(blockHeight)
 	if err != nil {
 		return err
 	}
+	blockHeightGroupIndex := heightGroupSize
 
 	databaseBlock := &model.Block{
 		BlockHash:                      blockHash.String(),
 		Timestamp:                      block.Header.TimeInMilliseconds(),
 		ParentIDs:                      parentIDs,
 		Height:                         blockHeight,
-		HeightGroupIndex:               blocksWithHeightCount,
+		HeightGroupIndex:               blockHeightGroupIndex,
 		SelectedParentID:               nil,
 		Color:                          model.ColorGray,
 		IsInVirtualSelectedParentChain: false,
@@ -110,6 +120,15 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	if err != nil {
 		return err
 	}
+	heightGroup := &model.HeightGroup{
+		Height: blockHeight,
+		Size:   blockHeightGroupIndex + 1,
+	}
+	err = p.database.InsertOrUpdateHeightGroup(heightGroup)
+	if err != nil {
+		return err
+	}
+
 	for _, parentID := range parentIDs {
 		parentHeight, err := p.database.BlockHeight(parentID)
 		if err != nil {
@@ -124,7 +143,7 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 			ToBlockID:            parentID,
 			FromHeight:           blockHeight,
 			ToHeight:             parentHeight,
-			FromHeightGroupIndex: blocksWithHeightCount,
+			FromHeightGroupIndex: blockHeightGroupIndex,
 			ToHeightGroupIndex:   parentHeightGroupIndex,
 		}
 		err = p.database.InsertOrIgnoreEdge(edge)

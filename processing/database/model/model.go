@@ -26,3 +26,8 @@ type Edge struct {
 	FromHeightGroupIndex uint32 `pg:"from_height_group_index,use_zero"`
 	ToHeightGroupIndex   uint32 `pg:"to_height_group_index,use_zero"`
 }
+
+type HeightGroup struct {
+	Height uint64 `pg:"height,use_zero"`
+	Size   uint32 `pg:"size,use_zero"`
+}

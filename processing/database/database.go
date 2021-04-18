@@ -175,22 +175,22 @@ func (db *Database) highestBlockHeight(blockIDs []uint64) (uint64, error) {
 	return result.Highest, nil
 }
 
-func (db *Database) CountBlocksWithHeight(height uint64) (uint32, error) {
+func (db *Database) HeightGroupSize(height uint64) (uint32, error) {
 	db.RLock()
 	defer db.RUnlock()
 
-	return db.countBlocksWithHeight(height)
+	return db.heightGroupSize(height)
 }
 
-func (db *Database) countBlocksWithHeight(height uint64) (uint32, error) {
+func (db *Database) heightGroupSize(height uint64) (uint32, error) {
 	var result struct {
-		Count uint32
+		Size uint32
 	}
-	_, err := db.database.Query(&result, "SELECT COUNT(*) AS count FROM blocks WHERE height = ?", height)
+	_, err := db.database.Query(&result, "SELECT size FROM height_groups WHERE height = ?", height)
 	if err != nil {
 		return 0, err
 	}
-	return result.Count, nil
+	return result.Size, nil
 }
 
 func (db *Database) BlockHeight(blockID uint64) (uint64, error) {
@@ -238,6 +238,21 @@ func (db *Database) InsertOrIgnoreEdge(edge *model.Edge) error {
 
 func (db *Database) insertOrIgnoreEdge(edge *model.Edge) error {
 	_, err := db.database.Model(edge).OnConflict("DO NOTHING").Insert()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *Database) InsertOrUpdateHeightGroup(heightGroup *model.HeightGroup) error {
+	db.Lock()
+	defer db.Unlock()
+
+	return db.insertOrUpdateHeightGroup(heightGroup)
+}
+
+func (db *Database) insertOrUpdateHeightGroup(heightGroup *model.HeightGroup) error {
+	_, err := db.database.Model(heightGroup).OnConflict("(height) DO UPDATE SET size = EXCLUDED.size").Insert()
 	if err != nil {
 		return err
 	}

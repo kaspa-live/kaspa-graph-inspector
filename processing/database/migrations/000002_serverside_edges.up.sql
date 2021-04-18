@@ -11,3 +11,10 @@ CREATE TABLE edges
     to_height_group_index   INT    NOT NULL,
     PRIMARY KEY (from_block_id, to_block_id)
 );
+
+CREATE TABLE height_groups
+(
+    height BIGINT NOT NULL,
+    size   INT    NOT NULL,
+    PRIMARY KEY (height)
+);
