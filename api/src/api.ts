@@ -26,7 +26,7 @@ server.get('/blocksBetweenHeights', async (request, response) => {
     try {
         const startHeight = parseInt(request.query.startHeight as string);
         const endHeight = parseInt(request.query.endHeight as string);
-        const blocksAndEdges = await database.getBlocksAndEdges(startHeight, endHeight)
+        const blocksAndEdges = await database.getBlocksAndEdgesAndHeightGroups(startHeight, endHeight)
         response.send(JSON.stringify(blocksAndEdges));
         return;
     } catch (error) {
@@ -48,7 +48,7 @@ server.get('/head', async (request, response) => {
         if (startHeight < 0) {
             startHeight = 0;
         }
-        const blocksAndEdges = await database.getBlocksAndEdges(startHeight, endHeight);
+        const blocksAndEdges = await database.getBlocksAndEdgesAndHeightGroups(startHeight, endHeight);
         response.send(JSON.stringify(blocksAndEdges));
         return;
     } catch (error) {
@@ -75,7 +75,7 @@ server.get('/blockHash', async (request, response) => {
             startHeight = 0;
         }
         const endHeight = height + heightDifference;
-        const blocksAndEdges = await database.getBlocksAndEdges(startHeight, endHeight);
+        const blocksAndEdges = await database.getBlocksAndEdgesAndHeightGroups(startHeight, endHeight);
         response.send(JSON.stringify(blocksAndEdges));
         return;
     } catch (error) {

@@ -1,4 +1,5 @@
 import pg from "pg";
+import {Block, BlocksAndEdgesAndHeightGroups, Edge, HeightGroup} from "./model";
 
 export default class Database {
     private client: pg.Client;
@@ -8,16 +9,35 @@ export default class Database {
         this.client.connect();
     }
 
-    async getBlocksAndEdges(startHeight: number, endHeight: number): Promise<BlocksAndEdges> {
+    getBlocksAndEdgesAndHeightGroups = async (startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups> => {
         const blocks = await this.getBlocks(startHeight, endHeight);
         const edges = await this.getEdges(startHeight, endHeight);
+
+        const heights: number[] = [];
+        const heightsMap: { [height: number]: boolean } = {};
+        const addHeight = (height: number) => {
+            if (!heightsMap[height]) {
+                heightsMap[height] = true;
+                heights.push(height);
+            }
+        };
+        for (let block of blocks) {
+            addHeight(block.height);
+        }
+        for (let edge of edges) {
+            addHeight(edge.fromHeight);
+            addHeight(edge.toHeight);
+        }
+        const heightGroups = await this.getHeightGroups(heights);
+
         return {
             blocks: blocks,
             edges: edges,
-        }
+            heightGroups: heightGroups,
+        };
     }
 
-    async getBlocks(startHeight: number, endHeight: number): Promise<Block[]> {
+    getBlocks = async (startHeight: number, endHeight: number): Promise<Block[]> => {
         const result = await this.client.query('SELECT * FROM blocks ' +
             'WHERE height >= $1 AND height <= $2 ' +
             'ORDER BY height',
@@ -38,7 +58,7 @@ export default class Database {
         });
     }
 
-    async getEdges(startHeight: number, endHeight: number): Promise<Edge[]> {
+    getEdges = async (startHeight: number, endHeight: number): Promise<Edge[]> => {
         const result = await this.client.query('SELECT * FROM edges ' +
             'WHERE from_height >= $1 AND to_height <= $2 ' +
             'ORDER BY to_height',
@@ -56,7 +76,7 @@ export default class Database {
         });
     }
 
-    async getMaxHeight(): Promise<number> {
+    getMaxHeight = async (): Promise<number> => {
         const result = await this.client.query('SELECT MAX(height) AS max_height FROM blocks');
         if (result.rows.length === 0) {
             return 0;
@@ -64,38 +84,24 @@ export default class Database {
         return parseInt(result.rows[0].max_height);
     }
 
-    async getBlockHeight(blockHash: string): Promise<number> {
+    getBlockHeight = async (blockHash: string): Promise<number> => {
         const result = await this.client.query('SELECT height FROM blocks ' +
-            'WHERE block_hash = $1', [blockHash])
+            'WHERE block_hash = $1', [blockHash]);
         if (result.rows.length === 0) {
             throw new Error(`Block ${blockHash} does not exist`);
         }
         return parseInt(result.rows[0].height);
     }
-}
 
-export type BlocksAndEdges = {
-    blocks: Block[],
-    edges: Edge[],
-}
+    getHeightGroups = async (heights: number[]): Promise<HeightGroup[]> => {
+        const result = await this.client.query('SELECT * FROM height_groups ' +
+            'WHERE height = ANY ($1)', [heights]);
 
-export type Block = {
-    id: number,
-    blockHash: string,
-    timestamp: number,
-    parentIds: number[],
-    height: number,
-    heightGroupIndex: number,
-    selectedParentId: number | null,
-    color: string,
-    isInVirtualSelectedParentChain: boolean,
-};
-
-export type Edge = {
-    fromBlockId: number,
-    toBlockId: number,
-    fromHeight: number,
-    toHeight: number,
-    fromHeightGroupIndex: number,
-    toHeightGroupIndex: number,
+        return result.rows.map(item => {
+            return {
+                height: parseInt(item.height),
+                size: parseInt(item.size),
+            };
+        });
+    }
 }
