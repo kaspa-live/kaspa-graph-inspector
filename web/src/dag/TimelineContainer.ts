@@ -4,7 +4,7 @@ import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
 import {Ease, Tween} from "@createjs/tweenjs";
 import HeightSprite from "./HeightSprite";
-import {BlocksAndEdges} from "./model/BlocksAndEdges";
+import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
 import {Edge} from "./model/Edge";
 
 export default class TimelineContainer extends PIXI.Container {
@@ -50,9 +50,10 @@ export default class TimelineContainer extends PIXI.Container {
         this.addChild(this.blockContainer);
     }
 
-    setBlocksAndEdges = (blocksAndEdges: BlocksAndEdges) => {
-        const blocks = blocksAndEdges.blocks;
-        const edges = blocksAndEdges.edges;
+    setBlocksAndEdgesAndHeightGroups = (blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups) => {
+        const blocks = blocksAndEdgesAndHeightGroups.blocks;
+        const edges = blocksAndEdgesAndHeightGroups.edges;
+        const heightGroups = blocksAndEdgesAndHeightGroups.heightGroups;
 
         // Update the blocks-by-ids map with the new blocks
         this.blockIdsToBlocks = {};

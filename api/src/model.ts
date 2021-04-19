@@ -2,7 +2,7 @@ export type BlocksAndEdgesAndHeightGroups = {
     blocks: Block[],
     edges: Edge[],
     heightGroups: HeightGroup[],
-}
+};
 
 export type Block = {
     id: number,
@@ -23,9 +23,9 @@ export type Edge = {
     toHeight: number,
     fromHeightGroupIndex: number,
     toHeightGroupIndex: number,
-}
+};
 
 export type HeightGroup = {
     height: number,
     size: number,
-}
+};
