@@ -130,8 +130,8 @@ export default class BlockSprite extends PIXI.Container {
 
     // clampVectorToBounds clamps the given vector's magnitude
     // to be fully within the block's shape
-    clampVectorToBounds = (vectorX: number, vectorY: number): { blockBoundsVectorX: number, blockBoundsVectorY: number } => {
-        const halfBlockSize = this.blockSize / 2;
+    static clampVectorToBounds = (blockSize: number, vectorX: number, vectorY: number): { blockBoundsVectorX: number, blockBoundsVectorY: number } => {
+        const halfBlockSize = blockSize / 2;
 
         // Don't bother with any fancy calculations if the y
         // coordinate is exactly 0

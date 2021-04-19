@@ -237,35 +237,31 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private recalculateEdgeSpritePositions = () => {
-        const rendererWidth = this.application.renderer.width;
         const rendererHeight = this.application.renderer.height;
+        const blockSize = this.calculateBlockSize(rendererHeight);
+        const margin = this.calculateMargin(blockSize);
 
-        Object.entries(this.edgeKeysToEdgeSprites)
-            .forEach(([edgeKey, edgeSprite]) => {
-                // const fromBlockSprite = this.blockKeysToBlockSprites[edgeSprite.getFromBlockId()];
-                // const fromX = fromBlockSprite.x;
-                // const fromY = fromBlockSprite.y;
-                //
-                // let toX;
-                // let toY;
-                // if (!this.blockKeysToBlockSprites[edgeSprite.getToBlockId()]) {
-                //     // These blocks have not been loaded/fetched
-                //     // so we make up `to` values for them
-                //     toX = fromX - rendererWidth;
-                //     toY = this.calculateBlockSpriteY(i, edgeSprites.length, rendererHeight);
-                // } else {
-                //     const toBlockSprite = this.blockKeysToBlockSprites[edgeSprite.getToBlockId()];
-                //     toX = toBlockSprite.x;
-                //     toY = toBlockSprite.y;
-                // }
-                //
-                // const vectorX = toX - fromX;
-                // const vectorY = toY - fromY;
-                // const {blockBoundsVectorX, blockBoundsVectorY} = fromBlockSprite.clampVectorToBounds(vectorX, vectorY);
-                // edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
-                //
-                // edgeSprite.x = fromX;
-                // edgeSprite.y = fromY;
+        Object.entries(this.edgeKeysToEdges)
+            .forEach(([edgeKey, edge]) => {
+                const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
+
+                const toHeightKey = this.buildHeightKey(edge.toHeight);
+                const toHeightGroup = this.heightKeysToHeightGroups[toHeightKey];
+                const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
+                const toY = this.calculateBlockSpriteY(edge.toHeightGroupIndex, toHeightGroup.size, rendererHeight);
+
+                const fromHeightKey = this.buildHeightKey(edge.fromHeight);
+                const fromHeightGroup = this.heightKeysToHeightGroups[fromHeightKey];
+                const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
+                const fromY = this.calculateBlockSpriteY(edge.fromHeightGroupIndex, fromHeightGroup.size, rendererHeight);
+
+                const vectorX = toX - fromX;
+                const vectorY = toY - fromY;
+                const {blockBoundsVectorX, blockBoundsVectorY} = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
+                edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
+
+                edgeSprite.x = fromX;
+                edgeSprite.y = fromY;
             });
     }
 
