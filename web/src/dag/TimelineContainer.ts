@@ -224,22 +224,15 @@ export default class TimelineContainer extends PIXI.Container {
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
-        const heightGroupSizes: { [height: number]: number } = {};
-        Object.values(this.blockKeysToBlocks).forEach(block => {
-            if (!heightGroupSizes[block.height]) {
-                heightGroupSizes[block.height] = 0;
-            }
-            heightGroupSizes[block.height]++;
-        });
-
         Object.entries(this.blockKeysToBlocks)
             .forEach(([blockKey, block]) => {
                 const blockSprite = this.blockKeysToBlockSprites[blockKey];
                 blockSprite.setSize(blockSize);
 
-                const heightGroupSize = heightGroupSizes[block.height];
+                const heightKey = this.buildHeightKey(block.height);
+                const heightGroup = this.heightKeysToHeightGroups[heightKey];
                 blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
-                blockSprite.y = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroupSize, rendererHeight);
+                blockSprite.y = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight);
             });
     }
 
