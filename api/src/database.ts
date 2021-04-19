@@ -2,16 +2,28 @@ import pg from "pg";
 import {Block, BlocksAndEdgesAndHeightGroups, Edge, HeightGroup} from "./model";
 
 export default class Database {
-    private client: pg.Client;
+    private pool: pg.Pool;
 
     constructor() {
-        this.client = new pg.Client();
-        this.client.connect();
+        this.pool = new pg.Pool();
     }
 
-    getBlocksAndEdgesAndHeightGroups = async (startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups> => {
-        const blocks = await this.getBlocks(startHeight, endHeight);
-        const edges = await this.getEdges(startHeight, endHeight);
+    withClient = async (func: (client: pg.PoolClient) => Promise<void>) => {
+        const client = await this.pool.connect();
+        try {
+            await client.query('BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+            await func(client);
+        } catch (error) {
+            throw error
+        } finally {
+            await client.query('ROLLBACK');
+            client.release();
+        }
+    }
+
+    getBlocksAndEdgesAndHeightGroups = async (client: pg.PoolClient, startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups> => {
+        const blocks = await this.getBlocks(client, startHeight, endHeight);
+        const edges = await this.getEdges(client, startHeight, endHeight);
 
         const heights: number[] = [];
         const heightsMap: { [height: number]: boolean } = {};
@@ -28,7 +40,7 @@ export default class Database {
             addHeight(edge.fromHeight);
             addHeight(edge.toHeight);
         }
-        const heightGroups = await this.getHeightGroups(heights);
+        const heightGroups = await this.getHeightGroups(client, heights);
 
         return {
             blocks: blocks,
@@ -37,8 +49,8 @@ export default class Database {
         };
     }
 
-    getBlocks = async (startHeight: number, endHeight: number): Promise<Block[]> => {
-        const result = await this.client.query('SELECT * FROM blocks ' +
+    private getBlocks = async (client: pg.PoolClient, startHeight: number, endHeight: number): Promise<Block[]> => {
+        const result = await client.query('SELECT * FROM blocks ' +
             'WHERE height >= $1 AND height <= $2 ' +
             'ORDER BY height',
             [startHeight, endHeight]);
@@ -58,8 +70,8 @@ export default class Database {
         });
     }
 
-    getEdges = async (startHeight: number, endHeight: number): Promise<Edge[]> => {
-        const result = await this.client.query('SELECT * FROM edges ' +
+    private getEdges = async (client: pg.PoolClient, startHeight: number, endHeight: number): Promise<Edge[]> => {
+        const result = await client.query('SELECT * FROM edges ' +
             'WHERE from_height >= $1 AND to_height <= $2 ' +
             'ORDER BY to_height',
             [startHeight, endHeight]);
@@ -76,25 +88,8 @@ export default class Database {
         });
     }
 
-    getMaxHeight = async (): Promise<number> => {
-        const result = await this.client.query('SELECT MAX(height) AS max_height FROM blocks');
-        if (result.rows.length === 0) {
-            return 0;
-        }
-        return parseInt(result.rows[0].max_height);
-    }
-
-    getBlockHeight = async (blockHash: string): Promise<number> => {
-        const result = await this.client.query('SELECT height FROM blocks ' +
-            'WHERE block_hash = $1', [blockHash]);
-        if (result.rows.length === 0) {
-            throw new Error(`Block ${blockHash} does not exist`);
-        }
-        return parseInt(result.rows[0].height);
-    }
-
-    getHeightGroups = async (heights: number[]): Promise<HeightGroup[]> => {
-        const result = await this.client.query('SELECT * FROM height_groups ' +
+    private getHeightGroups = async (client: pg.PoolClient, heights: number[]): Promise<HeightGroup[]> => {
+        const result = await client.query('SELECT * FROM height_groups ' +
             'WHERE height = ANY ($1)', [heights]);
 
         return result.rows.map(item => {
@@ -103,5 +98,22 @@ export default class Database {
                 size: parseInt(item.size),
             };
         });
+    }
+
+    getMaxHeight = async (client: pg.PoolClient): Promise<number> => {
+        const result = await client.query('SELECT MAX(height) AS max_height FROM blocks');
+        if (result.rows.length === 0) {
+            return 0;
+        }
+        return parseInt(result.rows[0].max_height);
+    }
+
+    getBlockHeight = async (client: pg.PoolClient, blockHash: string): Promise<number> => {
+        const result = await client.query('SELECT height FROM blocks ' +
+            'WHERE block_hash = $1', [blockHash]);
+        if (result.rows.length === 0) {
+            throw new Error(`Block ${blockHash} does not exist`);
+        }
+        return parseInt(result.rows[0].height);
     }
 }
