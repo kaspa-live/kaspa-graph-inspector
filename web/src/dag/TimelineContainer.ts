@@ -6,6 +6,7 @@ import {Ease, Tween} from "@createjs/tweenjs";
 import HeightSprite from "./HeightSprite";
 import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
 import {Edge} from "./model/Edge";
+import {HeightGroup} from "./model/HeightGroup";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly maxBlocksPerHeightGroup = 12;
@@ -17,12 +18,13 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly edgeContainer: PIXI.Container;
     private readonly blockContainer: PIXI.Container;
 
-    private readonly heightsToHeightSprites: { [height: number]: HeightSprite } = {};
+    private readonly heightKeysToHeightSprites: { [heightKey: string]: HeightSprite } = {};
     private readonly blockKeysToBlockSprites: { [blockKey: string]: BlockSprite } = {};
     private readonly edgeKeysToEdgeSprites: { [edgeKey: string]: EdgeSprite } = {};
 
     private blockKeysToBlocks: { [key: string]: Block } = {};
     private edgeKeysToEdges: { [key: string]: Edge } = {};
+    private heightKeysToHeightGroups: { [key: string]: HeightGroup } = {};
     private targetHeight: number = 0;
 
     private blockClickedListener: (block: Block) => void;
@@ -62,22 +64,30 @@ export default class TimelineContainer extends PIXI.Container {
             this.blockKeysToBlocks[key] = block;
         }
 
-        // Update the edges-by-keys my with the new edges
+        // Update the edges-by-keys map with the new edges
         this.edgeKeysToEdges = {};
         for (let edge of edges) {
             const key = this.buildEdgeKey(edge);
             this.edgeKeysToEdges[key] = edge;
         }
 
-        // Remove no-longer relevant height sprites
-        const heightsInBlocks: { [height: number]: boolean } = {};
-        for (let block of blocks) {
-            heightsInBlocks[block.height] = true;
+        // Update the height-groups-by-keys map with the new height groups
+        this.heightKeysToHeightGroups = {};
+        for (let heightGroup of heightGroups) {
+            const key = this.buildHeightKey(heightGroup.height);
+            this.heightKeysToHeightGroups[key] = heightGroup;
         }
-        Object.entries(this.heightsToHeightSprites)
-            .filter(([height, _]) => !heightsInBlocks[parseInt(height)])
-            .forEach(([height, sprite]) => {
-                delete this.heightsToHeightSprites[parseInt(height)];
+
+        // Remove no-longer relevant height sprites
+        const heightKeysInBlocks: { [heightKey: string]: boolean } = {};
+        for (let block of blocks) {
+            const key = this.buildHeightKey(block.height);
+            heightKeysInBlocks[key] = true;
+        }
+        Object.entries(this.heightKeysToHeightSprites)
+            .filter(([heightKey, _]) => !heightKeysInBlocks[heightKey])
+            .forEach(([heightKey, sprite]) => {
+                delete this.heightKeysToHeightSprites[heightKey];
                 this.heightContainer.removeChild(sprite);
             });
 
@@ -108,13 +118,14 @@ export default class TimelineContainer extends PIXI.Container {
         }
 
         // Add new height sprites
-        Object.keys(heightsInBlocks)
-            .filter(height => !this.heightsToHeightSprites[parseInt(height)])
-            .forEach(height => {
-                // Add the height to the heightSprite-by-height map
-                const heightSprite = new HeightSprite(this.application, parseInt(height));
+        Object.keys(heightKeysInBlocks)
+            .filter(heightKey => !this.heightKeysToHeightSprites[heightKey])
+            .forEach(heightKey => {
+                // Add the height to the heightSprite-by-heightKey map
+                const heightGroup = this.heightKeysToHeightGroups[heightKey];
+                const heightSprite = new HeightSprite(this.application, heightGroup.height);
                 heightSprite.setHeightClickedListener(this.heightClickedListener);
-                this.heightsToHeightSprites[parseInt(height)] = heightSprite;
+                this.heightKeysToHeightSprites[heightKey] = heightSprite;
 
                 // Add the height sprite to the height container
                 this.heightContainer.addChild(heightSprite);
@@ -183,6 +194,10 @@ export default class TimelineContainer extends PIXI.Container {
         return `${edge.fromBlockId}-${edge.toBlockId}`;
     }
 
+    private buildHeightKey = (height: number): string => {
+        return `${height};`
+    }
+
     private recalculateSpritePositions = () => {
         this.recalculateHeightSpritePositions();
         this.recalculateBlockSpritePositions();
@@ -194,11 +209,12 @@ export default class TimelineContainer extends PIXI.Container {
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
-        Object.entries(this.heightsToHeightSprites)
-            .forEach(([height, sprite]) => {
+        Object.values(this.heightKeysToHeightSprites)
+            .forEach(sprite => {
                 sprite.setSize(blockSize + margin, rendererHeight, blockSize);
 
-                sprite.x = this.calculateBlockSpriteX(parseInt(height), blockSize, margin);
+                const height = sprite.getHeight();
+                sprite.x = this.calculateBlockSpriteX(height, blockSize, margin);
                 sprite.y = 0;
             });
     }
