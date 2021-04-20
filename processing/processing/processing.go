@@ -63,7 +63,7 @@ func (p *Processing) insertGenesisIfRequired() error {
 			Color:                          model.ColorGray,
 			IsInVirtualSelectedParentChain: true,
 		}
-		err = p.database.InsertOrIgnoreBlock(databaseTransaction, genesisHash, databaseGenesisBlock)
+		err = p.database.InsertBlock(databaseTransaction, genesisHash, databaseGenesisBlock)
 		if err != nil {
 			return errors.Wrapf(err, "Could not insert genesis block %s", genesisHash)
 		}
@@ -85,6 +85,14 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 		blockHash := consensushashing.BlockHash(block)
 		log.Debugf("Preprocessing block %s", blockHash)
 		defer log.Debugf("Finished preprocessing block %s", blockHash)
+
+		blockExists, err := p.database.DoesBlockExist(databaseTransaction, blockHash)
+		if err != nil {
+			return err
+		}
+		if blockExists {
+			return nil
+		}
 
 		parentHashes := block.Header.ParentHashes()
 		parentIDs, err := p.database.BlockIDsByHashes(databaseTransaction, parentHashes)
@@ -115,7 +123,7 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 			Color:                          model.ColorGray,
 			IsInVirtualSelectedParentChain: false,
 		}
-		err = p.database.InsertOrIgnoreBlock(databaseTransaction, blockHash, databaseBlock)
+		err = p.database.InsertBlock(databaseTransaction, blockHash, databaseBlock)
 		if err != nil {
 			return errors.Wrapf(err, "Could not insert block %s", blockHash)
 		}

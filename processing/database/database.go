@@ -40,20 +40,11 @@ func (db *Database) DoesBlockExist(databaseTransaction *pg.Tx, blockHash *extern
 	return true, nil
 }
 
-func (db *Database) InsertOrIgnoreBlock(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash, block *model.Block) error {
-	blockExists, err := db.DoesBlockExist(databaseTransaction, blockHash)
+func (db *Database) InsertBlock(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash, block *model.Block) error {
+	_, err := databaseTransaction.Model(block).Insert()
 	if err != nil {
 		return err
 	}
-	if blockExists {
-		return nil
-	}
-
-	_, err = databaseTransaction.Model(block).Insert()
-	if err != nil {
-		return err
-	}
-
 	db.blockHashesToIDs.Set(blockHash, block.ID)
 	return nil
 }
