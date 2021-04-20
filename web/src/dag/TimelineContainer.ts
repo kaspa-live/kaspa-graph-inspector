@@ -4,6 +4,9 @@ import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
 import {Ease, Tween} from "@createjs/tweenjs";
 import HeightSprite from "./HeightSprite";
+import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
+import {Edge} from "./model/Edge";
+import {HeightGroup} from "./model/HeightGroup";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly maxBlocksPerHeightGroup = 12;
@@ -15,12 +18,13 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly edgeContainer: PIXI.Container;
     private readonly blockContainer: PIXI.Container;
 
-    private readonly heightGroups: { [height: number]: number[] } = {};
-    private readonly heightsToHeightSprites: { [height: number]: HeightSprite } = {};
-    private readonly blockIdsToBlockSprites: { [id: number]: BlockSprite } = {};
-    private readonly blockIdsToEdgeSprites: { [id: number]: EdgeSprite[] } = {};
+    private readonly heightKeysToHeightSprites: { [heightKey: string]: HeightSprite } = {};
+    private readonly blockKeysToBlockSprites: { [blockKey: string]: BlockSprite } = {};
+    private readonly edgeKeysToEdgeSprites: { [edgeKey: string]: EdgeSprite } = {};
 
-    private blockIdsToBlocks: { [id: number]: Block } = {};
+    private blockKeysToBlocks: { [key: string]: Block } = {};
+    private edgeKeysToEdges: { [key: string]: Edge } = {};
+    private heightKeysToHeightGroups: { [key: string]: HeightGroup } = {};
     private targetHeight: number = 0;
 
     private blockClickedListener: (block: Block) => void;
@@ -48,82 +52,80 @@ export default class TimelineContainer extends PIXI.Container {
         this.addChild(this.blockContainer);
     }
 
-    setBlocks = (blocks: Block[]) => {
+    setBlocksAndEdgesAndHeightGroups = (blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups) => {
+        const blocks = blocksAndEdgesAndHeightGroups.blocks;
+        const edges = blocksAndEdgesAndHeightGroups.edges;
+        const heightGroups = blocksAndEdgesAndHeightGroups.heightGroups;
+
         // Update the blocks-by-ids map with the new blocks
-        this.blockIdsToBlocks = {};
+        this.blockKeysToBlocks = {};
         for (let block of blocks) {
-            this.blockIdsToBlocks[block.id] = block;
+            const key = this.buildBlockKey(block);
+            this.blockKeysToBlocks[key] = block;
         }
 
-        // Remove no-longer relevant height groups
-        const heightsInBlocks: { [height: number]: boolean } = {};
-        for (let block of blocks) {
-            heightsInBlocks[block.height] = true;
+        // Update the edges-by-keys map with the new edges
+        this.edgeKeysToEdges = {};
+        for (let edge of edges) {
+            const key = this.buildEdgeKey(edge);
+            this.edgeKeysToEdges[key] = edge;
         }
-        Object.keys(this.heightGroups)
-            .filter(height => !heightsInBlocks[parseInt(height)])
-            .forEach(height => delete this.heightGroups[parseInt(height)]);
+
+        // Update the height-groups-by-keys map with the new height groups
+        this.heightKeysToHeightGroups = {};
+        for (let heightGroup of heightGroups) {
+            const key = this.buildHeightKey(heightGroup.height);
+            this.heightKeysToHeightGroups[key] = heightGroup;
+        }
 
         // Remove no-longer relevant height sprites
-        Object.entries(this.heightsToHeightSprites)
-            .filter(([height, _]) => !heightsInBlocks[parseInt(height)])
-            .forEach(([height, sprite]) => {
-                delete this.heightsToHeightSprites[parseInt(height)];
+        const heightKeysInBlocks: { [heightKey: string]: boolean } = {};
+        for (let block of blocks) {
+            const key = this.buildHeightKey(block.height);
+            heightKeysInBlocks[key] = true;
+        }
+        Object.entries(this.heightKeysToHeightSprites)
+            .filter(([heightKey, _]) => !heightKeysInBlocks[heightKey])
+            .forEach(([heightKey, sprite]) => {
+                delete this.heightKeysToHeightSprites[heightKey];
                 this.heightContainer.removeChild(sprite);
             });
 
         // Remove no-longer relevant block sprites
-        Object.entries(this.blockIdsToBlockSprites)
-            .filter(([blockId, _]) => !this.blockIdsToBlocks[parseInt(blockId)])
-            .forEach(([blockId, sprite]) => {
-                delete this.blockIdsToBlockSprites[parseInt(blockId)];
+        Object.entries(this.blockKeysToBlockSprites)
+            .filter(([blockKey, _]) => !this.blockKeysToBlocks[blockKey])
+            .forEach(([blockKey, sprite]) => {
+                delete this.blockKeysToBlockSprites[blockKey];
                 this.blockContainer.removeChild(sprite);
             });
 
 
         // Remove no-longer relevant edge sprites
-        Object.entries(this.blockIdsToEdgeSprites)
-            .filter(([blockId, _]) => !this.blockIdsToBlocks[parseInt(blockId)])
-            .forEach(([blockId, sprites]) => {
-                delete this.blockIdsToEdgeSprites[parseInt(blockId)];
-                for (let sprite of sprites) {
-                    this.edgeContainer.removeChild(sprite);
-                }
+        Object.entries(this.edgeKeysToEdgeSprites)
+            .filter(([edgeKey, _]) => !this.edgeKeysToEdges[edgeKey])
+            .forEach(([edgeKey, sprite]) => {
+                delete this.edgeKeysToEdgeSprites[edgeKey];
+                this.edgeContainer.removeChild(sprite);
             });
 
         // Update existing block sprites
         for (let block of blocks) {
-            if (this.blockIdsToBlockSprites[block.id]) {
-                const blockSprite = this.blockIdsToBlockSprites[block.id];
+            const key = this.buildBlockKey(block);
+            if (this.blockKeysToBlockSprites[key]) {
+                const blockSprite = this.blockKeysToBlockSprites[key];
                 blockSprite.setColor(block.color);
             }
         }
 
-        // Add new blocks to their appropriate height groups
-        for (let block of blocks) {
-            if (!this.heightGroups[block.height]) {
-                this.heightGroups[block.height] = [];
-            }
-            let exists = false;
-            for (let blockId of this.heightGroups[block.height]) {
-                if (blockId === block.id) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
-                this.heightGroups[block.height].push(block.id);
-            }
-        }
-
         // Add new height sprites
-        Object.keys(heightsInBlocks)
-            .filter(height => !this.heightsToHeightSprites[parseInt(height)])
-            .forEach(height => {
-                // Add the height to the heightSprite-by-height map
-                const heightSprite = new HeightSprite(this.application, parseInt(height));
+        Object.keys(heightKeysInBlocks)
+            .filter(heightKey => !this.heightKeysToHeightSprites[heightKey])
+            .forEach(heightKey => {
+                // Add the height to the heightSprite-by-heightKey map
+                const heightGroup = this.heightKeysToHeightGroups[heightKey];
+                const heightSprite = new HeightSprite(this.application, heightGroup.height);
                 heightSprite.setHeightClickedListener(this.heightClickedListener);
-                this.heightsToHeightSprites[parseInt(height)] = heightSprite;
+                this.heightKeysToHeightSprites[heightKey] = heightSprite;
 
                 // Add the height sprite to the height container
                 this.heightContainer.addChild(heightSprite);
@@ -131,12 +133,13 @@ export default class TimelineContainer extends PIXI.Container {
 
         // Add new block sprites
         for (let block of blocks) {
-            if (!this.blockIdsToBlockSprites[block.id]) {
+            const key = this.buildBlockKey(block);
+            if (!this.blockKeysToBlockSprites[key]) {
                 // Add the block to the blockSprite-by-ID map
                 const blockSprite = new BlockSprite(this.application, block);
                 blockSprite.setColor(block.color);
                 blockSprite.setBlockClickedListener(this.blockClickedListener);
-                this.blockIdsToBlockSprites[block.id] = blockSprite;
+                this.blockKeysToBlockSprites[key] = blockSprite;
 
                 // Add the block sprite to the block container
                 this.blockContainer.addChild(blockSprite);
@@ -148,43 +151,57 @@ export default class TimelineContainer extends PIXI.Container {
         }
 
         // Update existing edge sprites
-        for (let block of blocks) {
-            if (this.blockIdsToEdgeSprites[block.id]) {
-                const edgeSprites = this.blockIdsToEdgeSprites[block.id];
-                for (let edgeSprite of edgeSprites) {
-                    if (edgeSprite.getToBlockId() === block.selectedParentId) {
-                        edgeSprite.setIsInVirtualSelectedParentChain(block.isInVirtualSelectedParentChain);
-                    }
+        for (let edge of edges) {
+            const edgeKey = this.buildEdgeKey(edge);
+            if (this.edgeKeysToEdgeSprites[edgeKey]) {
+                const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
+                const toBlock = this.blockKeysToBlocks[edge.toBlockId];
+                const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
+                if (toBlock && fromBlock) {
+                    const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
+                        && toBlock.isInVirtualSelectedParentChain;
+                    edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
                 }
             }
         }
 
         // Add new edge sprites
-        for (let block of blocks) {
-            if (!this.blockIdsToEdgeSprites[block.id]) {
-                // Create edges between the block and all its
-                // parents and add them to the appropriate
-                // collections
-                this.blockIdsToEdgeSprites[block.id] = [];
-                if (block.parentIds) {
-                    for (let parentId of block.parentIds) {
-                        const edgeSprite = new EdgeSprite(this.application, block.id, parentId);
-                        if (parentId === block.selectedParentId) {
-                            edgeSprite.setIsInVirtualSelectedParentChain(block.isInVirtualSelectedParentChain)
-                        }
-                        this.blockIdsToEdgeSprites[block.id].push(edgeSprite);
-
-                        this.edgeContainer.addChild(edgeSprite);
-
-                        // Animate the edge sprite as its created
-                        edgeSprite.alpha = 0.0;
-                        Tween.get(edgeSprite).to({alpha: 1.0}, 500);
-                    }
+        for (let edge of edges) {
+            const edgeKey = this.buildEdgeKey(edge);
+            if (!this.edgeKeysToEdgeSprites[edgeKey]) {
+                // Add the edge to the edgeSprite-by-key map
+                const edgeSprite = new EdgeSprite(this.application, edge.fromBlockId, edge.toBlockId);
+                const toBlock = this.blockKeysToBlocks[edge.toBlockId];
+                const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
+                if (toBlock && fromBlock) {
+                    const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
+                        && toBlock.isInVirtualSelectedParentChain;
+                    edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
                 }
+                this.edgeKeysToEdgeSprites[edgeKey] = edgeSprite;
+
+                // Add the edge sprite to the edge container
+                this.edgeContainer.addChild(edgeSprite);
+
+                // Animate the edge sprite as its created
+                edgeSprite.alpha = 0.0;
+                Tween.get(edgeSprite).to({alpha: 1.0}, 500);
             }
         }
 
         this.recalculateSpritePositions();
+    }
+
+    private buildBlockKey = (block: Block): string => {
+        return `${block.id}`;
+    }
+
+    private buildEdgeKey = (edge: Edge): string => {
+        return `${edge.fromBlockId}-${edge.toBlockId}`;
+    }
+
+    private buildHeightKey = (height: number): string => {
+        return `${height};`
     }
 
     private recalculateSpritePositions = () => {
@@ -198,11 +215,12 @@ export default class TimelineContainer extends PIXI.Container {
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
-        Object.entries(this.heightsToHeightSprites)
-            .forEach(([height, sprite]) => {
+        Object.values(this.heightKeysToHeightSprites)
+            .forEach(sprite => {
                 sprite.setSize(blockSize + margin, rendererHeight, blockSize);
 
-                sprite.x = this.calculateBlockSpriteX(parseInt(height), blockSize, margin);
+                const height = sprite.getHeight();
+                sprite.x = this.calculateBlockSpriteX(height, blockSize, margin);
                 sprite.y = 0;
             });
     }
@@ -212,53 +230,48 @@ export default class TimelineContainer extends PIXI.Container {
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
-        Object.values(this.heightGroups).forEach(blockIds => {
-            for (let i = 0; i < blockIds.length; i++) {
-                const blockId = blockIds[i];
-                const blockSprite = this.blockIdsToBlockSprites[blockId];
+        Object.entries(this.blockKeysToBlocks)
+            .forEach(([blockKey, block]) => {
+                const blockSprite = this.blockKeysToBlockSprites[blockKey];
                 blockSprite.setSize(blockSize);
 
-                const block = this.blockIdsToBlocks[blockId];
+                const heightKey = this.buildHeightKey(block.height);
+                const heightGroup = this.heightKeysToHeightGroups[heightKey];
                 blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
-                blockSprite.y = this.calculateBlockSpriteY(i, blockIds.length, rendererHeight);
-            }
-        });
+                blockSprite.y = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight);
+            });
     }
 
     private recalculateEdgeSpritePositions = () => {
-        const rendererWidth = this.application.renderer.width;
         const rendererHeight = this.application.renderer.height;
+        const blockSize = this.calculateBlockSize(rendererHeight);
+        const margin = this.calculateMargin(blockSize);
 
-        Object.values(this.blockIdsToEdgeSprites).forEach(edgeSprites => {
-            for (let i = 0; i < edgeSprites.length; i++) {
-                const edgeSprite = edgeSprites[i];
+        Object.entries(this.edgeKeysToEdges)
+            .forEach(([edgeKey, edge]) => {
+                const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
 
-                const fromBlockSprite = this.blockIdsToBlockSprites[edgeSprite.getFromBlockId()];
-                const fromX = fromBlockSprite.x;
-                const fromY = fromBlockSprite.y;
+                const toHeightKey = this.buildHeightKey(edge.toHeight);
+                const toHeightGroup = this.heightKeysToHeightGroups[toHeightKey];
+                const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
+                const toY = this.calculateBlockSpriteY(edge.toHeightGroupIndex, toHeightGroup.size, rendererHeight);
 
-                let toX;
-                let toY;
-                if (!this.blockIdsToBlockSprites[edgeSprite.getToBlockId()]) {
-                    // These blocks have not been loaded/fetched
-                    // so we make up `to` values for them
-                    toX = fromX - rendererWidth;
-                    toY = this.calculateBlockSpriteY(i, edgeSprites.length, rendererHeight);
-                } else {
-                    const toBlockSprite = this.blockIdsToBlockSprites[edgeSprite.getToBlockId()];
-                    toX = toBlockSprite.x;
-                    toY = toBlockSprite.y;
-                }
+                const fromHeightKey = this.buildHeightKey(edge.fromHeight);
+                const fromHeightGroup = this.heightKeysToHeightGroups[fromHeightKey];
+                const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
+                const fromY = this.calculateBlockSpriteY(edge.fromHeightGroupIndex, fromHeightGroup.size, rendererHeight);
 
                 const vectorX = toX - fromX;
                 const vectorY = toY - fromY;
-                const {blockBoundsVectorX, blockBoundsVectorY} = fromBlockSprite.clampVectorToBounds(vectorX, vectorY);
+                const {
+                    blockBoundsVectorX,
+                    blockBoundsVectorY
+                } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
                 edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
 
                 edgeSprite.x = fromX;
                 edgeSprite.y = fromY;
-            }
-        });
+            });
     }
 
     private calculateBlockSpriteY = (heightGroupIndex: number, heightGroupSize: number, rendererHeight: number): number => {

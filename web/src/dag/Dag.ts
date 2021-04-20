@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js';
 import TimelineContainer from "./TimelineContainer";
 import {Block} from "./model/Block";
 import {Ticker} from "@createjs/core";
+import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
 
 export default class Dag {
     private readonly tickInternalInMilliseconds = 1000;
@@ -146,7 +147,7 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocks = await response.json();
+        const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
 
         // Exit early if the track function or the target
         // height changed while we were busy fetching data
@@ -154,7 +155,7 @@ export default class Dag {
             return;
         }
 
-        this.timelineContainer!.setBlocks(blocks);
+        this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
     }
 
     private trackTargetHash = async () => {
@@ -167,7 +168,7 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocks: Block[] = await response.json();
+        const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
 
         // Exit early if the track function or the target
         // hash changed while we were busy fetching data
@@ -175,13 +176,13 @@ export default class Dag {
             return;
         }
 
-        for (let block of blocks) {
+        for (let block of blocksAndEdgesAndHeightGroups.blocks) {
             if (block.blockHash === targetHash) {
                 this.timelineContainer!.setTargetHeight(block.height);
                 break;
             }
         }
-        this.timelineContainer!.setBlocks(blocks);
+        this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
     }
 
     private trackHead = async () => {
@@ -202,7 +203,7 @@ export default class Dag {
         if (!response) {
             return;
         }
-        const blocks: Block[] = await response.json();
+        const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
 
         // Exit early if the track function changed while we
         // were busy fetching data
@@ -211,7 +212,7 @@ export default class Dag {
         }
 
         let maxHeight = 0;
-        for (let block of blocks) {
+        for (let block of blocksAndEdgesAndHeightGroups.blocks) {
             if (block.height > maxHeight) {
                 maxHeight = block.height;
             }
@@ -223,7 +224,7 @@ export default class Dag {
         }
 
         this.timelineContainer!.setTargetHeight(targetHeight);
-        this.timelineContainer!.setBlocks(blocks);
+        this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
     }
 
     private handleBlockClicked = (block: Block) => {

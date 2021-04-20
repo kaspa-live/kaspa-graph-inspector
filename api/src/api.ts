@@ -24,10 +24,12 @@ server.get('/blocksBetweenHeights', async (request, response) => {
     }
 
     try {
-        const startHeight = parseInt(request.query.startHeight as string);
-        const endHeight = parseInt(request.query.endHeight as string);
-        const blocks = await database.getBlocks(startHeight, endHeight)
-        response.send(JSON.stringify(blocks));
+        await database.withClient(async client => {
+            const startHeight = parseInt(request.query.startHeight as string);
+            const endHeight = parseInt(request.query.endHeight as string);
+            const blocksAndEdges = await database.getBlocksAndEdgesAndHeightGroups(client, startHeight, endHeight);
+            response.send(JSON.stringify(blocksAndEdges));
+        });
         return;
     } catch (error) {
         response.status(400).send(`invalid input: ${error}`);
@@ -42,14 +44,16 @@ server.get('/head', async (request, response) => {
     }
 
     try {
-        const heightDifference = parseInt(request.query.heightDifference as string);
-        const endHeight = await database.getMaxHeight();
-        let startHeight = endHeight - heightDifference;
-        if (startHeight < 0) {
-            startHeight = 0;
-        }
-        const blocks = await database.getBlocks(startHeight, endHeight);
-        response.send(JSON.stringify(blocks));
+        await database.withClient(async client => {
+            const heightDifference = parseInt(request.query.heightDifference as string);
+            const endHeight = await database.getMaxHeight(client);
+            let startHeight = endHeight - heightDifference;
+            if (startHeight < 0) {
+                startHeight = 0;
+            }
+            const blocksAndEdges = await database.getBlocksAndEdgesAndHeightGroups(client, startHeight, endHeight);
+            response.send(JSON.stringify(blocksAndEdges));
+        });
         return;
     } catch (error) {
         response.status(400).send(`invalid input: ${error}`);
@@ -68,15 +72,17 @@ server.get('/blockHash', async (request, response) => {
     }
 
     try {
-        const height = await database.getBlockHeight(request.query.blockHash as string);
-        const heightDifference = parseInt(request.query.heightDifference as string);
-        let startHeight = height - heightDifference;
-        if (startHeight < 0) {
-            startHeight = 0;
-        }
-        const endHeight = height + heightDifference;
-        const blocks = await database.getBlocks(startHeight, endHeight);
-        response.send(JSON.stringify(blocks));
+        await database.withClient(async client => {
+            const height = await database.getBlockHeight(client, request.query.blockHash as string);
+            const heightDifference = parseInt(request.query.heightDifference as string);
+            let startHeight = height - heightDifference;
+            if (startHeight < 0) {
+                startHeight = 0;
+            }
+            const endHeight = height + heightDifference;
+            const blocksAndEdges = await database.getBlocksAndEdgesAndHeightGroups(client, startHeight, endHeight);
+            response.send(JSON.stringify(blocksAndEdges));
+        });
         return;
     } catch (error) {
         response.status(400).send(`invalid input: ${error}`);
