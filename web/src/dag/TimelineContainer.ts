@@ -156,8 +156,11 @@ export default class TimelineContainer extends PIXI.Container {
             if (this.edgeKeysToEdgeSprites[edgeKey]) {
                 const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
                 const toBlock = this.blockKeysToBlocks[edge.toBlockId];
-                if (toBlock) {
-                    edgeSprite.setIsInVirtualSelectedParentChain(toBlock.isInVirtualSelectedParentChain);
+                const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
+                if (toBlock && fromBlock) {
+                    const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
+                        && toBlock.isInVirtualSelectedParentChain;
+                    edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
                 }
             }
         }
@@ -169,8 +172,11 @@ export default class TimelineContainer extends PIXI.Container {
                 // Add the edge to the edgeSprite-by-key map
                 const edgeSprite = new EdgeSprite(this.application, edge.fromBlockId, edge.toBlockId);
                 const toBlock = this.blockKeysToBlocks[edge.toBlockId];
-                if (toBlock) {
-                    edgeSprite.setIsInVirtualSelectedParentChain(toBlock.isInVirtualSelectedParentChain);
+                const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
+                if (toBlock && fromBlock) {
+                    const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
+                        && toBlock.isInVirtualSelectedParentChain;
+                    edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
                 }
                 this.edgeKeysToEdgeSprites[edgeKey] = edgeSprite;
 
@@ -257,7 +263,10 @@ export default class TimelineContainer extends PIXI.Container {
 
                 const vectorX = toX - fromX;
                 const vectorY = toY - fromY;
-                const {blockBoundsVectorX, blockBoundsVectorY} = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
+                const {
+                    blockBoundsVectorX,
+                    blockBoundsVectorY
+                } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
                 edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
 
                 edgeSprite.x = fromX;
