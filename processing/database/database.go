@@ -150,8 +150,8 @@ func (db *Database) BlockHeightGroupIndex(databaseTransaction *pg.Tx, blockID ui
 	return result.HeightGroupIndex, nil
 }
 
-func (db *Database) InsertOrIgnoreEdge(databaseTransaction *pg.Tx, edge *model.Edge) error {
-	_, err := databaseTransaction.Model(edge).OnConflict("DO NOTHING").Insert()
+func (db *Database) InsertEdge(databaseTransaction *pg.Tx, edge *model.Edge) error {
+	_, err := databaseTransaction.Model(edge).Insert()
 	if err != nil {
 		return err
 	}

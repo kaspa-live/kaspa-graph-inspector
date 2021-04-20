@@ -158,7 +158,7 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 				FromHeightGroupIndex: blockHeightGroupIndex,
 				ToHeightGroupIndex:   parentHeightGroupIndex,
 			}
-			err = p.database.InsertOrIgnoreEdge(databaseTransaction, edge)
+			err = p.database.InsertEdge(databaseTransaction, edge)
 			if err != nil {
 				return err
 			}
