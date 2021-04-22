@@ -120,7 +120,7 @@ export default class BlockSprite extends PIXI.Container {
 
             Tween.get(this.currentSprite)
                 .to({alpha: 1.0}, 500)
-                .call(() => this.removeChild(oldSprite));
+                .call(() => this.spriteContainer.removeChild(oldSprite));
         }
     }
 
