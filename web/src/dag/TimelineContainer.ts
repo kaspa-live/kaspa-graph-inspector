@@ -292,12 +292,18 @@ export default class TimelineContainer extends PIXI.Container {
         }
         const offsetGroupSize = (heightGroupSize * 2) + 1;
 
+        // Flip the sign for even height groups. This make it so
+        // that relations between blocks are preserved when blocks
+        // are added to an existing (and already shown) height
+        // group
+        const signMultiplier = heightGroupSize % 2 === 0 ? 1 : -1;
+
         // These equations simply position indices in the following
         // manner: 0, -1, 1, -2, 2, -3, 3...
         const centeredIndex = Math.floor((offsetGroupSize - 1) / 2)
             + (Math.ceil(offsetGroupIndex / 2) * ((-1) ** (offsetGroupIndex + 1)));
         const normalizedPosition = centeredIndex / (offsetGroupSize - 1);
-        return (normalizedPosition - 0.5) * rendererHeight;
+        return (normalizedPosition - 0.5) * rendererHeight * signMultiplier;
     }
 
     private calculateBlockSpriteX = (blockHeight: number, blockSize: number, margin: number): number => {
