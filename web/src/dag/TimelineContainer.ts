@@ -233,12 +233,21 @@ export default class TimelineContainer extends PIXI.Container {
         Object.entries(this.blockKeysToBlocks)
             .forEach(([blockKey, block]) => {
                 const blockSprite = this.blockKeysToBlockSprites[blockKey];
+                const wasBlockSpriteSizeSet = blockSprite.wasBlockSizeSet();
                 blockSprite.setSize(blockSize);
 
                 const heightKey = this.buildHeightKey(block.height);
                 const heightGroup = this.heightKeysToHeightGroups[heightKey];
                 blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
-                blockSprite.y = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight);
+
+                const targetY = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight);
+                if (blockSprite.y !== targetY) {
+                    if (!wasBlockSpriteSizeSet) {
+                        blockSprite.y = targetY;
+                    } else {
+                        Tween.get(blockSprite).to({y: targetY}, 500, Ease.quadOut);
+                    }
+                }
             });
     }
 
