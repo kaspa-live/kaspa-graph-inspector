@@ -17,8 +17,13 @@ import (
 var log = logging.Logger()
 
 func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Consensus, error) {
+	consensusConfig := &kaspadConsensus.Config{
+		Params:                          *dagParams,
+		IsArchival:                      false,
+		EnableSanityCheckPruningUTXOSet: false,
+	}
 	kaspadConsensusFactory := kaspadConsensus.NewFactory()
-	kaspadConsensusInstance, err := kaspadConsensusFactory.NewConsensus(dagParams, databaseContext, false)
+	kaspadConsensusInstance, err := kaspadConsensusFactory.NewConsensus(consensusConfig, databaseContext)
 	if err != nil {
 		return nil, err
 	}
