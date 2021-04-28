@@ -189,7 +189,7 @@ export default class TimelineContainer extends PIXI.Container {
             }
         }
 
-        this.recalculateSpritePositions();
+        this.recalculateSpritePositions(true);
     }
 
     private buildBlockKey = (blockId: number): string => {
@@ -204,9 +204,9 @@ export default class TimelineContainer extends PIXI.Container {
         return `${height};`
     }
 
-    private recalculateSpritePositions = () => {
-        this.recalculateEdgeSpritePositions();
-        this.recalculateBlockSpritePositions();
+    private recalculateSpritePositions = (animate: boolean) => {
+        this.recalculateEdgeSpritePositions(animate);
+        this.recalculateBlockSpritePositions(animate);
         this.recalculateHeightSpritePositions();
     }
 
@@ -225,7 +225,7 @@ export default class TimelineContainer extends PIXI.Container {
             });
     }
 
-    private recalculateBlockSpritePositions = () => {
+    private recalculateBlockSpritePositions = (animate: boolean) => {
         const rendererHeight = this.application.renderer.height;
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
@@ -242,7 +242,7 @@ export default class TimelineContainer extends PIXI.Container {
 
                 const targetY = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight);
                 if (blockSprite.y !== targetY) {
-                    if (!wasBlockSpriteSizeSet) {
+                    if (!wasBlockSpriteSizeSet || !animate) {
                         blockSprite.y = targetY;
                     } else {
                         Tween.get(blockSprite).to({y: targetY}, 500, Ease.quadOut);
@@ -251,7 +251,7 @@ export default class TimelineContainer extends PIXI.Container {
             });
     }
 
-    private recalculateEdgeSpritePositions = () => {
+    private recalculateEdgeSpritePositions = (animate: boolean) => {
         const rendererHeight = this.application.renderer.height;
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
@@ -270,6 +270,11 @@ export default class TimelineContainer extends PIXI.Container {
 
                 const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
                 const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
+
+                if (!animate) {
+                    this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                    return;
+                }
 
                 let previousToY = 0;
                 let previousFromY = 0;
@@ -372,7 +377,7 @@ export default class TimelineContainer extends PIXI.Container {
 
     recalculatePositions = () => {
         this.moveTimelineContainer();
-        this.recalculateSpritePositions();
+        this.recalculateSpritePositions(false);
     }
 
     private moveTimelineContainer = () => {
