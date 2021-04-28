@@ -260,27 +260,58 @@ export default class TimelineContainer extends PIXI.Container {
             .forEach(([edgeKey, edge]) => {
                 const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
 
-                const toHeightKey = this.buildHeightKey(edge.toHeight);
-                const toHeightGroup = this.heightKeysToHeightGroups[toHeightKey];
-                const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
-                const toY = this.calculateBlockSpriteY(edge.toHeightGroupIndex, toHeightGroup.size, rendererHeight);
-
                 const fromHeightKey = this.buildHeightKey(edge.fromHeight);
                 const fromHeightGroup = this.heightKeysToHeightGroups[fromHeightKey];
-                const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
                 const fromY = this.calculateBlockSpriteY(edge.fromHeightGroupIndex, fromHeightGroup.size, rendererHeight);
 
-                const vectorX = toX - fromX;
-                const vectorY = toY - fromY;
-                const {
-                    blockBoundsVectorX,
-                    blockBoundsVectorY
-                } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
-                edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
+                const toHeightKey = this.buildHeightKey(edge.toHeight);
+                const toHeightGroup = this.heightKeysToHeightGroups[toHeightKey];
+                const toY = this.calculateBlockSpriteY(edge.toHeightGroupIndex, toHeightGroup.size, rendererHeight);
 
-                edgeSprite.x = fromX;
-                edgeSprite.y = fromY;
+                const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
+                const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
+
+                // If the edgeSprite was not shown yet, simply update it
+                if (!edgeSprite.wasVectorSet()) {
+                    this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                    return;
+                }
+
+                const previousToY = edgeSprite.getToY();
+                const previousFromY = edgeSprite.y;
+
+                // Exit early if the y coordinates are exactly the same
+                if (toY === previousToY && fromY === previousFromY) {
+                    return;
+                }
+
+                // Animate the edge
+                const tween = {
+                    fromY: previousFromY,
+                    toY: previousToY,
+                };
+                const onChange = (event: any) => {
+                    const fromY = event.target.target.fromY;
+                    const toY = event.target.target.toY;
+                    this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                };
+                Tween.get(tween, {onChange: onChange}).to({fromY: fromY, toY: toY}, 500, Ease.quadOut);
             });
+    }
+
+    private updateEdgeSprite = (edgeSprite: EdgeSprite, blockSize: number, fromX: number, toX: number, fromY: number, toY: number) => {
+        const vectorX = toX - fromX;
+        const vectorY = toY - fromY;
+        const {
+            blockBoundsVectorX,
+            blockBoundsVectorY
+        } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
+
+        edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
+        edgeSprite.setToY(toY);
+
+        edgeSprite.x = fromX;
+        edgeSprite.y = fromY;
     }
 
     private calculateBlockSpriteY = (heightGroupIndex: number, heightGroupSize: number, rendererHeight: number): number => {

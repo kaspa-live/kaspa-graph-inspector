@@ -17,6 +17,8 @@ export default class EdgeSprite extends PIXI.Container {
     private vectorY: number = 0;
     private blockBoundsVectorX: number = 0;
     private blockBoundsVectorY: number = 0;
+    private isVectorInitialized: boolean = false;
+    private toY: number = 0;
     private isInVirtualSelectedParentChain: boolean = false;
     private currentGraphics: PIXI.Graphics;
 
@@ -48,6 +50,11 @@ export default class EdgeSprite extends PIXI.Container {
 
             this.renderGraphics()
         }
+        this.isVectorInitialized = true;
+    }
+
+    wasVectorSet = (): boolean => {
+        return this.isVectorInitialized;
     }
 
     private renderGraphics = () => {
@@ -93,6 +100,14 @@ export default class EdgeSprite extends PIXI.Container {
         this.currentGraphics.beginFill(color);
         this.currentGraphics.drawStar(arrowX, arrowY, 3, arrowRadius, undefined, angleRadians);
         this.currentGraphics.endFill();
+    }
+
+    setToY = (toY: number) => {
+        this.toY = toY;
+    }
+
+    getToY = (): number => {
+        return this.toY;
     }
 
     setIsInVirtualSelectedParentChain = (isInVirtualSelectedParentChain: boolean) => {
