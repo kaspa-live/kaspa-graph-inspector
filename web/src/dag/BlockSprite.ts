@@ -32,6 +32,7 @@ export default class BlockSprite extends PIXI.Container {
     private readonly textContainer: PIXI.Container;
 
     private blockSize: number = 0;
+    private isBlockSizeInitialized: boolean = false;
     private blockColor: string = "gray";
     private currentSprite: PIXI.Sprite;
     private blockClickedListener: (block: Block) => void;
@@ -105,6 +106,11 @@ export default class BlockSprite extends PIXI.Container {
             this.textContainer.removeChildren();
             this.textContainer.addChild(text);
         }
+        this.isBlockSizeInitialized = true;
+    }
+
+    wasBlockSizeSet = (): boolean => {
+        return this.isBlockSizeInitialized;
     }
 
     setColor = (color: string) => {

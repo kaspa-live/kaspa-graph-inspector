@@ -60,7 +60,7 @@ export default class TimelineContainer extends PIXI.Container {
         // Update the blocks-by-ids map with the new blocks
         this.blockKeysToBlocks = {};
         for (let block of blocks) {
-            const key = this.buildBlockKey(block);
+            const key = this.buildBlockKey(block.id);
             this.blockKeysToBlocks[key] = block;
         }
 
@@ -110,7 +110,7 @@ export default class TimelineContainer extends PIXI.Container {
 
         // Update existing block sprites
         for (let block of blocks) {
-            const key = this.buildBlockKey(block);
+            const key = this.buildBlockKey(block.id);
             if (this.blockKeysToBlockSprites[key]) {
                 const blockSprite = this.blockKeysToBlockSprites[key];
                 blockSprite.setColor(block.color);
@@ -133,7 +133,7 @@ export default class TimelineContainer extends PIXI.Container {
 
         // Add new block sprites
         for (let block of blocks) {
-            const key = this.buildBlockKey(block);
+            const key = this.buildBlockKey(block.id);
             if (!this.blockKeysToBlockSprites[key]) {
                 // Add the block to the blockSprite-by-ID map
                 const blockSprite = new BlockSprite(this.application, block);
@@ -192,8 +192,8 @@ export default class TimelineContainer extends PIXI.Container {
         this.recalculateSpritePositions();
     }
 
-    private buildBlockKey = (block: Block): string => {
-        return `${block.id}`;
+    private buildBlockKey = (blockId: number): string => {
+        return `${blockId}`;
     }
 
     private buildEdgeKey = (edge: Edge): string => {
@@ -205,9 +205,9 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private recalculateSpritePositions = () => {
-        this.recalculateHeightSpritePositions();
-        this.recalculateBlockSpritePositions();
         this.recalculateEdgeSpritePositions();
+        this.recalculateBlockSpritePositions();
+        this.recalculateHeightSpritePositions();
     }
 
     private recalculateHeightSpritePositions = () => {
@@ -233,12 +233,21 @@ export default class TimelineContainer extends PIXI.Container {
         Object.entries(this.blockKeysToBlocks)
             .forEach(([blockKey, block]) => {
                 const blockSprite = this.blockKeysToBlockSprites[blockKey];
+                const wasBlockSpriteSizeSet = blockSprite.wasBlockSizeSet();
                 blockSprite.setSize(blockSize);
 
                 const heightKey = this.buildHeightKey(block.height);
                 const heightGroup = this.heightKeysToHeightGroups[heightKey];
                 blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
-                blockSprite.y = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight);
+
+                const targetY = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight);
+                if (blockSprite.y !== targetY) {
+                    if (!wasBlockSpriteSizeSet) {
+                        blockSprite.y = targetY;
+                    } else {
+                        Tween.get(blockSprite).to({y: targetY}, 500, Ease.quadOut);
+                    }
+                }
             });
     }
 
@@ -251,27 +260,70 @@ export default class TimelineContainer extends PIXI.Container {
             .forEach(([edgeKey, edge]) => {
                 const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
 
-                const toHeightKey = this.buildHeightKey(edge.toHeight);
-                const toHeightGroup = this.heightKeysToHeightGroups[toHeightKey];
-                const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
-                const toY = this.calculateBlockSpriteY(edge.toHeightGroupIndex, toHeightGroup.size, rendererHeight);
-
                 const fromHeightKey = this.buildHeightKey(edge.fromHeight);
                 const fromHeightGroup = this.heightKeysToHeightGroups[fromHeightKey];
-                const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
                 const fromY = this.calculateBlockSpriteY(edge.fromHeightGroupIndex, fromHeightGroup.size, rendererHeight);
 
-                const vectorX = toX - fromX;
-                const vectorY = toY - fromY;
-                const {
-                    blockBoundsVectorX,
-                    blockBoundsVectorY
-                } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
-                edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
+                const toHeightKey = this.buildHeightKey(edge.toHeight);
+                const toHeightGroup = this.heightKeysToHeightGroups[toHeightKey];
+                const toY = this.calculateBlockSpriteY(edge.toHeightGroupIndex, toHeightGroup.size, rendererHeight);
 
-                edgeSprite.x = fromX;
-                edgeSprite.y = fromY;
+                const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
+                const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
+
+                let previousToY = 0;
+                let previousFromY = 0;
+                if (edgeSprite.wasVectorSet()) {
+                    previousToY = edgeSprite.getToY();
+                    previousFromY = edgeSprite.y;
+                } else {
+                    // Attempt to get the previous toY from the toBlock
+                    const toBlockKey = this.buildBlockKey(edge.toBlockId);
+                    const toBlockSprite = this.blockKeysToBlockSprites[toBlockKey];
+
+                    // toY either not available or not interesting, so don't bother
+                    // animating a transition
+                    if (!toBlockSprite || !toBlockSprite.wasBlockSizeSet() || toBlockSprite.y === toY) {
+                        this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                        return;
+                    }
+
+                    previousToY = toBlockSprite.y;
+                    previousFromY = fromY;
+                }
+
+                // Exit early if the y coordinates are exactly the same
+                if (toY === previousToY && fromY === previousFromY) {
+                    return;
+                }
+
+                // Animate the edge
+                const tween = {
+                    fromY: previousFromY,
+                    toY: previousToY,
+                };
+                const onChange = (event: any) => {
+                    const fromY = event.target.target.fromY;
+                    const toY = event.target.target.toY;
+                    this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                };
+                Tween.get(tween, {onChange: onChange}).to({fromY: fromY, toY: toY}, 500, Ease.quadOut);
             });
+    }
+
+    private updateEdgeSprite = (edgeSprite: EdgeSprite, blockSize: number, fromX: number, toX: number, fromY: number, toY: number) => {
+        const vectorX = toX - fromX;
+        const vectorY = toY - fromY;
+        const {
+            blockBoundsVectorX,
+            blockBoundsVectorY
+        } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
+
+        edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
+        edgeSprite.setToY(toY);
+
+        edgeSprite.x = fromX;
+        edgeSprite.y = fromY;
     }
 
     private calculateBlockSpriteY = (heightGroupIndex: number, heightGroupSize: number, rendererHeight: number): number => {
