@@ -60,7 +60,7 @@ export default class TimelineContainer extends PIXI.Container {
         // Update the blocks-by-ids map with the new blocks
         this.blockKeysToBlocks = {};
         for (let block of blocks) {
-            const key = this.buildBlockKey(block);
+            const key = this.buildBlockKey(block.id);
             this.blockKeysToBlocks[key] = block;
         }
 
@@ -110,7 +110,7 @@ export default class TimelineContainer extends PIXI.Container {
 
         // Update existing block sprites
         for (let block of blocks) {
-            const key = this.buildBlockKey(block);
+            const key = this.buildBlockKey(block.id);
             if (this.blockKeysToBlockSprites[key]) {
                 const blockSprite = this.blockKeysToBlockSprites[key];
                 blockSprite.setColor(block.color);
@@ -133,7 +133,7 @@ export default class TimelineContainer extends PIXI.Container {
 
         // Add new block sprites
         for (let block of blocks) {
-            const key = this.buildBlockKey(block);
+            const key = this.buildBlockKey(block.id);
             if (!this.blockKeysToBlockSprites[key]) {
                 // Add the block to the blockSprite-by-ID map
                 const blockSprite = new BlockSprite(this.application, block);
@@ -192,8 +192,8 @@ export default class TimelineContainer extends PIXI.Container {
         this.recalculateSpritePositions();
     }
 
-    private buildBlockKey = (block: Block): string => {
-        return `${block.id}`;
+    private buildBlockKey = (blockId: number): string => {
+        return `${blockId}`;
     }
 
     private buildEdgeKey = (edge: Edge): string => {
@@ -205,9 +205,9 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private recalculateSpritePositions = () => {
-        this.recalculateHeightSpritePositions();
-        this.recalculateBlockSpritePositions();
         this.recalculateEdgeSpritePositions();
+        this.recalculateBlockSpritePositions();
+        this.recalculateHeightSpritePositions();
     }
 
     private recalculateHeightSpritePositions = () => {
@@ -271,14 +271,26 @@ export default class TimelineContainer extends PIXI.Container {
                 const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
                 const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
 
-                // If the edgeSprite was not shown yet, simply update it
-                if (!edgeSprite.wasVectorSet()) {
-                    this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
-                    return;
-                }
+                let previousToY = 0;
+                let previousFromY = 0;
+                if (edgeSprite.wasVectorSet()) {
+                    previousToY = edgeSprite.getToY();
+                    previousFromY = edgeSprite.y;
+                } else {
+                    // Attempt to get the previous toY from the toBlock
+                    const toBlockKey = this.buildBlockKey(edge.toBlockId);
+                    const toBlockSprite = this.blockKeysToBlockSprites[toBlockKey];
 
-                const previousToY = edgeSprite.getToY();
-                const previousFromY = edgeSprite.y;
+                    // toY either not available or not interesting, so don't bother
+                    // animating a transition
+                    if (!toBlockSprite || !toBlockSprite.wasBlockSizeSet() || toBlockSprite.y === toY) {
+                        this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                        return;
+                    }
+
+                    previousToY = toBlockSprite.y;
+                    previousFromY = fromY;
+                }
 
                 // Exit early if the y coordinates are exactly the same
                 if (toY === previousToY && fromY === previousFromY) {
