@@ -68,7 +68,7 @@ export default class Dag {
         if (!apiAddress) {
             throw new Error("The REACT_APP_API_ADDRESS environment variable is required");
         }
-        return apiAddress;
+        return `${window.location.protocol}//${apiAddress}`;
     }
 
     private resolveKatnipAddress = (): string => {
@@ -76,7 +76,7 @@ export default class Dag {
         if (!katnipAddress) {
             throw new Error("The REACT_APP_KATNIP_ADDRESS environment variable is required");
         }
-        return katnipAddress;
+        return `${window.location.protocol}//${katnipAddress}`;
     }
 
     private resizeIfRequired = () => {
@@ -141,7 +141,7 @@ export default class Dag {
         this.timelineContainer!.setTargetHeight(targetHeight);
 
         const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
-        const response = await this.fetch(`http://${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
+        const response = await this.fetch(`${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
 
         // Exit early if the request failed
         if (!response) {
@@ -162,7 +162,7 @@ export default class Dag {
         const targetHash = this.targetHash as string;
 
         const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
-        const response = await this.fetch(`http://${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
+        const response = await this.fetch(`${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
 
         // Exit early if the request failed
         if (!response) {
@@ -197,7 +197,7 @@ export default class Dag {
 
         const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
 
-        const response = await this.fetch(`http://${this.apiAddress}/head?heightDifference=${heightDifference}`);
+        const response = await this.fetch(`${this.apiAddress}/head?heightDifference=${heightDifference}`);
 
         // Exit early if the request failed
         if (!response) {
@@ -233,7 +233,7 @@ export default class Dag {
             this.setStateTrackTargetBlock(block);
             return;
         }
-        window.open(`http://${this.katnipAddress}/#/block/${block.blockHash}`, "'_blank'");
+        window.open(`${this.katnipAddress}/#/block/${block.blockHash}`, "'_blank'");
     }
 
     private handleHeightClicked = (height: number) => {
