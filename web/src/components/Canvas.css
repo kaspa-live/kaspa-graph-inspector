@@ -1,6 +1,5 @@
 .canvas {
     position: absolute;
     width: 100vw;
-    height: calc(100vh - 64px);
-    margin-top: 64px;
+    height: 100vh;
 }

@@ -1,15 +1,28 @@
 import './App.css';
 import Canvas from "./components/Canvas";
-import Header from "./components/Header";
 import {createMuiTheme, ThemeProvider} from '@material-ui/core';
 import Dag from "./dag/Dag";
+import {useState} from "react";
+import ConnectionIssuesIndicator from "./components/ConnectionIssuesIndicator";
+import TrackButton from "./components/TrackButton";
 
 const App = () => {
+    const [isTrackingState, setTrackingState] = useState(true);
+    const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
+
+    dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
+    dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
+
     return (
         <ThemeProvider theme={theme}>
             <div className="container">
-                <Header dag={dag}/>
                 <Canvas dag={dag}/>
+                <div className="track-button-container">
+                    {isTrackingState ? undefined : <TrackButton onClick={() => dag.setStateTrackHead()}/>}
+                </div>
+                <div className="connection-issue-indicator-container">
+                    {isHavingConnectionIssuesState ? <ConnectionIssuesIndicator/> : undefined}
+                </div>
             </div>
         </ThemeProvider>
     );
