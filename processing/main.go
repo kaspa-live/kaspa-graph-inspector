@@ -1,12 +1,12 @@
 package main
 
 import (
+	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
+	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
+	processingPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/processing"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	databasePackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/database"
-	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
-	kaspadPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad"
-	processingPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/processing"
 	"os"
 	"time"
 )

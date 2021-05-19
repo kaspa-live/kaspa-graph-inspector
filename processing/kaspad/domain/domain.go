@@ -1,13 +1,13 @@
 package domain
 
 import (
+	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/mining_manager"
 	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/dagconfig"
 	"github.com/kaspanet/kaspad/domain/miningmanager"
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
-	consensusPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain/consensus"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain/mining_manager"
 )
 
 func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domain, error) {

@@ -113,3 +113,11 @@ func (c *Consensus) GetBlockRelations(blockHash *externalapi.DomainHash) (
 
 	return c.kaspadConsensus.GetBlockRelations(blockHash)
 }
+
+func (c *Consensus) GetBlockEvenIfHeaderOnly(blockHash *externalapi.DomainHash) (*externalapi.DomainBlock, error) {
+	return c.kaspadConsensus.GetBlockEvenIfHeaderOnly(blockHash)
+}
+
+func (c *Consensus) EstimateNetworkHashesPerSecond(windowSize int) (uint64, error) {
+	return c.kaspadConsensus.EstimateNetworkHashesPerSecond(windowSize)
+}

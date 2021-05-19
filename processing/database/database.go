@@ -3,9 +3,9 @@ package database
 import (
 	"context"
 	"github.com/go-pg/pg/v10"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/model"
 	"sync"
 )
 

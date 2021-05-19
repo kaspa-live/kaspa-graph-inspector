@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/go-pg/pg/extra/pgdebug"
 	"github.com/go-pg/pg/v10"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	"github.com/pkg/errors"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
 	"strings"
 )
 

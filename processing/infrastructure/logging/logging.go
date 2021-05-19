@@ -1,8 +1,8 @@
 package logging
 
 import (
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspanet/kaspad/infrastructure/logger"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
 	"path/filepath"
 )
 

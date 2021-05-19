@@ -1,6 +1,8 @@
 package consensus
 
 import (
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/processing_errors"
 	kaspadConsensus "github.com/kaspanet/kaspad/domain/consensus"
 	consensusDatabase "github.com/kaspanet/kaspad/domain/consensus/database"
 	"github.com/kaspanet/kaspad/domain/consensus/datastructures/ghostdagdatastore"
@@ -10,8 +12,6 @@ import (
 	"github.com/kaspanet/kaspad/domain/dagconfig"
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
 	"github.com/pkg/errors"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/processing_errors"
 )
 
 var log = logging.Logger()
@@ -77,7 +77,7 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock) (*ext
 		return nil, err
 	}
 	if receivedOrphanBlock {
-		return nil, errors.Errorf("Expected orphan block %s was " +
+		return nil, errors.Errorf("Expected orphan block %s was "+
 			"successfully added to the consensus", consensushashing.BlockHash(block))
 	}
 

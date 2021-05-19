@@ -1,6 +1,11 @@
 package kaspad
 
 import (
+	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/database"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	domainPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain"
+	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 	"github.com/kaspanet/kaspad/app/appmessage"
 	"github.com/kaspanet/kaspad/app/protocol"
 	"github.com/kaspanet/kaspad/domain/consensus/model"
@@ -11,11 +16,6 @@ import (
 	"github.com/kaspanet/kaspad/infrastructure/network/dnsseed"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter/router"
-	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/database"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
-	domainPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain"
-	consensusPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 	"net"
 )
 
@@ -100,7 +100,7 @@ func (k *Kaspad) seedFromDNS() {
 			_ = k.addressManager.AddAddresses(addresses...)
 		})
 
-	dnsseed.SeedFromGRPC(k.config.NetParams(), k.config.GRPCSeed,  false, nil,
+	dnsseed.SeedFromGRPC(k.config.NetParams(), k.config.GRPCSeed, false, nil,
 		func(addresses []*appmessage.NetAddress) {
 			_ = k.addressManager.AddAddresses(addresses...)
 		})

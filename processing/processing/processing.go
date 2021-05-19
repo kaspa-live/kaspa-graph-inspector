@@ -2,15 +2,15 @@ package processing
 
 import (
 	"github.com/go-pg/pg/v10"
+	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/model"
+	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/processing_errors"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/pkg/errors"
-	databasePackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/database"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/database/model"
-	configPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/config"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/infrastructure/logging"
-	kaspadPackage "github.com/stasatdaglabs/kaspa-graph-inspector/processing/kaspad"
-	"github.com/stasatdaglabs/kaspa-graph-inspector/processing/processing_errors"
 )
 
 var log = logging.Logger()
