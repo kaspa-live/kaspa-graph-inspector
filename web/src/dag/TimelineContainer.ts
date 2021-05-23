@@ -160,10 +160,14 @@ export default class TimelineContainer extends PIXI.Container {
                 const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
                 const toBlock = this.blockKeysToBlocks[edge.toBlockId];
                 const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
-                if (toBlock && fromBlock) {
-                    const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
-                        && toBlock.isInVirtualSelectedParentChain;
-                    edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
+                if (fromBlock) {
+                    edgeSprite.setIsSelectedParent(fromBlock.selectedParentId === edge.toBlockId);
+                    if (toBlock) {
+                        const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
+                            && toBlock.isInVirtualSelectedParentChain;
+                        edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
+
+                    }
                 }
                 edgeSprite.setHighlightedParent(this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
                 edgeSprite.setHighlightedChild(this.buildBlockKey(edge.toBlockId) === targetBlockKey);
@@ -178,10 +182,14 @@ export default class TimelineContainer extends PIXI.Container {
                 const edgeSprite = new EdgeSprite(this.application, edge.fromBlockId, edge.toBlockId);
                 const toBlock = this.blockKeysToBlocks[edge.toBlockId];
                 const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
-                if (toBlock && fromBlock) {
-                    const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
-                        && toBlock.isInVirtualSelectedParentChain;
-                    edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
+                if (fromBlock) {
+                    edgeSprite.setIsSelectedParent(fromBlock.selectedParentId === edge.toBlockId);
+                    if (toBlock) {
+                        const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
+                            && toBlock.isInVirtualSelectedParentChain;
+                        edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
+
+                    }
                 }
                 edgeSprite.setHighlightedParent(this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
                 edgeSprite.setHighlightedChild(this.buildBlockKey(edge.toBlockId) === targetBlockKey);
