@@ -30,6 +30,7 @@ export default class BlockSprite extends PIXI.Container {
     private readonly block: Block;
     private readonly spriteContainer: PIXI.Container;
     private readonly textContainer: PIXI.Container;
+    private readonly highlightContainer: PIXI.Container;
 
     private blockSize: number = 0;
     private isBlockSizeInitialized: boolean = false;
@@ -52,6 +53,9 @@ export default class BlockSprite extends PIXI.Container {
 
         this.textContainer = new PIXI.Container();
         this.addChild(this.textContainer);
+
+        this.highlightContainer = new PIXI.Container();
+        this.addChild(this.highlightContainer);
 
         this.currentSprite = this.buildSprite();
         this.spriteContainer.addChild(this.currentSprite);
@@ -97,6 +101,18 @@ export default class BlockSprite extends PIXI.Container {
         return text;
     }
 
+    private buildHighlight = (blockSize: number): PIXI.Graphics => {
+        const highlightOffset = 9;
+        const highlightSize = blockSize + highlightOffset;
+        const highlightRoundingRadius = blockRoundingRadius + (highlightOffset / 2);
+
+        const graphics = new PIXI.Graphics();
+        graphics.lineStyle(3, 0xaaaaaa);
+        graphics.drawRoundedRect(0, 0, highlightSize, highlightSize, highlightRoundingRadius);
+        graphics.position.set(-highlightSize / 2, -highlightSize / 2);
+        return graphics;
+    }
+
     setSize = (blockSize: number) => {
         if (!this.currentSprite.texture || this.blockSize !== blockSize) {
             this.blockSize = blockSize;
@@ -105,6 +121,10 @@ export default class BlockSprite extends PIXI.Container {
             const text = this.buildText(blockSize);
             this.textContainer.removeChildren();
             this.textContainer.addChild(text);
+
+            const highlight = this.buildHighlight(blockSize);
+            this.highlightContainer.removeChildren();
+            this.highlightContainer.addChild(highlight);
         }
         this.isBlockSizeInitialized = true;
     }
