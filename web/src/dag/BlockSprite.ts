@@ -35,6 +35,7 @@ export default class BlockSprite extends PIXI.Container {
     private blockSize: number = 0;
     private isBlockSizeInitialized: boolean = false;
     private blockColor: string = "gray";
+    private isHighlighted: boolean = false;
     private currentSprite: PIXI.Sprite;
     private blockClickedListener: (block: Block) => void;
 
@@ -55,6 +56,7 @@ export default class BlockSprite extends PIXI.Container {
         this.addChild(this.textContainer);
 
         this.highlightContainer = new PIXI.Container();
+        this.highlightContainer.alpha = 0.0;
         this.addChild(this.highlightContainer);
 
         this.currentSprite = this.buildSprite();
@@ -147,6 +149,16 @@ export default class BlockSprite extends PIXI.Container {
             Tween.get(this.currentSprite)
                 .to({alpha: 1.0}, 500)
                 .call(() => this.spriteContainer.removeChild(oldSprite));
+        }
+    }
+
+    setHighlighted = (isHighlighted: boolean) => {
+        if (this.isHighlighted !== isHighlighted) {
+            this.isHighlighted = isHighlighted;
+
+            const toAlpha = this.isHighlighted ? 1.0 : 0.0;
+            Tween.get(this.highlightContainer)
+                .to({alpha: toAlpha}, 300);
         }
     }
 

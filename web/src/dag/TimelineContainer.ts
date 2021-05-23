@@ -56,6 +56,7 @@ export default class TimelineContainer extends PIXI.Container {
         const blocks = blocksAndEdgesAndHeightGroups.blocks;
         const edges = blocksAndEdgesAndHeightGroups.edges;
         const heightGroups = blocksAndEdgesAndHeightGroups.heightGroups;
+        const targetBlockKey = targetBlock ? this.buildBlockKey(targetBlock.id) : null;
 
         // Update the blocks-by-ids map with the new blocks
         this.blockKeysToBlocks = {};
@@ -114,6 +115,7 @@ export default class TimelineContainer extends PIXI.Container {
             if (this.blockKeysToBlockSprites[key]) {
                 const blockSprite = this.blockKeysToBlockSprites[key];
                 blockSprite.setColor(block.color);
+                blockSprite.setHighlighted(key === targetBlockKey);
             }
         }
 
@@ -138,6 +140,7 @@ export default class TimelineContainer extends PIXI.Container {
                 // Add the block to the blockSprite-by-ID map
                 const blockSprite = new BlockSprite(this.application, block);
                 blockSprite.setColor(block.color);
+                blockSprite.setHighlighted(key === targetBlockKey);
                 blockSprite.setBlockClickedListener(this.blockClickedListener);
                 this.blockKeysToBlockSprites[key] = blockSprite;
 
