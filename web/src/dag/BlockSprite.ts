@@ -104,12 +104,12 @@ export default class BlockSprite extends PIXI.Container {
     }
 
     private buildHighlight = (blockSize: number): PIXI.Graphics => {
-        const highlightOffset = 9;
+        const highlightOffset = 11;
         const highlightSize = blockSize + highlightOffset;
         const highlightRoundingRadius = blockRoundingRadius + (highlightOffset / 2);
 
         const graphics = new PIXI.Graphics();
-        graphics.lineStyle(3, 0xaaaaaa);
+        graphics.lineStyle(5, 0x49849e);
         graphics.drawRoundedRect(0, 0, highlightSize, highlightSize, highlightRoundingRadius);
         graphics.position.set(-highlightSize / 2, -highlightSize / 2);
         return graphics;
