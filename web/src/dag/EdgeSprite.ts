@@ -3,11 +3,11 @@ import {Tween} from "@createjs/tweenjs";
 
 export default class EdgeSprite extends PIXI.Container {
     private readonly normalDefinition = new EdgeGraphicsDefinition(0xaaaaaa, 2, 4);
-    private readonly selectedDefinition = new EdgeGraphicsDefinition(0xb4cfed, 4, 6);
-    private readonly highlightedParentDefinition = new EdgeGraphicsDefinition(0xff0000, 4, 6);
-    private readonly highlightedChildDefinition = new EdgeGraphicsDefinition(0x00ff00, 4, 6);
-    private readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(0xffff00, 6, 8);
-    private readonly highlightedSelectedChildDefinition = new EdgeGraphicsDefinition(0x00ffff, 6, 8);
+    private readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0xb4cfed, 4, 6);
+    private readonly highlightedParentDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
+    private readonly highlightedChildDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
+    private readonly highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
+    private readonly highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
 
     private readonly application: PIXI.Application;
     private readonly fromBlockId: number;
@@ -34,11 +34,11 @@ export default class EdgeSprite extends PIXI.Container {
         this.toBlockId = toBlockId;
 
         this.definitionMap[this.normalDefinition.key()] = this.normalDefinition;
-        this.definitionMap[this.selectedDefinition.key()] = this.selectedDefinition;
+        this.definitionMap[this.inVirtualSelectedParentChainDefinition.key()] = this.inVirtualSelectedParentChainDefinition;
         this.definitionMap[this.highlightedParentDefinition.key()] = this.highlightedParentDefinition;
         this.definitionMap[this.highlightedChildDefinition.key()] = this.highlightedChildDefinition;
-        this.definitionMap[this.highlightedSelectedParentDefinition.key()] = this.highlightedSelectedParentDefinition;
-        this.definitionMap[this.highlightedSelectedChildDefinition.key()] = this.highlightedSelectedChildDefinition;
+        this.definitionMap[this.highlightedParentInVirtualSelectedParentChainDefinition.key()] = this.highlightedParentInVirtualSelectedParentChainDefinition;
+        this.definitionMap[this.highlightedChildInVirtualSelectedParentChainDefinition.key()] = this.highlightedChildInVirtualSelectedParentChainDefinition;
 
         for (let definitionKey in this.definitionMap) {
             this.graphicsMap[definitionKey] = this.addNewGraphics();
@@ -155,11 +155,11 @@ export default class EdgeSprite extends PIXI.Container {
         let definition;
         if (this.isInVirtualSelectedParentChain) {
             if (this.isHighlightedParent) {
-                definition = this.highlightedSelectedParentDefinition;
+                definition = this.highlightedParentInVirtualSelectedParentChainDefinition;
             } else if (this.isHighlightedChild) {
-                definition = this.highlightedSelectedChildDefinition;
+                definition = this.highlightedChildInVirtualSelectedParentChainDefinition;
             } else {
-                definition = this.selectedDefinition;
+                definition = this.inVirtualSelectedParentChainDefinition;
             }
         } else {
             if (this.isHighlightedParent) {
