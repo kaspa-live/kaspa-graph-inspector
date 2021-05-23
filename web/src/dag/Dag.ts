@@ -176,13 +176,24 @@ export default class Dag {
             return;
         }
 
+        let targetBlock = null;
         for (let block of blocksAndEdgesAndHeightGroups.blocks) {
             if (block.blockHash === targetHash) {
-                this.timelineContainer!.setTargetHeight(block.height);
+                targetBlock = block;
                 break;
             }
         }
-        this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
+
+        // If we didn't find the target block in the response
+        // something funny is going on. Print a warning and
+        // exit
+        if (!targetBlock) {
+            console.error(`Block ${targetHash} not found in blockHash response ${response}`);
+            return;
+        }
+
+        this.timelineContainer!.setTargetHeight(targetBlock.height);
+        this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups, targetBlock);
     }
 
     private trackHead = async () => {

@@ -52,7 +52,7 @@ export default class TimelineContainer extends PIXI.Container {
         this.addChild(this.blockContainer);
     }
 
-    setBlocksAndEdgesAndHeightGroups = (blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups) => {
+    setBlocksAndEdgesAndHeightGroups = (blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups, targetBlock: Block | null = null) => {
         const blocks = blocksAndEdgesAndHeightGroups.blocks;
         const edges = blocksAndEdgesAndHeightGroups.edges;
         const heightGroups = blocksAndEdgesAndHeightGroups.heightGroups;
