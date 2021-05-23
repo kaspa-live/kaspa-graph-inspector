@@ -2,12 +2,12 @@ import * as PIXI from "pixi.js";
 import {Tween} from "@createjs/tweenjs";
 
 export default class EdgeSprite extends PIXI.Container {
-    private readonly normalColor = 0xaaaaaa;
-    private readonly normalLineWidth = 2;
-    private readonly normalArrowRadius = 4;
-    private readonly selectedColor = 0xb4cfed;
-    private readonly selectedLineWidth = 4;
-    private readonly selectedArrowRadius = 6;
+    private readonly normalDefinition = new EdgeGraphicsDefinition(0xaaaaaa, 2, 4);
+    private readonly selectedDefinition = new EdgeGraphicsDefinition(0xb4cfed, 4, 6);
+    private readonly highlightedParentDefinition = new EdgeGraphicsDefinition(0xff0000, 4, 6);
+    private readonly highlightedChildDefinition = new EdgeGraphicsDefinition(0x00ff00, 4, 6);
+    private readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(0xffff00, 6, 8);
+    private readonly highlightedSelectedChildDefinition = new EdgeGraphicsDefinition(0x00ffff, 6, 8);
 
     private readonly application: PIXI.Application;
     private readonly fromBlockId: number;
@@ -20,8 +20,11 @@ export default class EdgeSprite extends PIXI.Container {
     private isVectorInitialized: boolean = false;
     private toY: number = 0;
     private isInVirtualSelectedParentChain: boolean = false;
-    private normalGraphics: PIXI.Graphics;
-    private selectedGraphics: PIXI.Graphics;
+    private isHighlightedParent: boolean = false;
+    private isHighlightedChild: boolean = false;
+
+    private definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = {};
+    private graphicsMap: { [definitionKey: string]: PIXI.Graphics } = {};
 
     constructor(application: PIXI.Application, fromBlockId: number, toBlockId: number) {
         super();
@@ -30,12 +33,24 @@ export default class EdgeSprite extends PIXI.Container {
         this.fromBlockId = fromBlockId;
         this.toBlockId = toBlockId;
 
-        this.normalGraphics = new PIXI.Graphics();
-        this.addChild(this.normalGraphics);
+        this.definitionMap[this.normalDefinition.key()] = this.normalDefinition;
+        this.definitionMap[this.selectedDefinition.key()] = this.selectedDefinition;
+        this.definitionMap[this.highlightedParentDefinition.key()] = this.highlightedParentDefinition;
+        this.definitionMap[this.highlightedChildDefinition.key()] = this.highlightedChildDefinition;
+        this.definitionMap[this.highlightedSelectedParentDefinition.key()] = this.highlightedSelectedParentDefinition;
+        this.definitionMap[this.highlightedSelectedChildDefinition.key()] = this.highlightedSelectedChildDefinition;
 
-        this.selectedGraphics = new PIXI.Graphics();
-        this.selectedGraphics.alpha = 0.0;
-        this.addChild(this.selectedGraphics);
+        for (let definitionKey in this.definitionMap) {
+            this.graphicsMap[definitionKey] = this.addNewGraphics();
+        }
+        this.graphicsMap[this.normalDefinition.key()].alpha = 1.0;
+    }
+
+    private addNewGraphics = (): PIXI.Graphics => {
+        const graphics = new PIXI.Graphics();
+        graphics.alpha = 0.0;
+        this.addChild(graphics);
+        return graphics;
     }
 
     setVector = (vectorX: number, vectorY: number, blockBoundsVectorX: number, blockBoundsVectorY: number) => {
@@ -49,8 +64,11 @@ export default class EdgeSprite extends PIXI.Container {
             this.blockBoundsVectorX = blockBoundsVectorX;
             this.blockBoundsVectorY = blockBoundsVectorY;
 
-            this.renderGraphics(this.normalGraphics, false);
-            this.renderGraphics(this.selectedGraphics, true);
+            for (let definitionKey in this.definitionMap) {
+                const definition = this.definitionMap[definitionKey];
+                const graphics = this.graphicsMap[definitionKey];
+                this.renderGraphics(graphics, definition);
+            }
         }
         this.isVectorInitialized = true;
     }
@@ -59,10 +77,10 @@ export default class EdgeSprite extends PIXI.Container {
         return this.isVectorInitialized;
     }
 
-    private renderGraphics = (graphics: PIXI.Graphics, isSelectedGraphics: boolean) => {
-        const lineWidth = isSelectedGraphics ? this.selectedLineWidth : this.normalLineWidth;
-        const color = isSelectedGraphics ? this.selectedColor : this.normalColor;
-        const arrowRadius = isSelectedGraphics ? this.selectedArrowRadius : this.normalArrowRadius;
+    private renderGraphics = (graphics: PIXI.Graphics, definition: EdgeGraphicsDefinition) => {
+        const lineWidth = definition.lineWidth;
+        const color = definition.color;
+        const arrowRadius = definition.arrowRadius;
 
         // Compensate for line width in block bounds vectors
         let blockBoundsVectorX = this.blockBoundsVectorX;
@@ -115,12 +133,57 @@ export default class EdgeSprite extends PIXI.Container {
     setIsInVirtualSelectedParentChain = (isInVirtualSelectedParentChain: boolean) => {
         if (this.isInVirtualSelectedParentChain !== isInVirtualSelectedParentChain) {
             this.isInVirtualSelectedParentChain = isInVirtualSelectedParentChain;
+            this.resolveShownGraphics();
+        }
+    }
 
-            const targetNormalAlpha = isInVirtualSelectedParentChain ? 0.0 : 1.0;
-            Tween.get(this.normalGraphics).to({alpha: targetNormalAlpha}, 500);
+    setHighlightedParent = (isHighlightedParent: boolean) => {
+        if (this.isHighlightedParent !== isHighlightedParent) {
+            this.isHighlightedParent = isHighlightedParent;
+            this.resolveShownGraphics();
+        }
+    }
 
-            const targetSelectedAlpha = isInVirtualSelectedParentChain ? 1.0 : 0.0;
-            Tween.get(this.selectedGraphics).to({alpha: targetSelectedAlpha}, 500);
+    setHighlightedChild = (isHighlightedChild: boolean) => {
+        if (this.isHighlightedChild !== isHighlightedChild) {
+            this.isHighlightedChild = isHighlightedChild;
+            this.resolveShownGraphics();
+        }
+    }
+
+    private resolveShownGraphics = () => {
+        let definition;
+        if (this.isInVirtualSelectedParentChain) {
+            if (this.isHighlightedParent) {
+                definition = this.highlightedSelectedParentDefinition;
+            } else if (this.isHighlightedChild) {
+                definition = this.highlightedSelectedChildDefinition;
+            } else {
+                definition = this.selectedDefinition;
+            }
+        } else {
+            if (this.isHighlightedParent) {
+                definition = this.highlightedParentDefinition;
+            } else if (this.isHighlightedChild) {
+                definition = this.highlightedChildDefinition;
+            } else {
+                definition = this.normalDefinition;
+            }
+        }
+        this.changeShownGraphics(definition);
+    }
+
+    private changeShownGraphics = (targetDefinition: EdgeGraphicsDefinition) => {
+        const targetKey = targetDefinition.key();
+        const targetGraphics = this.graphicsMap[targetKey];
+        Tween.get(targetGraphics).to({alpha: 1.0}, 500);
+
+        for (let definitionKey in this.graphicsMap) {
+            if (targetKey === definitionKey) {
+                continue;
+            }
+            const graphics = this.graphicsMap[definitionKey];
+            Tween.get(graphics).to({alpha: 0.0}, 500);
         }
     }
 
@@ -130,5 +193,21 @@ export default class EdgeSprite extends PIXI.Container {
 
     getToBlockId = (): number => {
         return this.toBlockId;
+    }
+}
+
+class EdgeGraphicsDefinition {
+    readonly color;
+    readonly lineWidth;
+    readonly arrowRadius;
+
+    constructor(color: number, lineWidth: number, arrowRadius: number) {
+        this.color = color;
+        this.lineWidth = lineWidth;
+        this.arrowRadius = arrowRadius;
+    }
+
+    key = (): string => {
+        return `${this.color}-${this.lineWidth}-${this.arrowRadius}`
     }
 }

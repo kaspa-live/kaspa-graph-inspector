@@ -165,6 +165,8 @@ export default class TimelineContainer extends PIXI.Container {
                         && toBlock.isInVirtualSelectedParentChain;
                     edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
                 }
+                edgeSprite.setHighlightedParent(this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
+                edgeSprite.setHighlightedChild(this.buildBlockKey(edge.toBlockId) === targetBlockKey);
             }
         }
 
@@ -181,6 +183,8 @@ export default class TimelineContainer extends PIXI.Container {
                         && toBlock.isInVirtualSelectedParentChain;
                     edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
                 }
+                edgeSprite.setHighlightedParent(this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
+                edgeSprite.setHighlightedChild(this.buildBlockKey(edge.toBlockId) === targetBlockKey);
                 this.edgeKeysToEdgeSprites[edgeKey] = edgeSprite;
 
                 // Add the edge sprite to the edge container
