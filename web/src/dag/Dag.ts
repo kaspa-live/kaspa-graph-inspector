@@ -139,6 +139,7 @@ export default class Dag {
     private trackTargetHeight = async () => {
         const targetHeight = this.targetHeight as number;
         this.timelineContainer!.setTargetHeight(targetHeight);
+        this.timelineContainer!.setTargetBlock(null);
 
         const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
         const response = await this.fetch(`${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
@@ -161,6 +162,14 @@ export default class Dag {
     private trackTargetHash = async () => {
         const targetHash = this.targetHash as string;
 
+        // Immediately update the timeline container if it already
+        // contains the target block
+        let targetBlock = this.timelineContainer!.findBlockWithHash(targetHash);
+        if (targetBlock) {
+            this.timelineContainer!.setTargetHeight(targetBlock.height);
+            this.timelineContainer!.setTargetBlock(targetBlock);
+        }
+
         const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
         const response = await this.fetch(`${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
 
@@ -176,7 +185,6 @@ export default class Dag {
             return;
         }
 
-        let targetBlock = null;
         for (let block of blocksAndEdgesAndHeightGroups.blocks) {
             if (block.blockHash === targetHash) {
                 targetBlock = block;
@@ -197,6 +205,8 @@ export default class Dag {
     }
 
     private trackHead = async () => {
+        this.timelineContainer!.setTargetBlock(null);
+
         const maxBlockAmountOnHalfTheScreen = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
 
         let headMargin = 0;

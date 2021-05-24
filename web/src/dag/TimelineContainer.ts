@@ -114,8 +114,7 @@ export default class TimelineContainer extends PIXI.Container {
             const key = this.buildBlockKey(block.id);
             if (this.blockKeysToBlockSprites[key]) {
                 const blockSprite = this.blockKeysToBlockSprites[key];
-                blockSprite.setColor(block.color);
-                blockSprite.setHighlighted(key === targetBlockKey);
+                this.assignBlockToBlockSprite(blockSprite, block, targetBlockKey);
             }
         }
 
@@ -139,8 +138,7 @@ export default class TimelineContainer extends PIXI.Container {
             if (!this.blockKeysToBlockSprites[key]) {
                 // Add the block to the blockSprite-by-ID map
                 const blockSprite = new BlockSprite(this.application, block);
-                blockSprite.setColor(block.color);
-                blockSprite.setHighlighted(key === targetBlockKey);
+                this.assignBlockToBlockSprite(blockSprite, block, targetBlockKey);
                 blockSprite.setBlockClickedListener(this.blockClickedListener);
                 this.blockKeysToBlockSprites[key] = blockSprite;
 
@@ -158,19 +156,7 @@ export default class TimelineContainer extends PIXI.Container {
             const edgeKey = this.buildEdgeKey(edge);
             if (this.edgeKeysToEdgeSprites[edgeKey]) {
                 const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
-                const toBlock = this.blockKeysToBlocks[edge.toBlockId];
-                const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
-                if (fromBlock) {
-                    edgeSprite.setIsSelectedParent(fromBlock.selectedParentId === edge.toBlockId);
-                    if (toBlock) {
-                        const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
-                            && toBlock.isInVirtualSelectedParentChain;
-                        edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
-
-                    }
-                }
-                edgeSprite.setHighlightedParent(this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
-                edgeSprite.setHighlightedChild(this.buildBlockKey(edge.toBlockId) === targetBlockKey);
+                this.assignEdgeToEdgeSprite(edgeSprite, edge, targetBlockKey);
             }
         }
 
@@ -180,19 +166,7 @@ export default class TimelineContainer extends PIXI.Container {
             if (!this.edgeKeysToEdgeSprites[edgeKey]) {
                 // Add the edge to the edgeSprite-by-key map
                 const edgeSprite = new EdgeSprite(this.application, edge.fromBlockId, edge.toBlockId);
-                const toBlock = this.blockKeysToBlocks[edge.toBlockId];
-                const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
-                if (fromBlock) {
-                    edgeSprite.setIsSelectedParent(fromBlock.selectedParentId === edge.toBlockId);
-                    if (toBlock) {
-                        const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
-                            && toBlock.isInVirtualSelectedParentChain;
-                        edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
-
-                    }
-                }
-                edgeSprite.setHighlightedParent(this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
-                edgeSprite.setHighlightedChild(this.buildBlockKey(edge.toBlockId) === targetBlockKey);
+                this.assignEdgeToEdgeSprite(edgeSprite, edge, targetBlockKey);
                 this.edgeKeysToEdgeSprites[edgeKey] = edgeSprite;
 
                 // Add the edge sprite to the edge container
@@ -205,6 +179,54 @@ export default class TimelineContainer extends PIXI.Container {
         }
 
         this.recalculateSpritePositions(true);
+    }
+
+    private assignBlockToBlockSprite = (blockSprite: BlockSprite, block: Block, targetBlockKey: string | null) => {
+        blockSprite.setColor(block.color);
+
+        const blockKey = this.buildBlockKey(block.id);
+        blockSprite.setHighlighted(blockKey === targetBlockKey);
+    }
+
+    private assignEdgeToEdgeSprite = (edgeSprite: EdgeSprite, edge: Edge, targetBlockKey: string | null) => {
+        const toBlock = this.blockKeysToBlocks[edge.toBlockId];
+        const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
+        if (fromBlock) {
+            edgeSprite.setIsSelectedParent(fromBlock.selectedParentId === edge.toBlockId);
+            if (toBlock) {
+                const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
+                    && toBlock.isInVirtualSelectedParentChain;
+                edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
+
+            }
+        }
+        edgeSprite.setHighlightedParent(this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
+        edgeSprite.setHighlightedChild(this.buildBlockKey(edge.toBlockId) === targetBlockKey);
+    }
+
+    findBlockWithHash = (blockHash: string): Block | null => {
+        let foundBlock = null;
+        for (let block of Object.values(this.blockKeysToBlocks)) {
+            if (block.blockHash === blockHash) {
+                foundBlock = block;
+                break;
+            }
+        }
+        return foundBlock;
+    }
+
+    setTargetBlock = (targetBlock: Block | null) => {
+        const targetBlockKey = targetBlock ? this.buildBlockKey(targetBlock.id) : null;
+        for (let blockKey in this.blockKeysToBlocks) {
+            const block = this.blockKeysToBlocks[blockKey];
+            const blockSprite = this.blockKeysToBlockSprites[blockKey];
+            this.assignBlockToBlockSprite(blockSprite, block, targetBlockKey);
+        }
+        for (let edgeKey in this.edgeKeysToEdges) {
+            const edge = this.edgeKeysToEdges[edgeKey];
+            const edgeSprite = this.edgeKeysToEdgeSprites[edgeKey];
+            this.assignEdgeToEdgeSprite(edgeSprite, edge, targetBlockKey);
+        }
     }
 
     private buildBlockKey = (blockId: number): string => {
