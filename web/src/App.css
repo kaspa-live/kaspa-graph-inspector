@@ -1,22 +1,42 @@
 .container {
-  min-height: 100vh;
-  min-width: 100vw;
-  display: flex;
-  flex-direction: column;
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    flex-direction: column;
 }
 
 .connection-issue-indicator-container {
-  position: absolute;
-  top: 5vw;
-  right: 5vw;
+    position: absolute;
+    top: 5vw;
+    right: 5vw;
 }
 
 .track-button-container {
-  position: absolute;
-  bottom: 5vw;
-  right: 5vw;
+    position: absolute;
+    bottom: 5vw;
+    right: 5vw;
 }
 
 .block-information-container {
-  position: absolute;
+    position: absolute;
+    width: 20vw;
+    height: 100vh;
+    transform: translateX(-100%);
+}
+
+.block-information-open {
+    animation: slide-in 0.3s forwards;
+}
+
+.block-information-closed {
+    animation: slide-out 0.3s forwards;
+}
+
+@keyframes slide-in {
+    100% { transform: translateX(0%); }
+}
+
+@keyframes slide-out {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
 }

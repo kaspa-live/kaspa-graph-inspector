@@ -12,10 +12,23 @@ const App = () => {
     const [isTrackingState, setTrackingState] = useState(true);
     const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
     const [targetBlockState, setTargetBlockState] = useState<Block | null>(null);
+    const [wasBlockSetState, setWasBlockSetState] = useState(false);
+    const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
 
     dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
     dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
-    dag.setTargetBlockChangedListener(targetBlock => setTargetBlockState(targetBlock));
+    dag.setTargetBlockChangedListener(targetBlock => {
+        setBlockInformationPanelOpenState(targetBlock !== null)
+
+        // Only set the target block if it exists to prevent text in an already
+        // open panel from disappearing on close
+        if (targetBlock) {
+            setTargetBlockState(targetBlock);
+        }
+
+        // This prevents the panel slide-out animation from occurring on page load
+        setWasBlockSetState(wasBlockSetState || targetBlock !== null);
+    });
 
     return (
         <ThemeProvider theme={theme}>
@@ -27,9 +40,12 @@ const App = () => {
                 <div className="connection-issue-indicator-container">
                     {isHavingConnectionIssuesState ? <ConnectionIssuesIndicator/> : undefined}
                 </div>
-                <div className="block-information-container">
-                    {targetBlockState ? <BlockInformationPanel block={targetBlockState}/> : undefined}
-                </div>
+                {!wasBlockSetState ? undefined :
+                    <div
+                        className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
+                        <BlockInformationPanel block={targetBlockState}/>
+                    </div>
+                }
             </div>
         </ThemeProvider>
     );
