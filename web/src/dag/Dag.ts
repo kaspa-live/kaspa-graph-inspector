@@ -22,6 +22,7 @@ export default class Dag {
     private targetHash: string | null = null;
     private isTrackingChangedListener: (isTracking: boolean) => void;
     private isFetchFailingListener: (isFailing: boolean) => void;
+    private targetBlockChangedListener: (block: Block | null) => void;
 
     constructor() {
         this.currentTickFunction = async () => {
@@ -31,6 +32,9 @@ export default class Dag {
             // Do nothing
         }
         this.isFetchFailingListener = () => {
+            // Do nothing
+        }
+        this.targetBlockChangedListener = () => {
             // Do nothing
         }
 
@@ -140,6 +144,7 @@ export default class Dag {
         const targetHeight = this.targetHeight as number;
         this.timelineContainer!.setTargetHeight(targetHeight);
         this.timelineContainer!.setTargetBlock(null);
+        this.targetBlockChangedListener(null);
 
         const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
         const response = await this.fetch(`${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
@@ -168,6 +173,7 @@ export default class Dag {
         if (targetBlock) {
             this.timelineContainer!.setTargetHeight(targetBlock.height);
             this.timelineContainer!.setTargetBlock(targetBlock);
+            this.targetBlockChangedListener(targetBlock);
         }
 
         const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
@@ -202,10 +208,12 @@ export default class Dag {
 
         this.timelineContainer!.setTargetHeight(targetBlock.height);
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups, targetBlock);
+        this.targetBlockChangedListener(targetBlock);
     }
 
     private trackHead = async () => {
         this.timelineContainer!.setTargetBlock(null);
+        this.targetBlockChangedListener(null);
 
         const maxBlockAmountOnHalfTheScreen = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
 
@@ -287,6 +295,10 @@ export default class Dag {
 
     setIsFetchFailingListener = (isFetchFailingListener: (isFailing: boolean) => void) => {
         this.isFetchFailingListener = isFetchFailingListener;
+    }
+
+    setTargetBlockChangedListener = (targetBlockChangedListener: (block: Block | null) => void) => {
+        this.targetBlockChangedListener = targetBlockChangedListener;
     }
 
     private fetch = (url: string): Promise<Response | void> => {

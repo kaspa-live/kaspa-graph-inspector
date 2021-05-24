@@ -16,3 +16,7 @@
   bottom: 5vw;
   right: 5vw;
 }
+
+.block-information-container {
+  position: absolute;
+}

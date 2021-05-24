@@ -5,13 +5,17 @@ import Dag from "./dag/Dag";
 import {useState} from "react";
 import ConnectionIssuesIndicator from "./components/ConnectionIssuesIndicator";
 import TrackButton from "./components/TrackButton";
+import {Block} from "./dag/model/Block";
+import BlockInformationPanel from "./components/BlockInformationPanel";
 
 const App = () => {
     const [isTrackingState, setTrackingState] = useState(true);
     const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
+    const [targetBlockState, setTargetBlockState] = useState<Block | null>(null);
 
     dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
     dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
+    dag.setTargetBlockChangedListener(targetBlock => setTargetBlockState(targetBlock));
 
     return (
         <ThemeProvider theme={theme}>
@@ -22,6 +26,9 @@ const App = () => {
                 </div>
                 <div className="connection-issue-indicator-container">
                     {isHavingConnectionIssuesState ? <ConnectionIssuesIndicator/> : undefined}
+                </div>
+                <div className="block-information-container">
+                    {targetBlockState ? <BlockInformationPanel block={targetBlockState}/> : undefined}
                 </div>
             </div>
         </ThemeProvider>
