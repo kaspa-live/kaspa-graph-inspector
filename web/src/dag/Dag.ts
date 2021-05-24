@@ -8,7 +8,6 @@ export default class Dag {
     private readonly tickIntervalInMilliseconds = 1000;
     private readonly headHeightMarginMultiplier = 0.25;
     private readonly apiAddress: string;
-    private readonly katnipAddress: string;
 
     private application: PIXI.Application | undefined;
     private timelineContainer: TimelineContainer | undefined;
@@ -44,7 +43,6 @@ export default class Dag {
         Ticker.timingMode = Ticker.RAF;
 
         this.apiAddress = this.resolveApiAddress();
-        this.katnipAddress = this.resolveKatnipAddress();
     }
 
     initialize = (canvas: HTMLCanvasElement) => {
@@ -73,14 +71,6 @@ export default class Dag {
             throw new Error("The REACT_APP_API_ADDRESS environment variable is required");
         }
         return `${window.location.protocol}//${apiAddress}`;
-    }
-
-    private resolveKatnipAddress = (): string => {
-        const katnipAddress = process.env.REACT_APP_KATNIP_ADDRESS;
-        if (!katnipAddress) {
-            throw new Error("The REACT_APP_KATNIP_ADDRESS environment variable is required");
-        }
-        return `${window.location.protocol}//${katnipAddress}`;
     }
 
     private resizeIfRequired = () => {
@@ -258,11 +248,7 @@ export default class Dag {
 
     private handleBlockClicked = (block: Block) => {
         this.timelineContainer!.setTargetHeight(block.height);
-        if (this.targetHash !== block.blockHash) {
-            this.setStateTrackTargetBlock(block);
-            return;
-        }
-        window.open(`${this.katnipAddress}/#/block/${block.blockHash}`, "'_blank'");
+        this.setStateTrackTargetBlock(block);
     }
 
     private handleHeightClicked = (height: number) => {
