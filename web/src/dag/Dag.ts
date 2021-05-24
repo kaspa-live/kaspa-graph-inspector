@@ -5,7 +5,7 @@ import {Ticker} from "@createjs/core";
 import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
 
 export default class Dag {
-    private readonly tickInternalInMilliseconds = 1000;
+    private readonly tickIntervalInMilliseconds = 1000;
     private readonly headHeightMarginMultiplier = 0.25;
     private readonly apiAddress: string;
     private readonly katnipAddress: string;
@@ -133,7 +133,7 @@ export default class Dag {
     }
 
     private scheduleNextTick = () => {
-        this.currentTickId = window.setTimeout(this.tick, this.tickInternalInMilliseconds);
+        this.currentTickId = window.setTimeout(this.tick, this.tickIntervalInMilliseconds);
     }
 
     private trackTargetHeight = async () => {
