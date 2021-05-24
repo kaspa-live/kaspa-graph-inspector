@@ -3,4 +3,17 @@
     width: 100%;
     background-color: #175676;
     color: #ffffff;
+    display: flex;
+    padding: 20px;
+}
+
+.katnip-link-text {
+    align-self: flex-end;
+    font-weight: bold;
+    text-align: end;
+    width: 100%;
+}
+
+.katnip-link-text a {
+    text-decoration: underline;
 }

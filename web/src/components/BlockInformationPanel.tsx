@@ -7,9 +7,13 @@ const BlockInformationPanel = ({block}: { block: Block | null }) => {
         return <div/>;
     }
 
+    const katnipAddress = `${window.location.protocol}//${process.env.REACT_APP_KATNIP_ADDRESS}/#/block/${block.blockHash}`;
+
     return <Paper elevation={4}>
         <div className="block-information-panel">
-            {block.blockHash}
+            <div className="katnip-link-text">
+                See more details on <a href={katnipAddress} target="_blank">Katnip Block Explorer</a>
+            </div>
         </div>
     </Paper>
 }
