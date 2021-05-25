@@ -4,16 +4,28 @@
     background-color: #175676;
     color: #ffffff;
     display: flex;
+    flex-direction: column;
     padding: 20px;
 }
 
-.katnip-link-text {
+.block-information-panel .close-button {
+    align-self: flex-end;
+    padding: 20px;
+    margin-top: -20px;
+    margin-right: -20px;
+}
+
+.block-information-panel .block-information-content {
+    flex: 1 1 auto;
+}
+
+.block-information-panel .katnip-link-text {
     align-self: flex-end;
     font-weight: bold;
     text-align: end;
     width: 100%;
 }
 
-.katnip-link-text a {
+.block-information-panel .katnip-link-text a {
     text-decoration: underline;
 }

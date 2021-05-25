@@ -18,6 +18,11 @@ const App = () => {
     dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
     dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
     dag.setTargetBlockChangedListener(targetBlock => {
+        // Exit early if the target block didn't change
+        if (targetBlock?.blockHash === targetBlockState?.blockHash) {
+            return;
+        }
+
         setBlockInformationPanelOpenState(targetBlock !== null)
 
         // Only set the target block if it exists to prevent text in an already
@@ -43,7 +48,8 @@ const App = () => {
                 {!wasBlockSetState ? undefined :
                     <div
                         className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
-                        <BlockInformationPanel block={targetBlockState}/>
+                        <BlockInformationPanel block={targetBlockState}
+                                               onClose={() => setBlockInformationPanelOpenState(false)}/>
                     </div>
                 }
             </div>
