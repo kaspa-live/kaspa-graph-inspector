@@ -49,6 +49,15 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
                         </Typography>
                     </ListItem>
                     <Divider className="block-information-divider"/>
+                    <ListItem className="block-information-item" disableGutters>
+                        <Typography className="block-information-label" variant="h6">
+                            Is In Virtual Selected Parent Chain
+                        </Typography>
+                        <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
+                            {block.isInVirtualSelectedParentChain ? "Yes" : "No"}
+                        </Typography>
+                    </ListItem>
+                    <Divider className="block-information-divider"/>
                 </List>
             </div>
             <div className="katnip-link-text">

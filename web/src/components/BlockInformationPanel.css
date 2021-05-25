@@ -54,6 +54,10 @@
     color: #ff5972;
 }
 
+.block-information-panel .is-block-in-virtual-selected-parent-chain {
+    align-self: flex-start;
+}
+
 .block-information-panel .katnip-link-text {
     align-self: flex-end;
     font-weight: bold;
