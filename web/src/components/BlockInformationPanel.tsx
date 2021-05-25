@@ -11,6 +11,16 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
 
     const katnipAddress = `${window.location.protocol}//${process.env.REACT_APP_KATNIP_ADDRESS}/#/block/${block.blockHash}`;
 
+    let blockColorText = "Undecided";
+    let blockColorClass = "block-color-undecided";
+    if (block.color === "blue") {
+        blockColorText = "Blue";
+        blockColorClass = "block-color-blue";
+    } else if (block.color === "red") {
+        blockColorText = "Red";
+        blockColorClass = "block-color-red";
+    }
+
     return <Paper elevation={4}>
         <div className="block-information-panel">
             <div className="block-information-header">
@@ -23,19 +33,22 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
             </div>
             <div className="block-information-content">
                 <List>
-                    <ListItem className="block-hash-container" disableGutters>
-                        <Typography className="block-hash-label" variant="h6">
+                    <ListItem className="block-information-item" disableGutters>
+                        <Typography className="block-information-label" variant="h6">
                             Block Hash
                         </Typography>
                         <BlockInformationPanelHash hash={block.blockHash}/>
                     </ListItem>
                     <Divider className="block-information-divider"/>
-                    <ListItem className="block-hash-container" disableGutters>
-                        <Typography className="block-hash-label" variant="h6">
-                            Block Hash
+                    <ListItem className="block-information-item" disableGutters>
+                        <Typography className="block-information-label" variant="h6">
+                            Color
                         </Typography>
-                        <BlockInformationPanelHash hash={block.blockHash}/>
+                        <Typography className={`block-color ${blockColorClass}`} variant="h6">
+                            {blockColorText}
+                        </Typography>
                     </ListItem>
+                    <Divider className="block-information-divider"/>
                 </List>
             </div>
             <div className="katnip-link-text">

@@ -28,19 +28,30 @@
     background-color: #ffffff;
 }
 
-.block-information-panel .block-hash-container {
+.block-information-panel .block-information-item {
     display: flex;
     flex-direction: column;
 }
 
-.block-information-panel .block-hash-label {
+.block-information-panel .block-information-label {
     align-self: flex-start;
 }
 
-.block-information-panel .block-hash {
+.block-information-panel .block-color {
     align-self: flex-start;
-    text-transform: uppercase;
-    font-family: monospace;
+    text-transform: capitalize;
+}
+
+.block-color-undecided {
+    color: #aaaaaa;
+}
+
+.block-color-blue {
+    color: #b4cfed;
+}
+
+.block-color-red {
+    color: #ff5972;
 }
 
 .block-information-panel .katnip-link-text {
