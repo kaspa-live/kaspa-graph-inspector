@@ -8,11 +8,15 @@
     padding: 20px;
 }
 
+.block-information-panel .block-information-header {
+    display: flex;
+    flex-direction: row;
+}
+
 .block-information-panel .close-button {
     align-self: flex-end;
     padding: 20px;
-    margin-top: -20px;
-    margin-right: -20px;
+    margin: -20px -20px auto auto;
 }
 
 .block-information-panel .block-information-content {

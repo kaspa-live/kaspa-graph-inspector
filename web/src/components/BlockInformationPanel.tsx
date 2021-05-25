@@ -1,6 +1,6 @@
 import {Block} from "../dag/model/Block";
 import './BlockInformationPanel.css'
-import {IconButton, Paper} from "@material-ui/core";
+import {IconButton, Paper, Typography} from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 
 const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose: () => void }) => {
@@ -12,9 +12,14 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
 
     return <Paper elevation={4}>
         <div className="block-information-panel">
-            <IconButton className="close-button" color="primary" onClick={onClose}>
-                <CloseIcon/>
-            </IconButton>
+            <div className="block-information-header">
+                <Typography variant="h4">
+                    Block Information
+                </Typography>
+                <IconButton className="close-button" color="primary" onClick={onClose}>
+                    <CloseIcon/>
+                </IconButton>
+            </div>
             <div className="block-information-content">
 
             </div>
