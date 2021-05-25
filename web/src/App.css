@@ -22,6 +22,7 @@
     width: 20vw;
     height: 100vh;
     transform: translateX(-100%);
+    min-width: 375px;
 }
 
 .block-information-open {
