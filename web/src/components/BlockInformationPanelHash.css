@@ -1,0 +1,20 @@
+.block-information-panel-hash {
+    display: flex;
+    flex-direction: row;
+    text-transform: uppercase;
+    font-family: monospace;
+    width: 100%;
+}
+
+.block-information-panel-hash .hash-start {
+    align-self: flex-start;
+}
+
+.block-information-panel-hash .hash-ellipsis {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.block-information-panel-hash .hash-end {
+    align-self: flex-end;
+}

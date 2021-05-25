@@ -20,6 +20,27 @@
 
 .block-information-panel .block-information-content {
     flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.block-information-panel .block-information-divider {
+    background-color: #ffffff;
+}
+
+.block-information-panel .block-hash-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.block-information-panel .block-hash-label {
+    align-self: flex-start;
+}
+
+.block-information-panel .block-hash {
+    align-self: flex-start;
+    text-transform: uppercase;
+    font-family: monospace;
 }
 
 .block-information-panel .katnip-link-text {
