@@ -29,3 +29,8 @@ export type HeightGroup = {
     height: number,
     size: number,
 };
+
+export type BlockHashById = {
+    id: number,
+    hash: string,
+};

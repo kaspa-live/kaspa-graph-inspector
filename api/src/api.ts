@@ -90,6 +90,28 @@ server.get('/blockHash', async (request, response) => {
     }
 });
 
+server.get('/blockHashesByIds', async (request, response) =>{
+    if (!request.query.blockIds) {
+        response.status(400).send("missing parameter: blockIds");
+        return;
+    }
+
+    try {
+        await database.withClient(async client => {
+            const blockIdsString = request.query.blockIds as string;
+            const blockIdStrings = blockIdsString.split(",");
+            const blockIds = blockIdStrings.map(id => parseInt(id));
+            const hashesByIds = await database.getBlockHashesByIds(client, blockIds);
+
+            response.send(JSON.stringify(hashesByIds));
+        });
+        return;
+    } catch (error) {
+        response.status(400).send(`invalid input: ${error}`);
+        return;
+    }
+});
+
 server.listen(port, () => {
     console.log(`API server listening on port ${port}...`);
 });

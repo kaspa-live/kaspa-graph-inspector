@@ -1,5 +1,5 @@
 import pg from "pg";
-import {Block, BlocksAndEdgesAndHeightGroups, Edge, HeightGroup} from "./model";
+import {Block, BlockHashById, BlocksAndEdgesAndHeightGroups, Edge, HeightGroup} from "./model";
 
 export default class Database {
     private pool: pg.Pool;
@@ -115,5 +115,17 @@ export default class Database {
             throw new Error(`Block ${blockHash} does not exist`);
         }
         return parseInt(result.rows[0].height);
+    }
+
+    getBlockHashesByIds = async (client: pg.PoolClient, blockIds: number[]): Promise<BlockHashById[]> => {
+        const result = await client.query('SELECT id, block_hash FROM blocks ' +
+            'WHERE id = ANY ($1)', [blockIds]);
+
+        return result.rows.map(item => {
+            return {
+                id: parseInt(item.id),
+                hash: item.block_hash,
+            };
+        });
     }
 }
