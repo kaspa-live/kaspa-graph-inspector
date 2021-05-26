@@ -4,13 +4,14 @@ import {Divider, IconButton, List, Paper, Typography} from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import BlockInformationPanelHash from "./BlockInformationPanelHash";
 import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
+import {katnipAddress} from "../addresses";
 
 const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose: () => void }) => {
     if (!block) {
         return <div/>;
     }
 
-    const katnipAddress = `${window.location.protocol}//${process.env.REACT_APP_KATNIP_ADDRESS}/#/block/${block.blockHash}`;
+    const katnipAddressForBlock = `${katnipAddress}/#/block/${block.blockHash}`;
 
     let blockColorText = "Undecided";
     let blockColorClass = "block-color-undecided";
@@ -60,7 +61,7 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
                 </List>
             </div>
             <div className="katnip-link-text">
-                See more details on <a href={katnipAddress} target="_blank">Katnip Block Explorer</a>
+                See more details on <a href={katnipAddressForBlock} target="_blank">Katnip Block Explorer</a>
             </div>
         </div>
     </Paper>

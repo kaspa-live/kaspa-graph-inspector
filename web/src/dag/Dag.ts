@@ -3,11 +3,11 @@ import TimelineContainer from "./TimelineContainer";
 import {Block} from "./model/Block";
 import {Ticker} from "@createjs/core";
 import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
+import {apiAddress} from "../addresses";
 
 export default class Dag {
     private readonly tickIntervalInMilliseconds = 1000;
     private readonly headHeightMarginMultiplier = 0.25;
-    private readonly apiAddress: string;
 
     private application: PIXI.Application | undefined;
     private timelineContainer: TimelineContainer | undefined;
@@ -41,8 +41,6 @@ export default class Dag {
         // Without it, it uses setTimeout, which makes
         // animations not as smooth as they should be
         Ticker.timingMode = Ticker.RAF;
-
-        this.apiAddress = this.resolveApiAddress();
     }
 
     initialize = (canvas: HTMLCanvasElement) => {
@@ -63,14 +61,6 @@ export default class Dag {
         this.application.start();
 
         this.run();
-    }
-
-    private resolveApiAddress = (): string => {
-        const apiAddress = process.env.REACT_APP_API_ADDRESS;
-        if (!apiAddress) {
-            throw new Error("The REACT_APP_API_ADDRESS environment variable is required");
-        }
-        return `${window.location.protocol}//${apiAddress}`;
     }
 
     private resizeIfRequired = () => {
@@ -137,7 +127,7 @@ export default class Dag {
         this.targetBlockChangedListener(null);
 
         const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
-        const response = await this.fetch(`${this.apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
+        const response = await this.fetch(`${apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
 
         // Exit early if the request failed
         if (!response) {
@@ -167,7 +157,7 @@ export default class Dag {
         }
 
         const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
-        const response = await this.fetch(`${this.apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
+        const response = await this.fetch(`${apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
 
         // Exit early if the request failed
         if (!response) {
@@ -216,7 +206,7 @@ export default class Dag {
 
         const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
 
-        const response = await this.fetch(`${this.apiAddress}/head?heightDifference=${heightDifference}`);
+        const response = await this.fetch(`${apiAddress}/head?heightDifference=${heightDifference}`);
 
         // Exit early if the request failed
         if (!response) {
