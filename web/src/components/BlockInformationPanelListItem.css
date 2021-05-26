@@ -3,6 +3,18 @@
     flex-direction: column;
 }
 
+.block-information-panel-list-item .header {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
 .block-information-panel-list-item .label {
-    align-self: flex-start;
+    margin-left: 0;
+    margin-right: auto;
+}
+
+.block-information-panel-list-item .info-icon {
+    margin-right: 0;
+    margin-left: auto;
 }
