@@ -1,15 +1,19 @@
-import {ListItem, Typography} from "@material-ui/core";
+import {ListItem, Tooltip, Typography} from "@material-ui/core";
 import './BlockInformationPanelListItem.css'
-import {ReactNode} from "react";
+import {ReactFragment, ReactNode} from "react";
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 
-const BlockInformationPanelListItem = ({children, label}: { children: ReactNode, label: string }) => {
+const BlockInformationPanelListItem = ({children, label, tooltip}:
+                                           { children: ReactNode, label: string, tooltip: ReactFragment }) => {
+
     return <ListItem className="block-information-panel-list-item" disableGutters>
         <div className="header">
             <Typography className="label" variant="h6">
                 {label}
             </Typography>
-            <InfoOutlinedIcon className="info-icon"/>
+            <Tooltip title={tooltip} arrow interactive>
+                <InfoOutlinedIcon className="info-icon"/>
+            </Tooltip>
         </div>
         {children}
     </ListItem>

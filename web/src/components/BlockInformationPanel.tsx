@@ -22,6 +22,10 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
         blockColorClass = "block-color-red";
     }
 
+    const tooltip = <div>
+        Blah blah blah <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+    </div>;
+
     return <Paper elevation={4}>
         <div className="block-information-panel">
             <div className="block-information-header">
@@ -34,13 +38,13 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
             </div>
             <div className="block-information-content">
                 <List>
-                    <BlockInformationPanelListItem label="Block Hash">
+                    <BlockInformationPanelListItem label="Block Hash" tooltip={tooltip}>
                         <BlockInformationPanelHash hash={block.blockHash}/>
                     </BlockInformationPanelListItem>
 
                     <Divider className="block-information-divider"/>
 
-                    <BlockInformationPanelListItem label="Block Hash">
+                    <BlockInformationPanelListItem label="Block Hash" tooltip={tooltip}>
                         <Typography className={`block-color ${blockColorClass}`} variant="h6">
                             {blockColorText}
                         </Typography>
@@ -48,7 +52,7 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
 
                     <Divider className="block-information-divider"/>
 
-                    <BlockInformationPanelListItem label="Block Hash">
+                    <BlockInformationPanelListItem label="Block Hash" tooltip={tooltip}>
                         <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
                             {block.isInVirtualSelectedParentChain ? "Yes" : "No"}
                         </Typography>
