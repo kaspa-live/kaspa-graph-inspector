@@ -1,0 +1,8 @@
+.block-information-panel-list-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.block-information-panel-list-item .label {
+    align-self: flex-start;
+}
