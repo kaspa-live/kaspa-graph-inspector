@@ -23,6 +23,8 @@ export default class Dag {
     private isFetchFailingListener: (isFailing: boolean) => void;
     private targetBlockChangedListener: (block: Block | null) => void;
 
+    private readonly blockHashesByIds: { [id: string]: string } = {};
+
     constructor() {
         this.currentTickFunction = async () => {
             // Do nothing
@@ -134,6 +136,7 @@ export default class Dag {
             return;
         }
         const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
+        this.cacheBlockHashes(blocksAndEdgesAndHeightGroups.blocks);
 
         // Exit early if the track function or the target
         // height changed while we were busy fetching data
@@ -151,6 +154,14 @@ export default class Dag {
         // contains the target block
         let targetBlock = this.timelineContainer!.findBlockWithHash(targetHash);
         if (targetBlock) {
+            const [parentFoundHashes, parentNotFoundHashes] = this.getCachedBlockHashes(targetBlock.parentIds);
+            console.log("parentIds:", parentFoundHashes, parentNotFoundHashes);
+
+            if (targetBlock.selectedParentId) {
+                const [selectedParentFoundHashes, selectedParentNotFoundHashes] = this.getCachedBlockHashes([targetBlock.selectedParentId]);
+                console.log("selectedParentIds:", selectedParentFoundHashes, selectedParentNotFoundHashes);
+            }
+
             this.timelineContainer!.setTargetHeight(targetBlock.height);
             this.timelineContainer!.setTargetBlock(targetBlock);
             this.targetBlockChangedListener(targetBlock);
@@ -164,6 +175,7 @@ export default class Dag {
             return;
         }
         const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
+        this.cacheBlockHashes(blocksAndEdgesAndHeightGroups.blocks);
 
         // Exit early if the track function or the target
         // hash changed while we were busy fetching data
@@ -213,6 +225,7 @@ export default class Dag {
             return;
         }
         const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
+        this.cacheBlockHashes(blocksAndEdgesAndHeightGroups.blocks);
 
         // Exit early if the track function changed while we
         // were busy fetching data
@@ -234,6 +247,26 @@ export default class Dag {
 
         this.timelineContainer!.setTargetHeight(targetHeight);
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
+    }
+
+    private cacheBlockHashes = (blocks: Block[]) => {
+        for (let block of blocks) {
+            this.blockHashesByIds[block.id] = block.blockHash;
+        }
+    }
+
+    private getCachedBlockHashes = (blockIds: number[]): [string[], string[]] => {
+        const foundBlockHashes: string[] = [];
+        const notFoundBlockHashes: string[] = [];
+        for (let blockId of blockIds) {
+            const blockHash = this.blockHashesByIds[blockId];
+            if (blockHash) {
+                foundBlockHashes.push(blockHash);
+            } else {
+                notFoundBlockHashes.push(blockHash);
+            }
+        }
+        return [foundBlockHashes, notFoundBlockHashes];
     }
 
     private handleBlockClicked = (block: Block) => {
