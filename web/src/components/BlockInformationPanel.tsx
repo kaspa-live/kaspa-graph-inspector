@@ -61,15 +61,21 @@ const BlockInformationPanel = ({blockInformation, onClose}:
                         </Typography>
                     </BlockInformationPanelListItem>
 
-                    <Divider className="block-information-divider"/>
+                    {!blockInformation.isInformationComplete
+                        ? undefined
+                        : <div>
+                            <Divider className="block-information-divider"/>
 
-                    <BlockInformationPanelListItem label="Selected Parent Hash" tooltip={tooltip}>
-                        {!blockInformation.selectedParentHash
-                            ? <Typography className="block-information-panel-hash" variant="h6">None</Typography>
-                            : <BlockInformationPanelHash hash={blockInformation.selectedParentHash}/>
-                        }
+                            <BlockInformationPanelListItem label="Selected Parent Hash" tooltip={tooltip}>
+                                {!blockInformation.selectedParentHash
+                                    ?
+                                    <Typography className="block-information-panel-hash" variant="h6">None</Typography>
+                                    : <BlockInformationPanelHash hash={blockInformation.selectedParentHash}/>
+                                }
 
-                    </BlockInformationPanelListItem>
+                            </BlockInformationPanelListItem>
+                        </div>
+                    }
                 </List>
             </div>
             <div className="katnip-link-text">
