@@ -45,7 +45,7 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
 
                     <Divider className="block-information-divider"/>
 
-                    <BlockInformationPanelListItem label="Block Hash" tooltip={tooltip}>
+                    <BlockInformationPanelListItem label="Block Color" tooltip={tooltip}>
                         <Typography className={`block-color ${blockColorClass}`} variant="h6">
                             {blockColorText}
                         </Typography>
@@ -53,7 +53,7 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
 
                     <Divider className="block-information-divider"/>
 
-                    <BlockInformationPanelListItem label="Block Hash" tooltip={tooltip}>
+                    <BlockInformationPanelListItem label="Is Block In VSPC" tooltip={tooltip}>
                         <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
                             {block.isInVirtualSelectedParentChain ? "Yes" : "No"}
                         </Typography>
