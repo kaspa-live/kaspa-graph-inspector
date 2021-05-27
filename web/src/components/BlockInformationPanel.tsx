@@ -72,7 +72,17 @@ const BlockInformationPanel = ({blockInformation, onClose}:
                                     <Typography className="block-information-panel-hash" variant="h6">None</Typography>
                                     : <BlockInformationPanelHash hash={blockInformation.selectedParentHash}/>
                                 }
+                            </BlockInformationPanelListItem>
 
+                            <Divider className="block-information-divider"/>
+
+                            <BlockInformationPanelListItem label="Block Parents" tooltip={tooltip}>
+                                {blockInformation.parentHashes.length === 0
+                                    ?
+                                    <Typography className="block-information-panel-hash" variant="h6">None</Typography>
+                                    : blockInformation.parentHashes.map(parentHash =>
+                                        <BlockInformationPanelHash hash={parentHash}/>)
+                                }
                             </BlockInformationPanelListItem>
                         </div>
                     }
