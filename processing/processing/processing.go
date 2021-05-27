@@ -194,6 +194,19 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 			return err
 		}
 
+		mergeSetRedIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetReds())
+		if err != nil {
+			return err
+		}
+		mergeSetBlueIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetBlues())
+		if err != nil {
+			return err
+		}
+		err = p.database.UpdateBlockMergeSet(databaseTransaction, blockID, mergeSetRedIDs, mergeSetBlueIDs)
+		if err != nil {
+			return err
+		}
+
 		if blockInsertionResult.VirtualSelectedParentChainChanges == nil {
 			return nil
 		}

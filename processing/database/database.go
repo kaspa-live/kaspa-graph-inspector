@@ -54,6 +54,14 @@ func (db *Database) UpdateBlockSelectedParent(databaseTransaction *pg.Tx, blockI
 	return err
 }
 
+func (db *Database) UpdateBlockMergeSet(
+	databaseTransaction *pg.Tx, blockID uint64, mergeSetRedIDs []uint64, mergeSetBlueIDs []uint64) error {
+
+	_, err := databaseTransaction.Exec("UPDATE blocks SET merge_set_red_ids = ?, merge_set_blue_ids = ? WHERE id = ?",
+		mergeSetRedIDs, mergeSetBlueIDs, blockID)
+	return err
+}
+
 func (db *Database) UpdateBlockIsInVirtualSelectedParentChain(
 	databaseTransaction *pg.Tx, blockIDsToIsInVirtualSelectedParentChain map[uint64]bool) error {
 

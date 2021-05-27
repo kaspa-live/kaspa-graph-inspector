@@ -16,6 +16,8 @@ type Block struct {
 	SelectedParentID               *uint64  `pg:"selected_parent_id"`
 	Color                          string   `pg:"color"`
 	IsInVirtualSelectedParentChain bool     `pg:"is_in_virtual_selected_parent_chain,use_zero"`
+	MergeSetRedIDs                 []uint64 `pg:"merge_set_red_ids,use_zero"`
+	MergeSetBlueIDs                []uint64 `pg:"merge_set_blue_ids,use_zero"`
 }
 
 type Edge struct {
