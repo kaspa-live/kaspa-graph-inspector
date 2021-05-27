@@ -13,17 +13,20 @@ const App = () => {
     const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
+    const [wasBlockInformationPanelCloseRequested, setBlockInformationPanelCloseRequested] = useState(false);
     const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
 
     dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
     dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
     dag.setBlockInformationChangedListener(blockInformation => {
-        // Exit early if the target block didn't change
-        if (blockInformation?.block.blockHash === blockInformationState?.block.blockHash) {
-            return;
+        const hasBlockChanged = blockInformation?.block.blockHash !== blockInformationState?.block.blockHash;
+
+        // Reset close requests if the block changed
+        if (hasBlockChanged) {
+            setBlockInformationPanelCloseRequested(false);
         }
 
-        setBlockInformationPanelOpenState(blockInformation !== null)
+        setBlockInformationPanelOpenState(blockInformation !== null && (!wasBlockInformationPanelCloseRequested || hasBlockChanged));
 
         // Only set the target block if it exists to prevent text in an already
         // open panel from disappearing on close
@@ -49,7 +52,10 @@ const App = () => {
                     <div
                         className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
                         <BlockInformationPanel blockInformation={blockInformationState}
-                                               onClose={() => setBlockInformationPanelOpenState(false)}/>
+                                               onClose={() => {
+                                                   setBlockInformationPanelCloseRequested(true);
+                                                   setBlockInformationPanelOpenState(false);
+                                               }}/>
                     </div>
                 }
             </div>
