@@ -1,24 +1,26 @@
-import {Block} from "../dag/model/Block";
 import './BlockInformationPanel.css'
 import {Divider, IconButton, List, Paper, Typography} from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import BlockInformationPanelHash from "./BlockInformationPanelHash";
 import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
 import {katnipAddress} from "../addresses";
+import {BlockInformation} from "../dag/model/BlockInformation";
 
-const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose: () => void }) => {
-    if (!block) {
+const BlockInformationPanel = ({blockInformation, onClose}:
+                                   { blockInformation: BlockInformation | null, onClose: () => void }) => {
+
+    if (!blockInformation) {
         return <div/>;
     }
 
-    const katnipAddressForBlock = `${katnipAddress}/#/block/${block.blockHash}`;
+    const katnipAddressForBlock = `${katnipAddress}/#/block/${blockInformation.block.blockHash}`;
 
     let blockColorText = "Undecided";
     let blockColorClass = "block-color-undecided";
-    if (block.color === "blue") {
+    if (blockInformation.block.color === "blue") {
         blockColorText = "Blue";
         blockColorClass = "block-color-blue";
-    } else if (block.color === "red") {
+    } else if (blockInformation.block.color === "red") {
         blockColorText = "Red";
         blockColorClass = "block-color-red";
     }
@@ -40,7 +42,7 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
             <div className="block-information-content">
                 <List>
                     <BlockInformationPanelListItem label="Block Hash" tooltip={tooltip}>
-                        <BlockInformationPanelHash hash={block.blockHash}/>
+                        <BlockInformationPanelHash hash={blockInformation.block.blockHash}/>
                     </BlockInformationPanelListItem>
 
                     <Divider className="block-information-divider"/>
@@ -55,8 +57,18 @@ const BlockInformationPanel = ({block, onClose}: { block: Block | null, onClose:
 
                     <BlockInformationPanelListItem label="Is Block In VSPC" tooltip={tooltip}>
                         <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
-                            {block.isInVirtualSelectedParentChain ? "Yes" : "No"}
+                            {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
                         </Typography>
+                    </BlockInformationPanelListItem>
+
+                    <Divider className="block-information-divider"/>
+
+                    <BlockInformationPanelListItem label="Selected Parent Hash" tooltip={tooltip}>
+                        {!blockInformation.selectedParentHash
+                            ? <Typography className="block-information-panel-hash" variant="h6">None</Typography>
+                            : <BlockInformationPanelHash hash={blockInformation.selectedParentHash}/>
+                        }
+
                     </BlockInformationPanelListItem>
                 </List>
             </div>

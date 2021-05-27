@@ -4,6 +4,7 @@ import {Block} from "./model/Block";
 import {Ticker} from "@createjs/core";
 import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
 import {apiAddress} from "../addresses";
+import {BlockInformation} from "./model/BlockInformation";
 
 export default class Dag {
     private readonly tickIntervalInMilliseconds = 1000;
@@ -21,7 +22,7 @@ export default class Dag {
     private targetHash: string | null = null;
     private isTrackingChangedListener: (isTracking: boolean) => void;
     private isFetchFailingListener: (isFailing: boolean) => void;
-    private targetBlockChangedListener: (block: Block | null) => void;
+    private blockInformationChangedListener: (blockInformation: BlockInformation | null) => void;
 
     private readonly blockHashesByIds: { [id: string]: string } = {};
 
@@ -35,7 +36,7 @@ export default class Dag {
         this.isFetchFailingListener = () => {
             // Do nothing
         }
-        this.targetBlockChangedListener = () => {
+        this.blockInformationChangedListener = () => {
             // Do nothing
         }
 
@@ -126,7 +127,7 @@ export default class Dag {
         const targetHeight = this.targetHeight as number;
         this.timelineContainer!.setTargetHeight(targetHeight);
         this.timelineContainer!.setTargetBlock(null);
-        this.targetBlockChangedListener(null);
+        this.blockInformationChangedListener(null);
 
         const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
         const response = await this.fetch(`${apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
@@ -154,17 +155,11 @@ export default class Dag {
         // contains the target block
         let targetBlock = this.timelineContainer!.findBlockWithHash(targetHash);
         if (targetBlock) {
-            const [parentFoundHashes, parentNotFoundHashes] = this.getCachedBlockHashes(targetBlock.parentIds);
-            console.log("parentIds:", parentFoundHashes, parentNotFoundHashes);
-
-            if (targetBlock.selectedParentId) {
-                const [selectedParentFoundHashes, selectedParentNotFoundHashes] = this.getCachedBlockHashes([targetBlock.selectedParentId]);
-                console.log("selectedParentIds:", selectedParentFoundHashes, selectedParentNotFoundHashes);
-            }
-
             this.timelineContainer!.setTargetHeight(targetBlock.height);
             this.timelineContainer!.setTargetBlock(targetBlock);
-            this.targetBlockChangedListener(targetBlock);
+
+            const blockInformation = this.buildBlockInformation(targetBlock);
+            this.blockInformationChangedListener(blockInformation);
         }
 
         const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
@@ -200,12 +195,14 @@ export default class Dag {
 
         this.timelineContainer!.setTargetHeight(targetBlock.height);
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups, targetBlock);
-        this.targetBlockChangedListener(targetBlock);
+
+        const blockInformation = this.buildBlockInformation(targetBlock);
+        this.blockInformationChangedListener(blockInformation);
     }
 
     private trackHead = async () => {
         this.timelineContainer!.setTargetBlock(null);
-        this.targetBlockChangedListener(null);
+        this.blockInformationChangedListener(null);
 
         const maxBlockAmountOnHalfTheScreen = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
 
@@ -269,6 +266,27 @@ export default class Dag {
         return [foundBlockHashes, notFoundBlockHashes];
     }
 
+    private buildBlockInformation = (block: Block): BlockInformation => {
+        let isInformationComplete = true;
+
+        const [parentFoundHashes, parentNotFoundHashes] = this.getCachedBlockHashes(block.parentIds);
+        isInformationComplete &&= parentNotFoundHashes.length === 0;
+
+        let selectedParentHash = null;
+        if (block.selectedParentId) {
+            const [selectedParentFoundHashes, selectedParentNotFoundHashes] = this.getCachedBlockHashes([block.selectedParentId]);
+            isInformationComplete &&= selectedParentNotFoundHashes.length === 0;
+            selectedParentHash = selectedParentFoundHashes[0];
+        }
+
+        return {
+            block: block,
+            parentHashes: parentFoundHashes,
+            selectedParentHash: selectedParentHash,
+            isInformationComplete: isInformationComplete,
+        };
+    }
+
     private handleBlockClicked = (block: Block) => {
         this.timelineContainer!.setTargetHeight(block.height);
         this.setStateTrackTargetBlock(block);
@@ -306,8 +324,8 @@ export default class Dag {
         this.isFetchFailingListener = isFetchFailingListener;
     }
 
-    setTargetBlockChangedListener = (targetBlockChangedListener: (block: Block | null) => void) => {
-        this.targetBlockChangedListener = targetBlockChangedListener;
+    setBlockInformationChangedListener = (BlockInformationChangedListener: (blockInformation: BlockInformation | null) => void) => {
+        this.blockInformationChangedListener = BlockInformationChangedListener;
     }
 
     private fetch = (url: string): Promise<Response | void> => {
