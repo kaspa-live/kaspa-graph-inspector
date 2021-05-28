@@ -2,19 +2,21 @@
     display: flex;
     flex-direction: row;
     text-transform: uppercase;
-    font-family: monospace;
     width: 100%;
 }
 
 .block-information-panel-hash .hash-start {
     align-self: flex-start;
+    font-family: monospace;
 }
 
 .block-information-panel-hash .hash-ellipsis {
     flex: 1 1 auto;
     text-align: center;
+    font-family: monospace;
 }
 
 .block-information-panel-hash .hash-end {
     align-self: flex-end;
+    font-family: monospace;
 }
