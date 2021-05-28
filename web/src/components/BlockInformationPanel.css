@@ -49,6 +49,10 @@
     align-self: flex-start;
 }
 
+.block-information-panel .selected-parent-hash {
+    font-weight: bold;
+}
+
 .block-information-panel .katnip-link-text {
     align-self: flex-end;
     font-weight: bold;

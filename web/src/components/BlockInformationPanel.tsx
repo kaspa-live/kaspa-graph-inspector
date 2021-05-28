@@ -29,6 +29,14 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         Blah blah blah <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
     </div>;
 
+    const parentElements = [];
+    if (blockInformation.isInformationComplete) {
+        for (let parentHash of blockInformation.parentHashes) {
+            const className = blockInformation.selectedParentHash === parentHash ? "selected-parent-hash" : "";
+            parentElements.push(<BlockInformationPanelHash hash={parentHash} className={className}/>)
+        }
+    }
+
     const mergeSetHashElements = [];
     if (blockInformation.isInformationComplete) {
         for (let mergeSetBlueHash of blockInformation.mergeSetBlueHashes) {
@@ -78,22 +86,11 @@ const BlockInformationPanel = ({blockInformation, onClose}:
                         : <div>
                             <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem label="Selected Parent Hash" tooltip={tooltip}>
-                                {!blockInformation.selectedParentHash
-                                    ?
-                                    <Typography className="block-information-panel-hash" variant="h6">None</Typography>
-                                    : <BlockInformationPanelHash hash={blockInformation.selectedParentHash}/>
-                                }
-                            </BlockInformationPanelListItem>
-
-                            <Divider className="block-information-divider"/>
-
                             <BlockInformationPanelListItem label="Block Parents" tooltip={tooltip}>
-                                {blockInformation.parentHashes.length === 0
+                                {parentElements.length === 0
                                     ?
                                     <Typography className="block-information-panel-hash" variant="h6">None</Typography>
-                                    : blockInformation.parentHashes.map(parentHash =>
-                                        <BlockInformationPanelHash hash={parentHash}/>)
+                                    : parentElements
                                 }
                             </BlockInformationPanelListItem>
 
