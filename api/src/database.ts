@@ -66,6 +66,8 @@ export default class Database {
                 selectedParentId: item.selected_parent_id ? parseInt(item.selected_parent_id) : null,
                 color: item.color,
                 isInVirtualSelectedParentChain: item.is_in_virtual_selected_parent_chain,
+                mergeSetRedIds: item.merge_set_red_ids,
+                mergeSetBlueIds: item.merge_set_blue_ids,
             };
         });
     }

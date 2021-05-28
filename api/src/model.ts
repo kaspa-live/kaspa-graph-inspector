@@ -14,6 +14,8 @@ export type Block = {
     selectedParentId: number | null,
     color: string,
     isInVirtualSelectedParentChain: boolean,
+    mergeSetRedIds: number[],
+    mergeSetBlueIds: number[],
 };
 
 export type Edge = {
