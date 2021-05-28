@@ -5,12 +5,12 @@
     color: #ffffff;
     display: flex;
     flex-direction: column;
-    padding: 20px;
 }
 
 .block-information-panel .block-information-header {
     display: flex;
     flex-direction: row;
+    padding: 20px 20px 0;
 }
 
 .block-information-panel .close-button {
@@ -18,8 +18,21 @@
     margin: -20px -20px auto auto;
 }
 
-.block-information-panel .block-information-content {
+.block-information-panel .block-information-content-container {
     flex: 1 1 auto;
+    overflow-y: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+
+    scrollbar-width: none; /* Hide the scrollbar in Firefox */
+    -ms-overflow-style: none; /* Hide the scrollbar in IE */
+}
+
+.block-information-panel .block-information-content-container::-webkit-scrollbar {
+    width: 0; /* Hide the scrollbar in WebKit-based browsers */
+}
+
+.block-information-panel .block-information-content {
     display: flex;
     flex-direction: column;
 }
@@ -58,6 +71,7 @@
     font-weight: bold;
     text-align: end;
     width: 100%;
+    padding: 0 20px 20px;
 }
 
 .block-information-panel .katnip-link-text a {
