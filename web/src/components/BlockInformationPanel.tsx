@@ -32,10 +32,12 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     const mergeSetHashElements = [];
     if (blockInformation.isInformationComplete) {
         for (let mergeSetBlueHash of blockInformation.mergeSetBlueHashes) {
-            mergeSetHashElements.push(<BlockInformationPanelHash hash={mergeSetBlueHash}/>);
+            mergeSetHashElements.push(
+                <BlockInformationPanelHash className="block-color-blue" hash={mergeSetBlueHash}/>);
         }
         for (let mergeSetRedHash of blockInformation.mergeSetRedHashes) {
-            mergeSetHashElements.push(<BlockInformationPanelHash hash={mergeSetRedHash}/>);
+            mergeSetHashElements.push(
+                <BlockInformationPanelHash className="block-color-red" hash={mergeSetRedHash}/>);
         }
     }
 
