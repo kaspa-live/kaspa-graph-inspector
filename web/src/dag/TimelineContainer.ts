@@ -4,7 +4,10 @@ import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
 import {Ease, Tween} from "@createjs/tweenjs";
 import HeightSprite from "./HeightSprite";
-import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
+import {
+    areBlocksAndEdgesAndHeightGroupsEqual,
+    BlocksAndEdgesAndHeightGroups
+} from "./model/BlocksAndEdgesAndHeightGroups";
 import {Edge} from "./model/Edge";
 import {HeightGroup} from "./model/HeightGroup";
 
@@ -21,6 +24,8 @@ export default class TimelineContainer extends PIXI.Container {
     private readonly heightKeysToHeightSprites: { [heightKey: string]: HeightSprite } = {};
     private readonly blockKeysToBlockSprites: { [blockKey: string]: BlockSprite } = {};
     private readonly edgeKeysToEdgeSprites: { [edgeKey: string]: EdgeSprite } = {};
+
+    private currentBlocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups | null = null;
 
     private blockKeysToBlocks: { [key: string]: Block } = {};
     private edgeKeysToEdges: { [key: string]: Edge } = {};
@@ -53,6 +58,14 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     setBlocksAndEdgesAndHeightGroups = (blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups, targetBlock: Block | null = null) => {
+        // Don't bother updating anything if there's nothing to update
+        // noinspection JSSuspiciousNameCombination
+        if (this.currentBlocksAndEdgesAndHeightGroups !== null
+            && areBlocksAndEdgesAndHeightGroupsEqual(this.currentBlocksAndEdgesAndHeightGroups, blocksAndEdgesAndHeightGroups)) {
+            return;
+        }
+        this.currentBlocksAndEdgesAndHeightGroups = blocksAndEdgesAndHeightGroups;
+
         const blocks = blocksAndEdgesAndHeightGroups.blocks;
         const edges = blocksAndEdgesAndHeightGroups.edges;
         const heightGroups = blocksAndEdgesAndHeightGroups.heightGroups;
