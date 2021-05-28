@@ -5,6 +5,7 @@ import {Ticker} from "@createjs/core";
 import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
 import {apiAddress} from "../addresses";
 import {BlockInformation} from "./model/BlockInformation";
+import {BlockHashById} from "./model/BlockHashById";
 
 export default class Dag {
     private readonly tickIntervalInMilliseconds = 1000;
@@ -285,6 +286,15 @@ export default class Dag {
 
         const [mergeSetBlueHashes, notFoundMergeSetBlueIds] = this.getCachedBlockHashes(block.mergeSetBlueIds);
         notFoundIds.concat(notFoundMergeSetBlueIds);
+
+        this.fetch(`${apiAddress}/blockHashesByIds?blockIds=${notFoundIds.join(",")}`)
+            .then(response => (response as Response).json())
+            .then(response => {
+                const blockHashesByIds: BlockHashById[] = response;
+                for (let blockHashById of blockHashesByIds) {
+                    this.blockHashesByIds[blockHashById.id] = blockHashById.hash
+                }
+            });
 
         return {
             block: block,
