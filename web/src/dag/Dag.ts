@@ -268,33 +268,35 @@ export default class Dag {
     }
 
     private buildBlockInformation = (block: Block): BlockInformation => {
-        const notFoundIds: number[] = [];
+        let notFoundIds: number[] = [];
 
         const [parentHashes, notFoundParentIds] = this.getCachedBlockHashes(block.parentIds);
-        notFoundIds.concat(notFoundParentIds);
+        notFoundIds = notFoundIds.concat(notFoundParentIds);
 
         let selectedParentHash = null;
         if (block.selectedParentId) {
             const [selectedParentHashes, notFoundSelectedParentIds] = this.getCachedBlockHashes([block.selectedParentId]);
-            notFoundIds.concat(notFoundSelectedParentIds);
+            notFoundIds = notFoundIds.concat(notFoundSelectedParentIds);
 
             selectedParentHash = selectedParentHashes[0];
         }
 
         const [mergeSetRedHashes, notFoundMergeSetRedIds] = this.getCachedBlockHashes(block.mergeSetRedIds);
-        notFoundIds.concat(notFoundMergeSetRedIds);
+        notFoundIds = notFoundIds.concat(notFoundMergeSetRedIds);
 
         const [mergeSetBlueHashes, notFoundMergeSetBlueIds] = this.getCachedBlockHashes(block.mergeSetBlueIds);
-        notFoundIds.concat(notFoundMergeSetBlueIds);
+        notFoundIds = notFoundIds.concat(notFoundMergeSetBlueIds);
 
-        this.fetch(`${apiAddress}/blockHashesByIds?blockIds=${notFoundIds.join(",")}`)
-            .then(response => (response as Response).json())
-            .then(response => {
-                const blockHashesByIds: BlockHashById[] = response;
-                for (let blockHashById of blockHashesByIds) {
-                    this.blockHashesByIds[blockHashById.id] = blockHashById.hash
-                }
-            });
+        if (notFoundIds.length > 0) {
+            this.fetch(`${apiAddress}/blockHashesByIds?blockIds=${notFoundIds.join(",")}`)
+                .then(response => (response as Response).json())
+                .then(response => {
+                    const blockHashesByIds: BlockHashById[] = response;
+                    for (let blockHashById of blockHashesByIds) {
+                        this.blockHashesByIds[blockHashById.id] = blockHashById.hash
+                    }
+                });
+        }
 
         return {
             block: block,
