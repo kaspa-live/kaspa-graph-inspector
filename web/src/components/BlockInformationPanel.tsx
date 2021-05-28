@@ -29,6 +29,16 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         Blah blah blah <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
     </div>;
 
+    const mergeSetHashElements = [];
+    if (blockInformation.isInformationComplete) {
+        for (let mergeSetBlueHash of blockInformation.mergeSetBlueHashes) {
+            mergeSetHashElements.push(<BlockInformationPanelHash hash={mergeSetBlueHash}/>);
+        }
+        for (let mergeSetRedHash of blockInformation.mergeSetRedHashes) {
+            mergeSetHashElements.push(<BlockInformationPanelHash hash={mergeSetRedHash}/>);
+        }
+    }
+
     return <Paper elevation={4}>
         <div className="block-information-panel">
             <div className="block-information-header">
@@ -82,6 +92,16 @@ const BlockInformationPanel = ({blockInformation, onClose}:
                                     <Typography className="block-information-panel-hash" variant="h6">None</Typography>
                                     : blockInformation.parentHashes.map(parentHash =>
                                         <BlockInformationPanelHash hash={parentHash}/>)
+                                }
+                            </BlockInformationPanelListItem>
+
+                            <Divider className="block-information-divider"/>
+
+                            <BlockInformationPanelListItem label="Block Merge Set" tooltip={tooltip}>
+                                {mergeSetHashElements.length === 0
+                                    ?
+                                    <Typography className="block-information-panel-hash" variant="h6">None</Typography>
+                                    : mergeSetHashElements
                                 }
                             </BlockInformationPanelListItem>
                         </div>

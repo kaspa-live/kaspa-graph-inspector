@@ -252,38 +252,48 @@ export default class Dag {
         }
     }
 
-    private getCachedBlockHashes = (blockIds: number[]): [string[], string[]] => {
+    private getCachedBlockHashes = (blockIds: number[]): [string[], number[]] => {
         const foundBlockHashes: string[] = [];
-        const notFoundBlockHashes: string[] = [];
+        const notFoundBlockIds: number[] = [];
         for (let blockId of blockIds) {
             const blockHash = this.blockHashesByIds[blockId];
             if (blockHash) {
                 foundBlockHashes.push(blockHash);
             } else {
-                notFoundBlockHashes.push(blockHash);
+                notFoundBlockIds.push(blockId);
             }
         }
-        return [foundBlockHashes, notFoundBlockHashes];
+        return [foundBlockHashes, notFoundBlockIds];
     }
 
     private buildBlockInformation = (block: Block): BlockInformation => {
-        let isInformationComplete = true;
+        const notFoundIds: number[] = [];
 
-        const [parentFoundHashes, parentNotFoundHashes] = this.getCachedBlockHashes(block.parentIds);
-        isInformationComplete &&= parentNotFoundHashes.length === 0;
+        const [parentHashes, notFoundParentIds] = this.getCachedBlockHashes(block.parentIds);
+        notFoundIds.concat(notFoundParentIds);
 
         let selectedParentHash = null;
         if (block.selectedParentId) {
-            const [selectedParentFoundHashes, selectedParentNotFoundHashes] = this.getCachedBlockHashes([block.selectedParentId]);
-            isInformationComplete &&= selectedParentNotFoundHashes.length === 0;
-            selectedParentHash = selectedParentFoundHashes[0];
+            const [selectedParentHashes, notFoundSelectedParentIds] = this.getCachedBlockHashes([block.selectedParentId]);
+            notFoundIds.concat(notFoundSelectedParentIds);
+
+            selectedParentHash = selectedParentHashes[0];
         }
+
+        const [mergeSetRedHashes, notFoundMergeSetRedIds] = this.getCachedBlockHashes(block.mergeSetRedIds);
+        notFoundIds.concat(notFoundMergeSetRedIds);
+
+        const [mergeSetBlueHashes, notFoundMergeSetBlueIds] = this.getCachedBlockHashes(block.mergeSetBlueIds);
+        notFoundIds.concat(notFoundMergeSetBlueIds);
 
         return {
             block: block,
-            parentHashes: parentFoundHashes,
+            parentHashes: parentHashes,
             selectedParentHash: selectedParentHash,
-            isInformationComplete: isInformationComplete,
+            mergeSetRedHashes: mergeSetRedHashes,
+            mergeSetBlueHashes: mergeSetBlueHashes,
+
+            isInformationComplete: notFoundIds.length === 0,
         };
     }
 
