@@ -36,8 +36,8 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         magna feugiat venenatis.
     </div>
 
-    const blockColorTooltip = <div className="information-tooltip">
-        A block's color is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+    const blockParentsTooltip = <div className="information-tooltip">
+        A block's parents are <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
@@ -45,8 +45,8 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         blah blah
     </div>;
 
-    const blockParentsTooltip = <div className="information-tooltip">
-        A block's parents are <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+    const blockColorTooltip = <div className="information-tooltip">
+        A block's color is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
     </div>;
 
     const blockMergeSetTooltip = <div className="information-tooltip">
@@ -85,55 +85,53 @@ const BlockInformationPanel = ({blockInformation, onClose}:
             </div>
             <div className="block-information-content-container">
                 <div className="block-information-content">
-                    <List>
-                        <BlockInformationPanelListItem label="Block Hash" tooltip={blockHashTooltip}>
-                            <BlockInformationPanelHash hash={blockInformation.block.blockHash}/>
-                        </BlockInformationPanelListItem>
+                    {!blockInformation.isInformationComplete
+                        ? undefined
+                        : <List>
+                            <BlockInformationPanelListItem label="Block Hash" tooltip={blockHashTooltip}>
+                                <BlockInformationPanelHash hash={blockInformation.block.blockHash}/>
+                            </BlockInformationPanelListItem>
 
-                        <Divider className="block-information-divider"/>
+                            <Divider className="block-information-divider"/>
 
-                        <BlockInformationPanelListItem label="Block Color" tooltip={blockColorTooltip}>
-                            <Typography className={`block-color ${blockColorClass}`} variant="h6">
-                                {blockColorText}
-                            </Typography>
-                        </BlockInformationPanelListItem>
+                            <BlockInformationPanelListItem label="Block Parents" tooltip={blockParentsTooltip}>
+                                {parentElements.length === 0
+                                    ?
+                                    <Typography className="block-information-panel-hash"
+                                                variant="h6">None</Typography>
+                                    : parentElements
+                                }
+                            </BlockInformationPanelListItem>
 
-                        <Divider className="block-information-divider"/>
+                            <Divider className="block-information-divider"/>
 
-                        <BlockInformationPanelListItem label="Is Block In VSPC"
-                                                       tooltip={isBlockInVirtualSelectedParentChainTooltip}>
-                            <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
-                                {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
-                            </Typography>
-                        </BlockInformationPanelListItem>
+                            <BlockInformationPanelListItem label="Is Block In VSPC"
+                                                           tooltip={isBlockInVirtualSelectedParentChainTooltip}>
+                                <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
+                                    {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
+                                </Typography>
+                            </BlockInformationPanelListItem>
 
-                        {!blockInformation.isInformationComplete
-                            ? undefined
-                            : <div>
-                                <Divider className="block-information-divider"/>
+                            <Divider className="block-information-divider"/>
 
-                                <BlockInformationPanelListItem label="Block Parents" tooltip={blockParentsTooltip}>
-                                    {parentElements.length === 0
-                                        ?
-                                        <Typography className="block-information-panel-hash"
-                                                    variant="h6">None</Typography>
-                                        : parentElements
-                                    }
-                                </BlockInformationPanelListItem>
+                            <BlockInformationPanelListItem label="Block Color" tooltip={blockColorTooltip}>
+                                <Typography className={`block-color ${blockColorClass}`} variant="h6">
+                                    {blockColorText}
+                                </Typography>
+                            </BlockInformationPanelListItem>
 
-                                <Divider className="block-information-divider"/>
+                            <Divider className="block-information-divider"/>
 
-                                <BlockInformationPanelListItem label="Block Merge Set" tooltip={blockMergeSetTooltip}>
-                                    {mergeSetHashElements.length === 0
-                                        ?
-                                        <Typography className="block-information-panel-hash"
-                                                    variant="h6">None</Typography>
-                                        : mergeSetHashElements
-                                    }
-                                </BlockInformationPanelListItem>
-                            </div>
-                        }
-                    </List>
+                            <BlockInformationPanelListItem label="Block Merge Set" tooltip={blockMergeSetTooltip}>
+                                {mergeSetHashElements.length === 0
+                                    ?
+                                    <Typography className="block-information-panel-hash"
+                                                variant="h6">None</Typography>
+                                    : mergeSetHashElements
+                                }
+                            </BlockInformationPanelListItem>
+                        </List>
+                    }
                 </div>
             </div>
             <div className="katnip-link-text">
