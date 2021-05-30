@@ -1,7 +1,8 @@
-import {ListItem, Tooltip, Typography} from "@material-ui/core";
+import {ListItem, Typography} from "@material-ui/core";
 import './BlockInformationPanelListItem.css'
 import {ReactFragment, ReactNode} from "react";
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import BlockInformationPanelTooltip from "./BlockInformationPanelTooltip";
 
 const BlockInformationPanelListItem = ({children, label, tooltip}:
                                            { children: ReactNode, label: string, tooltip: ReactFragment }) => {
@@ -11,9 +12,9 @@ const BlockInformationPanelListItem = ({children, label, tooltip}:
             <Typography className="label" variant="h6">
                 {label}
             </Typography>
-            <Tooltip title={tooltip} arrow interactive>
+            <BlockInformationPanelTooltip title={tooltip}>
                 <InfoOutlinedIcon className="info-icon"/>
-            </Tooltip>
+            </BlockInformationPanelTooltip>
         </div>
         {children}
     </ListItem>
