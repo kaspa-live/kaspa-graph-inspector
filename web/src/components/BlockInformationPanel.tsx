@@ -25,8 +25,32 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         blockColorClass = "block-color-red";
     }
 
-    const tooltip = <div>
-        Blah blah blah <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+    const blockHashTooltip = <div className="information-tooltip">
+        A block hash is <a href="https://google.com" target="_blank"> blah blah blah</a> Lorem ipsum dolor sit amet,
+        consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo commodo, mattis urna et,
+        viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis et, cursus eu mauris.
+        Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta erat et facilisis
+        vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in sodales lorem.
+        Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget est. Morbi
+        blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel felis a
+        magna feugiat venenatis.
+    </div>
+
+    const blockColorTooltip = <div className="information-tooltip">
+        A block's color is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+    </div>;
+
+    const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
+        The virtual selected parent chain is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah
+        blah blah
+    </div>;
+
+    const blockParentsTooltip = <div className="information-tooltip">
+        A block's parents are <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+    </div>;
+
+    const blockMergeSetTooltip = <div className="information-tooltip">
+        A block's merge set is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
     </div>;
 
     const parentElements = [];
@@ -62,13 +86,13 @@ const BlockInformationPanel = ({blockInformation, onClose}:
             <div className="block-information-content-container">
                 <div className="block-information-content">
                     <List>
-                        <BlockInformationPanelListItem label="Block Hash" tooltip={tooltip}>
+                        <BlockInformationPanelListItem label="Block Hash" tooltip={blockHashTooltip}>
                             <BlockInformationPanelHash hash={blockInformation.block.blockHash}/>
                         </BlockInformationPanelListItem>
 
                         <Divider className="block-information-divider"/>
 
-                        <BlockInformationPanelListItem label="Block Color" tooltip={tooltip}>
+                        <BlockInformationPanelListItem label="Block Color" tooltip={blockColorTooltip}>
                             <Typography className={`block-color ${blockColorClass}`} variant="h6">
                                 {blockColorText}
                             </Typography>
@@ -76,7 +100,8 @@ const BlockInformationPanel = ({blockInformation, onClose}:
 
                         <Divider className="block-information-divider"/>
 
-                        <BlockInformationPanelListItem label="Is Block In VSPC" tooltip={tooltip}>
+                        <BlockInformationPanelListItem label="Is Block In VSPC"
+                                                       tooltip={isBlockInVirtualSelectedParentChainTooltip}>
                             <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
                                 {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
                             </Typography>
@@ -87,7 +112,7 @@ const BlockInformationPanel = ({blockInformation, onClose}:
                             : <div>
                                 <Divider className="block-information-divider"/>
 
-                                <BlockInformationPanelListItem label="Block Parents" tooltip={tooltip}>
+                                <BlockInformationPanelListItem label="Block Parents" tooltip={blockParentsTooltip}>
                                     {parentElements.length === 0
                                         ?
                                         <Typography className="block-information-panel-hash"
@@ -98,7 +123,7 @@ const BlockInformationPanel = ({blockInformation, onClose}:
 
                                 <Divider className="block-information-divider"/>
 
-                                <BlockInformationPanelListItem label="Block Merge Set" tooltip={tooltip}>
+                                <BlockInformationPanelListItem label="Block Merge Set" tooltip={blockMergeSetTooltip}>
                                     {mergeSetHashElements.length === 0
                                         ?
                                         <Typography className="block-information-panel-hash"

@@ -66,6 +66,16 @@
     font-weight: bold;
 }
 
+.information-tooltip {
+    max-width: 20vw;
+    text-align: justify;
+    text-justify: inter-character;
+}
+
+.information-tooltip a {
+    text-decoration: underline;
+}
+
 .block-information-panel .katnip-link-text {
     align-self: flex-end;
     font-weight: bold;
