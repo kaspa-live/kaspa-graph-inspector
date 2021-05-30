@@ -21,7 +21,8 @@ const BlockInformationPanelTooltip = ({children, title}:
 
     const classes = useStyles();
 
-    return <Tooltip title={title} arrow interactive classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+    return <Tooltip title={title} arrow interactive placement="right"
+                    classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
         {children}
     </Tooltip>
 };
