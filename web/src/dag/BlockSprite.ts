@@ -1,8 +1,10 @@
 import * as PIXI from "pixi.js";
 import {Ease, Tween} from "@createjs/tweenjs";
 import {Block} from "./model/Block";
+import {BlockColor} from "./model/BlockColor";
 
 const blockColors: { [color: string]: number } = {"gray": 0xf5faff, "red": 0xfc606f, "blue": 0xb4cfed};
+const highlightColors: { [color: string]: number } = {"gray": 0x49849e, "red": 0xfc606f, "blue": 0xb4cfed};
 const blockRoundingRadius = 10;
 const blockTextures: { [key: string]: PIXI.RenderTexture } = {};
 
@@ -34,9 +36,11 @@ export default class BlockSprite extends PIXI.Container {
 
     private blockSize: number = 0;
     private isBlockSizeInitialized: boolean = false;
-    private blockColor: string = "gray";
+    private blockColor: string = BlockColor.GRAY;
     private isHighlighted: boolean = false;
+    private highlightColor: string = BlockColor.GRAY;
     private currentSprite: PIXI.Sprite;
+    private currentHighlight: PIXI.Graphics;
     private blockClickedListener: (block: Block) => void;
 
     constructor(application: PIXI.Application, block: Block) {
@@ -61,6 +65,9 @@ export default class BlockSprite extends PIXI.Container {
 
         this.currentSprite = this.buildSprite();
         this.spriteContainer.addChild(this.currentSprite);
+
+        this.currentHighlight = this.buildHighlight();
+        this.highlightContainer.addChild(this.currentHighlight);
 
         this.scale.set(this.unfocusedScale, this.unfocusedScale);
     }
@@ -103,13 +110,13 @@ export default class BlockSprite extends PIXI.Container {
         return text;
     }
 
-    private buildHighlight = (blockSize: number): PIXI.Graphics => {
+    private buildHighlight = (): PIXI.Graphics => {
         const highlightOffset = 11;
-        const highlightSize = blockSize + highlightOffset;
+        const highlightSize = this.blockSize + highlightOffset;
         const highlightRoundingRadius = blockRoundingRadius + (highlightOffset / 2);
 
         const graphics = new PIXI.Graphics();
-        graphics.lineStyle(5, 0x49849e);
+        graphics.lineStyle(5, highlightColors[this.highlightColor]);
         graphics.drawRoundedRect(0, 0, highlightSize, highlightSize, highlightRoundingRadius);
         graphics.position.set(-highlightSize / 2, -highlightSize / 2);
         return graphics;
@@ -124,7 +131,7 @@ export default class BlockSprite extends PIXI.Container {
             this.textContainer.removeChildren();
             this.textContainer.addChild(text);
 
-            const highlight = this.buildHighlight(blockSize);
+            const highlight = this.buildHighlight();
             this.highlightContainer.removeChildren();
             this.highlightContainer.addChild(highlight);
         }
@@ -152,13 +159,26 @@ export default class BlockSprite extends PIXI.Container {
         }
     }
 
-    setHighlighted = (isHighlighted: boolean) => {
-        if (this.isHighlighted !== isHighlighted) {
+    setHighlighted = (isHighlighted: boolean, highlightColor: string) => {
+        if (this.isHighlighted !== isHighlighted || this.highlightColor !== highlightColor) {
             this.isHighlighted = isHighlighted;
+            this.highlightColor = highlightColor;
 
             const toAlpha = this.isHighlighted ? 1.0 : 0.0;
             Tween.get(this.highlightContainer)
                 .to({alpha: toAlpha}, 300);
+
+            if (this.highlightColor !== highlightColor) {
+                const oldHighlight = this.currentHighlight;
+
+                this.currentHighlight = this.buildHighlight();
+                this.currentHighlight.alpha = 0.0;
+                this.highlightContainer.addChild(this.currentHighlight);
+
+                Tween.get(this.currentHighlight)
+                    .to({alpha: 1.0}, 300)
+                    .call(() => this.highlightContainer.removeChild(oldHighlight));
+            }
         }
     }
 
