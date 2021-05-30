@@ -159,26 +159,29 @@ export default class BlockSprite extends PIXI.Container {
         }
     }
 
-    setHighlighted = (isHighlighted: boolean, highlightColor: string) => {
-        if (this.isHighlighted !== isHighlighted || this.highlightColor !== highlightColor) {
+    setHighlighted = (isHighlighted: boolean) => {
+        if (this.isHighlighted !== isHighlighted) {
             this.isHighlighted = isHighlighted;
-            this.highlightColor = highlightColor;
 
             const toAlpha = this.isHighlighted ? 1.0 : 0.0;
             Tween.get(this.highlightContainer)
                 .to({alpha: toAlpha}, 300);
+        }
+    }
 
-            if (this.highlightColor !== highlightColor) {
-                const oldHighlight = this.currentHighlight;
+    setHighlightColor = (highlightColor: string) => {
+        if (this.highlightColor !== highlightColor) {
+            this.highlightColor = highlightColor;
 
-                this.currentHighlight = this.buildHighlight();
-                this.currentHighlight.alpha = 0.0;
-                this.highlightContainer.addChild(this.currentHighlight);
+            const oldHighlight = this.currentHighlight;
 
-                Tween.get(this.currentHighlight)
-                    .to({alpha: 1.0}, 300)
-                    .call(() => this.highlightContainer.removeChild(oldHighlight));
-            }
+            this.currentHighlight = this.buildHighlight();
+            this.currentHighlight.alpha = 0.0;
+            this.highlightContainer.addChild(this.currentHighlight);
+
+            Tween.get(this.currentHighlight)
+                .to({alpha: 1.0}, 300)
+                .call(() => this.highlightContainer.removeChild(oldHighlight));
         }
     }
 

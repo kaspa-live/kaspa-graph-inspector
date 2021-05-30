@@ -198,8 +198,30 @@ export default class TimelineContainer extends PIXI.Container {
     private assignBlockToBlockSprite = (blockSprite: BlockSprite, block: Block, targetBlockKey: string | null) => {
         blockSprite.setColor(block.color);
 
+        if (targetBlockKey === null) {
+            blockSprite.setHighlighted(false);
+            return;
+        }
+
         const blockKey = this.buildBlockKey(block.id);
-        blockSprite.setHighlighted(blockKey === targetBlockKey, BlockColor.GRAY);
+        const targetBlock = this.blockKeysToBlocks[targetBlockKey];
+        const mergeSetRedBlockKeys = targetBlock.mergeSetRedIds.map(blockId => this.buildBlockKey(blockId));
+        const mergeSetBlueBlockKeys = targetBlock.mergeSetBlueIds.map(blockId => this.buildBlockKey(blockId));
+
+        const mergeSetBlockKeys = mergeSetRedBlockKeys.concat(mergeSetBlueBlockKeys);
+        if (mergeSetBlockKeys.indexOf(blockKey) < 0 && blockKey !== targetBlockKey) {
+            blockSprite.setHighlighted(false);
+            return;
+        }
+
+        blockSprite.setHighlighted(true);
+        if (mergeSetRedBlockKeys.indexOf(blockKey) >= 0) {
+            blockSprite.setHighlightColor(BlockColor.RED);
+        } else if (mergeSetBlueBlockKeys.indexOf(blockKey) >= 0) {
+            blockSprite.setHighlightColor(BlockColor.BLUE);
+        } else {
+            blockSprite.setHighlightColor(BlockColor.GRAY);
+        }
     }
 
     private assignEdgeToEdgeSprite = (edgeSprite: EdgeSprite, edge: Edge, targetBlockKey: string | null) => {
