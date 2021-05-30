@@ -20,3 +20,8 @@
     align-self: flex-end;
     font-family: monospace;
 }
+
+.block-information-panel-tooltip {
+    text-transform: uppercase;
+    font-family: monospace;
+}
