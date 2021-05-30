@@ -4,7 +4,7 @@ import {Block} from "./model/Block";
 import {BlockColor} from "./model/BlockColor";
 
 const blockColors: { [color: string]: number } = {"gray": 0xf5faff, "red": 0xfc606f, "blue": 0xb4cfed};
-const highlightColors: { [color: string]: number } = {"gray": 0x49849e, "red": 0xfc606f, "blue": 0xb4cfed};
+const highlightColors: { [color: string]: number } = {"gray": 0x78869e, "red": 0x9e4949, "blue": 0x49849e};
 const blockRoundingRadius = 10;
 const blockTextures: { [key: string]: PIXI.RenderTexture } = {};
 
