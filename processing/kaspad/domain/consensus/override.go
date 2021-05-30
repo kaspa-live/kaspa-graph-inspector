@@ -113,3 +113,7 @@ func (c *Consensus) GetBlockRelations(blockHash *externalapi.DomainHash) (
 
 	return c.kaspadConsensus.GetBlockRelations(blockHash)
 }
+
+func (c *Consensus) GetBlockEvenIfHeaderOnly(blockHash *externalapi.DomainHash) (*externalapi.DomainBlock, error) {
+	return c.kaspadConsensus.GetBlockEvenIfHeaderOnly(blockHash)
+}
