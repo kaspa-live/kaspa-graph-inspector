@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js';
+import * as PIXI from "pixi.js-legacy";
 import TimelineContainer from "./TimelineContainer";
 import {Block} from "./model/Block";
 import {Ticker} from "@createjs/core";

@@ -1,4 +1,4 @@
-import * as PIXI from 'pixi.js'
+import * as PIXI from "pixi.js-legacy";
 import {Block} from "./model/Block";
 import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
