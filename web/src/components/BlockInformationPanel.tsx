@@ -34,14 +34,13 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     </div>
 
     const blockParentsTooltip = <div className="information-tooltip">
-        A block's parents are <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
-        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
-        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
-        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
-        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
-        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
-        felis a magna feugiat venenatis.
+        <p>Every block in the block DAG (aside from the genesis) has one or more <b>parents.</b> A <b>parent</b> is
+            simply the hash of another block that had been added to the DAG at a prior time.</p>
+        <p>Here, we represent each parent with an arrow. Note that all arrows point from left to right—from child to
+            parent. Moving towards the left in the graph reveals increasingly older generations of blocks until we reach
+            the leftmost, and oldest, block. That's the origin of the DAG, or the genesis.</p>
+        <p>A block's <b>selected parent</b> is the parent that has the most accumulated proof-of-work.</p>
+        <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
