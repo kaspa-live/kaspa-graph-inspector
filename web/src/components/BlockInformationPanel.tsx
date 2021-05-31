@@ -44,15 +44,12 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
-        The virtual selected parent chain is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
-        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
-        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
-        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
-        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
-        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
-        felis a magna feugiat venenatis.
-        blah blah
+        <p>The <b>virtual</b> block is a special, invisible block whose parents are always the blocks in the DAG that do
+            not yet have any children.</p>
+        <p>Like all blocks, the virtual has a selected parent block. That block likewise has a selected parent.
+            Following this <b>chain</b> of selected parents will eventually bring us to the genesis. We call this chain
+            the <b>virtual selected parent chain,</b> or the <b>VSPC.</b></p>
+        <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
     const blockColorTooltip = <div className="information-tooltip">
