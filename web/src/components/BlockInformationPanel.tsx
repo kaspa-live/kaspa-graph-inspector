@@ -26,31 +26,56 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     }
 
     const blockHashTooltip = <div className="information-tooltip">
-        A block hash is <a href="https://google.com" target="_blank"> blah blah blah</a> Lorem ipsum dolor sit amet,
-        consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo commodo, mattis urna et,
-        viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis et, cursus eu mauris.
-        Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta erat et facilisis
-        vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in sodales lorem.
-        Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget est. Morbi
-        blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel felis a
-        magna feugiat venenatis.
+        <p>The <b>hash</b> of a block is its unique identifier in the block DAG.</p>
+        <p>A block's hash is derived directly from the block itself using a cryptographic hash function. That ensures
+            that no two blocks in the DAG have the same hash, and that each hash represents only the block from which it
+            was derived.</p>
+        <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>
 
     const blockParentsTooltip = <div className="information-tooltip">
         A block's parents are <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
+        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
+        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
+        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
+        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
+        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
+        felis a magna feugiat venenatis.
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
         The virtual selected parent chain is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
+        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
+        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
+        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
+        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
+        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
+        felis a magna feugiat venenatis.
         blah blah
     </div>;
 
     const blockColorTooltip = <div className="information-tooltip">
         A block's color is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
+        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
+        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
+        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
+        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
+        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
+        felis a magna feugiat venenatis.
     </div>;
 
     const blockMergeSetTooltip = <div className="information-tooltip">
         A block's merge set is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
+        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
+        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
+        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
+        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
+        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
+        felis a magna feugiat venenatis.
     </div>;
 
     const parentElements = [];
