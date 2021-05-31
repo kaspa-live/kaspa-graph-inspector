@@ -118,6 +118,6 @@ func (c *Consensus) GetBlockEvenIfHeaderOnly(blockHash *externalapi.DomainHash) 
 	return c.kaspadConsensus.GetBlockEvenIfHeaderOnly(blockHash)
 }
 
-func (c *Consensus) EstimateNetworkHashesPerSecond(windowSize int) (uint64, error) {
-	return c.kaspadConsensus.EstimateNetworkHashesPerSecond(windowSize)
+func (c *Consensus) EstimateNetworkHashesPerSecond(startHash *externalapi.DomainHash,windowSize int) (uint64, error) {
+	return c.kaspadConsensus.EstimateNetworkHashesPerSecond(startHash, windowSize)
 }
