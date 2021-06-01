@@ -46,6 +46,11 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     const blockMergeSetTooltip = <div className="information-tooltip">
         <p>The <b>merge set</b> of a block is the set of blocks that are not an ancestor (either a direct or indirect
             parent) of the block's selected parent. Note that this includes the block's selected parent itself.</p>
+        <p>Every block in the merge set is classified into one of two <b>colors</b>: <b className="block-color-red">
+            red</b> and <b className="block-color-blue">blue</b>.</p>
+        <p>For security reasons, only a certain amount of blocks in a block's merge set may
+            be <b className="block-color-blue">blue</b>. The blocks that do not make the cut are regarded as
+            attacker blocks and are marked <b className="block-color-red">red</b>.</p>
         <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
