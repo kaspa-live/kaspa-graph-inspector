@@ -43,6 +43,17 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
+    const blockMergeSetTooltip = <div className="information-tooltip">
+        A block's merge set is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
+        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
+        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
+        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
+        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
+        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
+        felis a magna feugiat venenatis.
+    </div>;
+
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
         <p>The <b>virtual</b> block is a special, invisible block whose parents are always the blocks in the DAG that do
             not yet have any children.</p>
@@ -54,17 +65,6 @@ const BlockInformationPanel = ({blockInformation, onClose}:
 
     const blockColorTooltip = <div className="information-tooltip">
         A block's color is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
-        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
-        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
-        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
-        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
-        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
-        felis a magna feugiat venenatis.
-    </div>;
-
-    const blockMergeSetTooltip = <div className="information-tooltip">
-        A block's merge set is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
         commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
         et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
@@ -126,6 +126,17 @@ const BlockInformationPanel = ({blockInformation, onClose}:
 
                             <Divider className="block-information-divider"/>
 
+                            <BlockInformationPanelListItem label="Block Merge Set" tooltip={blockMergeSetTooltip}>
+                                {mergeSetHashElements.length === 0
+                                    ?
+                                    <Typography className="block-information-panel-hash"
+                                                variant="h6">None</Typography>
+                                    : mergeSetHashElements
+                                }
+                            </BlockInformationPanelListItem>
+
+                            <Divider className="block-information-divider"/>
+
                             <BlockInformationPanelListItem label="Is Block In VSPC"
                                                            tooltip={isBlockInVirtualSelectedParentChainTooltip}>
                                 <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
@@ -139,17 +150,6 @@ const BlockInformationPanel = ({blockInformation, onClose}:
                                 <Typography className={`block-color ${blockColorClass}`} variant="h6">
                                     {blockColorText}
                                 </Typography>
-                            </BlockInformationPanelListItem>
-
-                            <Divider className="block-information-divider"/>
-
-                            <BlockInformationPanelListItem label="Block Merge Set" tooltip={blockMergeSetTooltip}>
-                                {mergeSetHashElements.length === 0
-                                    ?
-                                    <Typography className="block-information-panel-hash"
-                                                variant="h6">None</Typography>
-                                    : mergeSetHashElements
-                                }
                             </BlockInformationPanelListItem>
                         </List>
                     }
