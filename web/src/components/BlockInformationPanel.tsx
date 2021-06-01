@@ -44,22 +44,17 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     </div>;
 
     const blockMergeSetTooltip = <div className="information-tooltip">
-        A block's merge set is <a href="https://google.com" target="_blank"> blah blah blah</a> blah blah blah blah
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent sit amet rhoncus ipsum. Phasellus sit amet leo
-        commodo, mattis urna et, viverra nunc. Vestibulum faucibus pharetra nulla. Nam nisi nibh, tempor id facilisis
-        et, cursus eu mauris. Nunc ut magna ex. Sed porta hendrerit sapien, nec mollis erat elementum non. Donec porta
-        erat et facilisis vulputate. Vivamus dapibus ipsum quam. Quisque sed tempor mauris, at gravida risus. Ut in
-        sodales lorem. Quisque cursus fringilla dictum. Nullam lacus dolor, consequat luctus malesuada id, commodo eget
-        est. Morbi blandit lobortis elit a ultrices. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel
-        felis a magna feugiat venenatis.
+        <p>Every block in the DAG (aside from the genesis) has a selected parent. That selected parent likewise has a
+            selected parent. Following this <b>chain</b> of selected parents will eventually bring us to the genesis. We
+            call this chain the <b>Selected Parent Chain</b> of a block, or its <b>SPC.</b></p>
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
         <p>The <b>virtual</b> block is a special, invisible block whose parents are always the blocks in the DAG that do
             not yet have any children.</p>
-        <p>Like all blocks, the virtual has a selected parent block. That block likewise has a selected parent.
-            Following this <b>chain</b> of selected parents will eventually bring us to the genesis. We call this chain
-            the <b>virtual selected parent chain,</b> or the <b>VSPC.</b></p>
+        <p>Like all blocks, the virtual has a selected parent block. That block likewise has a selected parent, and so
+            on. This forms a Selected Parent Chain with the Virtual as its origin. We call this special chain the <b>Virtual
+                Selected Parent Chain,</b> or the <b>VSPC</b> for short.</p>
         <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
