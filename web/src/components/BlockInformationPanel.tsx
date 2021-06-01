@@ -44,17 +44,19 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     </div>;
 
     const blockMergeSetTooltip = <div className="information-tooltip">
-        <p>Every block in the DAG (aside from the genesis) has a selected parent. That selected parent likewise has a
-            selected parent. Following this <b>chain</b> of selected parents will eventually bring us to the genesis. We
-            call this chain the <b>Selected Parent Chain</b> of a block, or its <b>SPC.</b></p>
+        <p>The <b>merge set</b> of a block is the set of blocks that are not an ancestor (either a direct or indirect
+            parent) of the block's selected parent. Note that this includes the block's selected parent itself.</p>
+        <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
         <p>The <b>virtual</b> block is a special, invisible block whose parents are always the blocks in the DAG that do
             not yet have any children.</p>
-        <p>Like all blocks, the virtual has a selected parent block. That block likewise has a selected parent, and so
-            on. This forms a Selected Parent Chain with the Virtual as its origin. We call this special chain the <b>Virtual
-                Selected Parent Chain,</b> or the <b>VSPC</b> for short.</p>
+        <p>Every block in the DAG (aside from the genesis) has a selected parent. That selected parent likewise has a
+            selected parent. Following this <b>chain</b> of selected parents will eventually bring us to the genesis. We
+            call this chain the <b>Selected Parent Chain</b> of a block, or its <b>SPC.</b></p>
+        <p>Like all blocks, the virtual has a selected parent block. The Selected Parent Chain of the virtual is plainly
+            called the <b>Virtual Selected Parent Chain,</b> or the <b>VSPC</b> for short.</p>
         <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
