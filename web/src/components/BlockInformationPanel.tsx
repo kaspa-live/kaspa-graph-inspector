@@ -28,15 +28,15 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     const blockHashTooltip = <div className="information-tooltip">
         <p>The <b>hash</b> of a block is its unique identifier in the block DAG.</p>
         <p>A block's hash is derived directly from the block itself using a cryptographic hash function. That ensures
-            that no two blocks in the DAG have the same hash, and that each hash represents only the block from which it
-            was derived.</p>
+            that no two blocks in the DAG have the same hash, and that each hash represents only the original block from
+            which it was derived.</p>
         <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>
 
     const blockParentsTooltip = <div className="information-tooltip">
         <p>Every block in the block DAG (aside from the genesis) has one or more <b>parents.</b> A <b>parent</b> is
             simply the hash of another block that had been added to the DAG at a prior time.</p>
-        <p>Here, we represent each parent with an arrow. Note that all arrows point from left to right—from child to
+        <p>Here, we represent each parent with an arrow. Note that all arrows point from right to left—from child to
             parent. Moving towards the left in the graph reveals increasingly older generations of blocks until we reach
             the leftmost, and oldest, block. That's the origin of the DAG, or the genesis.</p>
         <p>A block's <b>selected parent</b> is the parent that has the most accumulated proof-of-work.</p>
@@ -44,9 +44,10 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     </div>;
 
     const blockMergeSetTooltip = <div className="information-tooltip">
-        <p>The <b>merge set</b> of a block is the set of blocks that are not an ancestor (either a direct or indirect
-            parent) of the block's selected parent. Note that this includes the block's selected parent itself.</p>
-        <p>Every block in the merge set is classified into one of two <b>colors</b>: <b className="block-color-red">
+        <p>The <b>merge set</b> of a block is the set of blocks that are an ancestor (either a direct or an indirect
+            parent) of the block but are not an ancestor of the block's selected parent. Note that this includes the
+            block's selected parent itself.</p>
+        <p>Every block in the merge set is classified as one of two <b>colors</b>: <b className="block-color-red">
             red</b> and <b className="block-color-blue">blue</b>.</p>
         <p>For security reasons, only a certain amount of blocks in a block's merge set may
             be <b className="block-color-blue">blue</b>. The blocks that do not make the cut are regarded as
@@ -55,21 +56,24 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
-        <p>The <b>virtual</b> block is a special, invisible block whose parents are always the blocks in the DAG that do
-            not yet have any children.</p>
         <p>Every block in the DAG (aside from the genesis) has a selected parent. That selected parent likewise has a
             selected parent. Following this <b>chain</b> of selected parents will eventually bring us to the genesis. We
             call this chain the <b>Selected Parent Chain</b> of a block, or its <b>SPC.</b></p>
+        <p>The <b>virtual</b> block is a special, invisible block whose parents are always the blocks in the DAG that do
+            not yet have any children.</p>
         <p>Like all blocks, the virtual has a selected parent block. The Selected Parent Chain of the virtual is plainly
-            called the <b>Virtual Selected Parent Chain,</b> or the <b>VSPC</b> for short.</p>
+            called the <b>Virtual Selected Parent Chain,</b> or the <b>VSPC.</b></p>
         <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
     const blockColorTooltip = <div className="information-tooltip">
-        <p>Blocks in the DAG are classified into one of two <b>colors:</b> <b className="block-color-red">
-            red (attacker)</b> and <b className="block-color-blue">blue (honest)</b>.</p>
-        <p>The color of every block in the DAG is determined by the combined <b>merge sets</b> of every block in
-            the <b>VSPC.</b></p>
+        <p>Every block in the DAG is classified as one of two <b>colors:</b>
+            <b className="block-color-red"> red (attacker)</b> and <b className="block-color-blue">blue (honest)</b>.
+        </p>
+        <p>If we were to combine all the merge sets of all the blocks in the VSPC, we would get a combined set of all
+            the blocks in the DAG. Therefore, to determine the color of a block, we find the VSPC block that contains
+            our block in its merge set. The color of our block in that merge set is the color of the block in the
+            DAG.</p>
         <p className="further-information"><a href="https://google.com/" target="_blank">Further Information</a></p>
     </div>;
 
