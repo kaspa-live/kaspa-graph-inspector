@@ -29,6 +29,8 @@ COPY . .
 RUN mv go.mod.bu go.mod
 RUN mv go.sum.bu go.sum
 
+RUN go env -w GOFLAGS=-mod=mod
+
 RUN GOOS=linux go build -o processing .
 
 FROM alpine
