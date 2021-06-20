@@ -10,27 +10,28 @@ import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/kaspanet/kaspad/domain/dagconfig"
+	"github.com/kaspanet/kaspad/domain/prefixmanager/prefix"
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
 	"github.com/pkg/errors"
 )
 
 var log = logging.Logger()
 
-func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Consensus, error) {
+func New(dagParams *dagconfig.Params, databaseContext database.Database, dbPrefix *prefix.Prefix) (*Consensus, error) {
 	consensusConfig := &kaspadConsensus.Config{
 		Params:                          *dagParams,
 		IsArchival:                      false,
 		EnableSanityCheckPruningUTXOSet: false,
 	}
 	kaspadConsensusFactory := kaspadConsensus.NewFactory()
-	kaspadConsensusInstance, err := kaspadConsensusFactory.NewConsensus(consensusConfig, databaseContext)
+	kaspadConsensusInstance, err := kaspadConsensusFactory.NewConsensus(consensusConfig, databaseContext, dbPrefix)
 	if err != nil {
 		return nil, err
 	}
 
 	dbManager := consensusDatabase.New(databaseContext)
 	pruningWindowSizeForCaches := int(dagParams.PruningDepth())
-	ghostdagDataStore := ghostdagdatastore.New(pruningWindowSizeForCaches, true)
+	ghostdagDataStore := ghostdagdatastore.New(dbPrefix, pruningWindowSizeForCaches, true)
 
 	return &Consensus{
 		dbManager:         dbManager,

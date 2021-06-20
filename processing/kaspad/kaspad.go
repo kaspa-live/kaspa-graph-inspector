@@ -6,14 +6,12 @@ import (
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	domainPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain"
 	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
-	"github.com/kaspanet/kaspad/app/appmessage"
 	"github.com/kaspanet/kaspad/app/protocol"
 	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	kaspadConfigPackage "github.com/kaspanet/kaspad/infrastructure/config"
 	"github.com/kaspanet/kaspad/infrastructure/network/addressmanager"
 	"github.com/kaspanet/kaspad/infrastructure/network/connmanager"
-	"github.com/kaspanet/kaspad/infrastructure/network/dnsseed"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter"
 	"github.com/kaspanet/kaspad/infrastructure/network/netadapter/router"
 	"net"
@@ -34,6 +32,7 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 	kaspadConfig.DNSSeed = config.DNSSeed
 	kaspadConfig.GRPCSeed = config.GRPCSeed
 	kaspadConfig.NetworkFlags = config.NetworkFlags
+	kaspadConfig.Lookup = net.LookupIP
 
 	logging.UpdateLogLevels()
 
@@ -90,20 +89,7 @@ func (k *Kaspad) Start() error {
 		return err
 	}
 	k.connectionManager.Start()
-	k.seedFromDNS()
 	return nil
-}
-
-func (k *Kaspad) seedFromDNS() {
-	dnsseed.SeedFromDNS(k.config.NetParams(), k.config.DNSSeed, false, nil,
-		net.LookupIP, func(addresses []*appmessage.NetAddress) {
-			_ = k.addressManager.AddAddresses(addresses...)
-		})
-
-	dnsseed.SeedFromGRPC(k.config.NetParams(), k.config.GRPCSeed, false, nil,
-		func(addresses []*appmessage.NetAddress) {
-			_ = k.addressManager.AddAddresses(addresses...)
-		})
 }
 
 func (k *Kaspad) Domain() *domainPackage.Domain {
