@@ -121,3 +121,8 @@ func (c *Consensus) GetBlockEvenIfHeaderOnly(blockHash *externalapi.DomainHash) 
 func (c *Consensus) EstimateNetworkHashesPerSecond(startHash *externalapi.DomainHash,windowSize int) (uint64, error) {
 	return c.kaspadConsensus.EstimateNetworkHashesPerSecond(startHash, windowSize)
 }
+
+func (c *Consensus) GetVirtualDAAScore() (uint64, error) {
+	return c.kaspadConsensus.GetVirtualDAAScore()
+}
+
