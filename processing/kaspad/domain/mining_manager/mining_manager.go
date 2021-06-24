@@ -11,6 +11,14 @@ func New() miningmanager.MiningManager {
 
 type miningManager struct{}
 
+func (mm *miningManager) ValidateAndInsertTransaction(transaction *externalapi.DomainTransaction, isHighPriority bool, allowOrphan bool) (acceptedTransactions []*externalapi.DomainTransaction, err error) {
+	panic("implement me")
+}
+
+func (mm *miningManager) RevalidateHighPriorityTransactions() (validTransactions []*externalapi.DomainTransaction, err error) {
+	panic("implement me")
+}
+
 func (mm *miningManager) TransactionCount() int {
 	panic("implement me")
 }
@@ -31,6 +39,3 @@ func (mm *miningManager) HandleNewBlockTransactions(txs []*externalapi.DomainTra
 	return nil, nil
 }
 
-func (mm *miningManager) ValidateAndInsertTransaction(transaction *externalapi.DomainTransaction, allowOrphan bool) error {
-	return nil
-}
