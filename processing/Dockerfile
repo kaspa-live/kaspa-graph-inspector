@@ -28,6 +28,7 @@ COPY . .
 # Restore go.mod and go.sum because `COPY . .` overwrote them
 RUN mv go.mod.bu go.mod
 RUN mv go.sum.bu go.sum
+RUN go mod tidy
 
 RUN go env -w GOFLAGS=-mod=mod
 
