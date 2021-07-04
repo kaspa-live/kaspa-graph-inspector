@@ -12,15 +12,15 @@ func New() miningmanager.MiningManager {
 type miningManager struct{}
 
 func (mm *miningManager) ValidateAndInsertTransaction(transaction *externalapi.DomainTransaction, isHighPriority bool, allowOrphan bool) (acceptedTransactions []*externalapi.DomainTransaction, err error) {
-	panic("implement me")
+	return nil, nil
 }
 
 func (mm *miningManager) RevalidateHighPriorityTransactions() (validTransactions []*externalapi.DomainTransaction, err error) {
-	panic("implement me")
+	return nil, nil
 }
 
 func (mm *miningManager) TransactionCount() int {
-	panic("implement me")
+	return 0
 }
 
 func (mm *miningManager) GetBlockTemplate(coinbaseData *externalapi.DomainCoinbaseData) (*externalapi.DomainBlock, error) {
@@ -32,10 +32,9 @@ func (mm *miningManager) GetTransaction(transactionID *externalapi.DomainTransac
 }
 
 func (mm *miningManager) AllTransactions() []*externalapi.DomainTransaction {
-	panic("unimplemented")
+	return nil
 }
 
 func (mm *miningManager) HandleNewBlockTransactions(txs []*externalapi.DomainTransaction) ([]*externalapi.DomainTransaction, error) {
 	return nil, nil
 }
-
