@@ -83,8 +83,8 @@ func (p *Processing) insertGenesisIfRequired() error {
 func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
 		blockHash := consensushashing.BlockHash(block)
-		log.Debugf("Preprocessing block %s", blockHash)
-		defer log.Debugf("Finished preprocessing block %s", blockHash)
+		log.Infof("Preprocessing block %s", blockHash)
+		defer log.Infof("Finished preprocessing block %s", blockHash)
 
 		blockExists, err := p.database.DoesBlockExist(databaseTransaction, blockHash)
 		if err != nil {
@@ -173,8 +173,8 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
 		blockHash := consensushashing.BlockHash(block)
-		log.Debugf("Processing added block %s", blockHash)
-		defer log.Debugf("Finished processing added block %s", blockHash)
+		log.Infof("Processing added block %s", blockHash)
+		defer log.Infof("Finished processing added block %s", blockHash)
 
 		blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
 		if err != nil {
