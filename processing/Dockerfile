@@ -14,9 +14,10 @@ ARG KASPAD_VERSION
 
 # Exit if KASPAD_VERSION is not set
 RUN if [ -z "${KASPAD_VERSION}" ]; then exit 1; fi
+ARG KASPAD_REPOSITORY='github.com/kaspanet/kaspad'
 
 # Replace the kaspad version in go.mod
-RUN go mod edit -replace github.com/kaspanet/kaspad=github.com/kaspanet/kaspad@$KASPAD_VERSION
+RUN go mod edit -replace github.com/kaspanet/kaspad=$KASPAD_REPOSITORY@$KASPAD_VERSION
 
 RUN go mod download
 
