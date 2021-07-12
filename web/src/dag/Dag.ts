@@ -132,7 +132,7 @@ export default class Dag {
         this.blockInformationChangedListener(null);
 
         const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
-        const blocksAndEdgesAndHeightGroups = await this.dataSource.blocksBetweenHeights(startHeight, endHeight);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource.getBlocksBetweenHeights(startHeight, endHeight);
         this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
@@ -165,7 +165,7 @@ export default class Dag {
         }
 
         const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
-        const blocksAndEdgesAndHeightGroups = await this.dataSource.blockHash(targetHash, heightDifference);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource.getBlockHash(targetHash, heightDifference);
         this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
@@ -216,7 +216,7 @@ export default class Dag {
         }
 
         const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
-        const blocksAndEdgesAndHeightGroups = await this.dataSource.head(heightDifference);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource.getHead(heightDifference);
         this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
@@ -288,7 +288,7 @@ export default class Dag {
         notFoundIds = notFoundIds.concat(notFoundMergeSetBlueIds);
 
         if (notFoundIds.length > 0) {
-            const blockHashesByIds = await this.dataSource.blockHashesByIds(notFoundIds.join(","));
+            const blockHashesByIds = await this.dataSource.getBlockHashesByIds(notFoundIds.join(","));
             if (blockHashesByIds) {
                 for (let blockHashById of blockHashesByIds) {
                     this.blockHashesByIds[blockHashById.id] = blockHashById.hash

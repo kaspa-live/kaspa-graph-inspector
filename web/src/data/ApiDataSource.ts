@@ -4,21 +4,21 @@ import {apiAddress} from "../addresses";
 import {BlocksAndEdgesAndHeightGroups} from "../dag/model/BlocksAndEdgesAndHeightGroups";
 
 export default class ApiDataSource implements DataSource {
-    blocksBetweenHeights = (startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+    getBlocksBetweenHeights = (startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
         return this.fetch(`${apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
-    }
+    };
 
-    blockHash = (targetHash: string, heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+    getBlockHash = (targetHash: string, heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
         return this.fetch(`${apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
-    }
+    };
 
-    head = (heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+    getHead = (heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
         return this.fetch(`${apiAddress}/head?heightDifference=${heightDifference}`);
-    }
+    };
 
-    blockHashesByIds = (blockIds: string): Promise<BlockHashById[] | void> => {
+    getBlockHashesByIds = (blockIds: string): Promise<BlockHashById[] | void> => {
         return this.fetch(`${apiAddress}/blockHashesByIds?blockIds=${blockIds}`);
-    }
+    };
 
     private fetch = async <T>(url: string): Promise<T | void> => {
         const response = await fetch(url)
@@ -32,5 +32,5 @@ export default class ApiDataSource implements DataSource {
             return Promise.resolve();
         }
         return response.json();
-    }
+    };
 }
