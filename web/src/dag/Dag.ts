@@ -320,22 +320,30 @@ export default class Dag {
     }
 
     setStateTrackTargetBlock = (targetBlock: Block) => {
-        const urlParams = new URLSearchParams();
+        const urlParams = this.initializeUrlSearchParams();
         urlParams.set("hash", `${targetBlock.blockHash}`);
         window.history.pushState(null, "", `?${urlParams}`);
         this.run();
     }
 
     setStateTrackTargetHeight = (targetHeight: number) => {
-        const urlParams = new URLSearchParams();
+        const urlParams = this.initializeUrlSearchParams();
         urlParams.set("height", `${targetHeight}`);
         window.history.pushState(null, "", `?${urlParams}`);
         this.run();
     }
 
     setStateTrackHead = () => {
-        window.history.pushState(null, "", "?");
+        const urlParams = this.initializeUrlSearchParams();
+        window.history.pushState(null, "", `?${urlParams}`);
         this.run();
+    }
+
+    private initializeUrlSearchParams = (): URLSearchParams => {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.delete("hash");
+        urlParams.delete("height");
+        return urlParams;
     }
 
     setIsTrackingChangedListener = (isTrackingChangedListener: (isTracking: boolean) => void) => {
