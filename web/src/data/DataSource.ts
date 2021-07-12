@@ -1,6 +1,5 @@
 import {BlocksAndEdgesAndHeightGroups} from "../dag/model/BlocksAndEdgesAndHeightGroups";
 import {BlockHashById} from "../dag/model/BlockHashById";
-import TestDataSource from "./TestDataSource";
 import ApiDataSource from "./ApiDataSource";
 import ChainDataSource from "./ChainDataSource";
 
@@ -19,13 +18,8 @@ export default interface DataSource {
 const resolveDataSource = (): DataSource => {
     const urlParams = new URLSearchParams(window.location.search);
     const dataSource = urlParams.get("dataSource");
-    if (dataSource) {
-        switch (dataSource) {
-            case "chain":
-                return resolveChainDataSource(urlParams);
-            default:
-                return new TestDataSource();
-        }
+    if (dataSource === "chain") {
+        return resolveChainDataSource(urlParams);
     }
     return new ApiDataSource();
 };
