@@ -52,7 +52,7 @@ export default class ChainDataSource implements DataSource {
             size: 1,
         });
         this.blockHashesByIds[nextBlockId] = nextBlockHash;
-        this.blockIdsByHashes[nextBlockHash] = nextBlockId
+        this.blockIdsByHashes[nextBlockHash] = nextBlockId;
     }
 
     getTickIntervalInMilliseconds = (): number => {
