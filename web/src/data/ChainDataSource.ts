@@ -1,0 +1,139 @@
+import DataSource from "./DataSource";
+import {BlocksAndEdgesAndHeightGroups} from "../dag/model/BlocksAndEdgesAndHeightGroups";
+import {BlockHashById} from "../dag/model/BlockHashById";
+import {Block} from "../dag/model/Block";
+import {BlockColor} from "../dag/model/BlockColor";
+import {Edge} from "../dag/model/Edge";
+import {HeightGroup} from "../dag/model/HeightGroup";
+
+export default class ChainDataSource implements DataSource {
+    private readonly blockInterval: number;
+    private readonly startTime: Date;
+
+    constructor(blockInterval: number) {
+        this.blockInterval = blockInterval;
+        this.startTime = new Date();
+
+        this.createNextBlockAndReschedule();
+    }
+
+    private createNextBlockAndReschedule = () => {
+        this.createNextBlock();
+        window.setTimeout(this.createNextBlockAndReschedule, this.blockInterval)
+    }
+
+    private createNextBlock = () => {
+        const lastBlock = this.blocks[this.blocks.length - 1];
+        const lastBlockId = lastBlock.id;
+        const nextBlockId = lastBlockId + 1;
+        const nextBlockHash = `${nextBlockId}`.repeat(8);
+
+        this.blocks.push({
+            id: nextBlockId,
+            blockHash: nextBlockHash,
+            timestamp: nextBlockId * this.blockInterval,
+            parentIds: [lastBlockId],
+            height: nextBlockId,
+            heightGroupIndex: 0,
+            selectedParentId: lastBlockId,
+            color: BlockColor.BLUE,
+            isInVirtualSelectedParentChain: true,
+            mergeSetRedIds: [],
+            mergeSetBlueIds: [lastBlockId],
+        });
+        this.edges.push({
+            fromBlockId: nextBlockId,
+            toBlockId: lastBlockId,
+            fromHeight: nextBlockId,
+            toHeight: lastBlockId,
+            fromHeightGroupIndex: 0,
+            toHeightGroupIndex: 0,
+        });
+        this.heightGroups.push({
+            height: nextBlockId,
+            size: 1,
+        });
+        this.blockHashesByIds[nextBlockId] = nextBlockHash;
+        this.blockIdsByHashes[nextBlockHash] = nextBlockId
+    }
+
+    getTickIntervalInMilliseconds = (): number => {
+        return this.blockInterval;
+    };
+
+    getBlocksBetweenHeights = async (startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+        if (startHeight < 0) {
+            startHeight = 0;
+        }
+        if (endHeight > this.blocks.length) {
+            endHeight = this.blocks.length;
+        }
+
+        const blocks = this.blocks.slice(startHeight, endHeight);
+        const edges = this.edges.slice(startHeight, endHeight - 1);
+        const heightGroups = this.heightGroups.slice(startHeight, endHeight);
+        return {
+            blocks: blocks,
+            edges: edges,
+            heightGroups: heightGroups,
+        };
+    };
+
+    getBlockHash = async (targetHash: string, heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+        const targetId = this.blockIdsByHashes[targetHash];
+        const startHeight = targetId - heightDifference;
+        const endHeight = targetId + heightDifference;
+
+        return this.getBlocksBetweenHeights(startHeight, endHeight);
+    };
+
+    getHead = async (heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+        return this.getBlocksBetweenHeights(this.blocks.length - heightDifference, this.blocks.length);
+    };
+
+    getBlockHashesByIds = async (blockIdsString: string): Promise<BlockHashById[] | void> => {
+        const blockIdStrings = blockIdsString.split(",");
+        const blockHashesByIds: BlockHashById[] = [];
+        for (let blockIdString of blockIdStrings) {
+            const blockId = parseInt(blockIdString);
+            blockHashesByIds.push({
+                id: blockId,
+                hash: this.blockHashesByIds[blockId],
+            });
+        }
+        return blockHashesByIds;
+    };
+
+    private blocks: Block[] = [
+        {
+            id: 0,
+            blockHash: "00000000",
+            timestamp: 0,
+            parentIds: [],
+            height: 0,
+            heightGroupIndex: 0,
+            selectedParentId: null,
+            color: BlockColor.BLUE,
+            isInVirtualSelectedParentChain: true,
+            mergeSetRedIds: [],
+            mergeSetBlueIds: [],
+        },
+    ];
+
+    private edges: Edge[] = [];
+
+    private heightGroups: HeightGroup[] = [
+        {
+            height: 0,
+            size: 1,
+        },
+    ];
+
+    private blockHashesByIds: { [id: number]: string } = {
+        0: "00000000",
+    };
+
+    private blockIdsByHashes: { [hash: string]: number } = {
+        "00000000": 0,
+    };
+};
