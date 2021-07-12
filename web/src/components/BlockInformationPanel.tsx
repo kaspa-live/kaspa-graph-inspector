@@ -4,7 +4,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import BlockInformationPanelHash from "./BlockInformationPanelHash";
 import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
 import {kaspaLiveAddress, katnipAddress} from "../addresses";
-import {BlockInformation} from "../dag/model/BlockInformation";
+import {BlockInformation} from "../model/BlockInformation";
 
 const BlockInformationPanel = ({blockInformation, onClose}:
                                    { blockInformation: BlockInformation | null, onClose: () => void }) => {

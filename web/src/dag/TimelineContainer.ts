@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js-legacy";
-import {Block} from "./model/Block";
+import {Block} from "../model/Block";
 import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
 import {Ease, Tween} from "@createjs/tweenjs";
@@ -7,10 +7,10 @@ import HeightSprite from "./HeightSprite";
 import {
     areBlocksAndEdgesAndHeightGroupsEqual,
     BlocksAndEdgesAndHeightGroups
-} from "./model/BlocksAndEdgesAndHeightGroups";
-import {Edge} from "./model/Edge";
-import {HeightGroup} from "./model/HeightGroup";
-import {BlockColor} from "./model/BlockColor";
+} from "../model/BlocksAndEdgesAndHeightGroups";
+import {Edge} from "../model/Edge";
+import {HeightGroup} from "../model/HeightGroup";
+import {BlockColor} from "../model/BlockColor";
 
 export default class TimelineContainer extends PIXI.Container {
     private readonly maxBlocksPerHeightGroup = 12;

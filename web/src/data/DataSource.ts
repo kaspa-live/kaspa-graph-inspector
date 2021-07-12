@@ -1,5 +1,5 @@
-import {BlocksAndEdgesAndHeightGroups} from "../dag/model/BlocksAndEdgesAndHeightGroups";
-import {BlockHashById} from "../dag/model/BlockHashById";
+import {BlocksAndEdgesAndHeightGroups} from "../model/BlocksAndEdgesAndHeightGroups";
+import {BlockHashById} from "../model/BlockHashById";
 import ApiDataSource from "./ApiDataSource";
 import ChainDataSource from "./ChainDataSource";
 

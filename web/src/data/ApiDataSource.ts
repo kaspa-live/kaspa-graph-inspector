@@ -1,7 +1,7 @@
 import DataSource from "./DataSource";
-import {BlockHashById} from "../dag/model/BlockHashById";
+import {BlockHashById} from "../model/BlockHashById";
 import {apiAddress} from "../addresses";
-import {BlocksAndEdgesAndHeightGroups} from "../dag/model/BlocksAndEdgesAndHeightGroups";
+import {BlocksAndEdgesAndHeightGroups} from "../model/BlocksAndEdgesAndHeightGroups";
 
 export default class ApiDataSource implements DataSource {
     getTickIntervalInMilliseconds = (): number => {

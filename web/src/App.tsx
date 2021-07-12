@@ -6,7 +6,7 @@ import {useState} from "react";
 import ConnectionIssuesIndicator from "./components/ConnectionIssuesIndicator";
 import TrackButton from "./components/TrackButton";
 import BlockInformationPanel from "./components/BlockInformationPanel";
-import {BlockInformation} from "./dag/model/BlockInformation";
+import {BlockInformation} from "./model/BlockInformation";
 import {resolveDataSource} from "./data/DataSource";
 
 const App = () => {

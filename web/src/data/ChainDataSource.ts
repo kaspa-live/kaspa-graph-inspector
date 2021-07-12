@@ -1,10 +1,10 @@
 import DataSource from "./DataSource";
-import {BlocksAndEdgesAndHeightGroups} from "../dag/model/BlocksAndEdgesAndHeightGroups";
-import {BlockHashById} from "../dag/model/BlockHashById";
-import {Block} from "../dag/model/Block";
-import {BlockColor} from "../dag/model/BlockColor";
-import {Edge} from "../dag/model/Edge";
-import {HeightGroup} from "../dag/model/HeightGroup";
+import {BlocksAndEdgesAndHeightGroups} from "../model/BlocksAndEdgesAndHeightGroups";
+import {BlockHashById} from "../model/BlockHashById";
+import {Block} from "../model/Block";
+import {BlockColor} from "../model/BlockColor";
+import {Edge} from "../model/Edge";
+import {HeightGroup} from "../model/HeightGroup";
 
 export default class ChainDataSource implements DataSource {
     private readonly blockInterval: number;
