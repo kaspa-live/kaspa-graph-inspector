@@ -44,13 +44,16 @@ export default class ReplayDataSource implements DataSource {
 
     private addNextBlockAndReschedule = () => {
         this.addNextBlock();
-        window.setTimeout(this.addNextBlockAndReschedule, this.replayData.blockInterval)
+
+        if (this.currentReplayBlockIndex < this.replayData.blocks.length) {
+            window.setTimeout(this.addNextBlockAndReschedule, this.replayData.blockInterval)
+        }
     }
 
     private addNextBlock = () => {
         const nextReplayBlock = this.replayData.blocks[this.currentReplayBlockIndex];
 
-        let maxParentHeight = 0;
+        let maxParentHeight = -1;
         for (let parentId of nextReplayBlock.parentIds) {
             const parentHeight = this.blockIdsToHeights[parentId];
             if (parentHeight > maxParentHeight) {
@@ -72,6 +75,9 @@ export default class ReplayDataSource implements DataSource {
         const blockHash = `${blockId}`.repeat(8);
         const heightGroupIndex = dataAtHeight.blocks.length;
 
+        this.dataAtHeight[height] = dataAtHeight;
+        this.blockIdsToHeights[blockId] = height;
+
         dataAtHeight.blocks.push({
             id: blockId,
             blockHash: blockHash,
@@ -87,8 +93,8 @@ export default class ReplayDataSource implements DataSource {
         });
 
         for (let parentId of nextReplayBlock.parentIds) {
-            const parentDataAtHeight = this.dataAtHeight[parentId];
-            const parentHeight = parentDataAtHeight.height;
+            const parentHeight = this.blockIdsToHeights[parentId];
+            const parentDataAtHeight = this.dataAtHeight[parentHeight];
             const parentHeightGroupIndex = parentDataAtHeight.blocks.findIndex(block => block.id === parentId);
 
             const nextEdge: Edge = {
@@ -100,7 +106,7 @@ export default class ReplayDataSource implements DataSource {
                 toHeightGroupIndex: parentHeightGroupIndex,
             };
 
-            for (let i = height; height >= parentHeight; i--) {
+            for (let i = height; i >= parentHeight; i--) {
                 const dataAtHeight = this.dataAtHeight[i];
                 dataAtHeight.edges.push(nextEdge);
             }
@@ -131,11 +137,14 @@ export default class ReplayDataSource implements DataSource {
         const seenEdges: { [edgeKey: string]: boolean } = {};
         for (let height = startHeight; height <= endHeight; height++) {
             const dataAtHeight = this.dataAtHeight[height];
+            if (!dataAtHeight) {
+                continue;
+            }
 
             blocks.push(...dataAtHeight.blocks);
 
             for (let edge of dataAtHeight.edges) {
-                const edgeKey = `${edge.fromHeight}-${edge.toHeight}`;
+                const edgeKey = `${edge.fromBlockId}-${edge.toBlockId}`;
                 if (seenEdges[edgeKey]) {
                     continue;
                 }

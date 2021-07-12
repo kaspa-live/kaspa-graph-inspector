@@ -2,6 +2,8 @@ import {BlocksAndEdgesAndHeightGroups} from "../model/BlocksAndEdgesAndHeightGro
 import {BlockHashById} from "../model/BlockHashById";
 import ApiDataSource from "./ApiDataSource";
 import ChainDataSource from "./ChainDataSource";
+import ReplayDataSource from "./ReplayDataSource";
+import {test} from "./replay/test";
 
 export default interface DataSource {
     getTickIntervalInMilliseconds: () => number;
@@ -18,10 +20,14 @@ export default interface DataSource {
 const resolveDataSource = (): DataSource => {
     const urlParams = new URLSearchParams(window.location.search);
     const dataSource = urlParams.get("dataSource");
-    if (dataSource === "chain") {
-        return resolveChainDataSource(urlParams);
+    switch (dataSource) {
+        case "chain":
+            return resolveChainDataSource(urlParams);
+        case "replay":
+            return resolveReplayDataSource(urlParams);
+        default:
+            return new ApiDataSource();
     }
-    return new ApiDataSource();
 };
 
 const resolveChainDataSource = (urlParams: URLSearchParams): ChainDataSource => {
@@ -34,6 +40,10 @@ const resolveChainDataSource = (urlParams: URLSearchParams): ChainDataSource => 
         }
     }
     return new ChainDataSource(blockInterval);
+}
+
+const resolveReplayDataSource = (urlParams: URLSearchParams): ReplayDataSource => {
+    return new ReplayDataSource(test);
 }
 
 export {
