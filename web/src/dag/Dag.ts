@@ -2,15 +2,14 @@ import * as PIXI from "pixi.js-legacy";
 import TimelineContainer from "./TimelineContainer";
 import {Block} from "./model/Block";
 import {Ticker} from "@createjs/core";
-import {BlocksAndEdgesAndHeightGroups} from "./model/BlocksAndEdgesAndHeightGroups";
-import {apiAddress} from "../addresses";
 import {BlockInformation} from "./model/BlockInformation";
-import {BlockHashById} from "./model/BlockHashById";
+import DataSource from "../data/DataSource";
 
 export default class Dag {
     private readonly tickIntervalInMilliseconds = 1000;
     private readonly headHeightMarginMultiplier = 0.25;
 
+    private dataSource: DataSource;
     private application: PIXI.Application | undefined;
     private timelineContainer: TimelineContainer | undefined;
 
@@ -27,7 +26,9 @@ export default class Dag {
 
     private readonly blockHashesByIds: { [id: string]: string } = {};
 
-    constructor() {
+    constructor(dataSource: DataSource) {
+        this.dataSource = dataSource;
+
         this.currentTickFunction = async () => {
             // Do nothing
         }
@@ -131,13 +132,13 @@ export default class Dag {
         this.blockInformationChangedListener(null);
 
         const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
-        const response = await this.fetch(`${apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource.blocksBetweenHeights(startHeight, endHeight);
+        this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
-        if (!response) {
+        if (!blocksAndEdgesAndHeightGroups) {
             return;
         }
-        const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
         this.cacheBlockHashes(blocksAndEdgesAndHeightGroups.blocks);
 
         // Exit early if the track function or the target
@@ -159,18 +160,18 @@ export default class Dag {
             this.timelineContainer!.setTargetHeight(targetBlock.height);
             this.timelineContainer!.setTargetBlock(targetBlock);
 
-            const blockInformation = this.buildBlockInformation(targetBlock);
+            const blockInformation = await this.buildBlockInformation(targetBlock);
             this.blockInformationChangedListener(blockInformation);
         }
 
         const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
-        const response = await this.fetch(`${apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource.blockHash(targetHash, heightDifference);
+        this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
-        if (!response) {
+        if (!blocksAndEdgesAndHeightGroups) {
             return;
         }
-        const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
         this.cacheBlockHashes(blocksAndEdgesAndHeightGroups.blocks);
 
         // Exit early if the track function or the target
@@ -190,14 +191,14 @@ export default class Dag {
         // something funny is going on. Print a warning and
         // exit
         if (!targetBlock) {
-            console.error(`Block ${targetHash} not found in blockHash response ${response}`);
+            console.error(`Block ${targetHash} not found in blockHash response ${blocksAndEdgesAndHeightGroups}`);
             return;
         }
 
         this.timelineContainer!.setTargetHeight(targetBlock.height);
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups, targetBlock);
 
-        const blockInformation = this.buildBlockInformation(targetBlock);
+        const blockInformation = await this.buildBlockInformation(targetBlock);
         this.blockInformationChangedListener(blockInformation);
     }
 
@@ -215,14 +216,13 @@ export default class Dag {
         }
 
         const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
-
-        const response = await this.fetch(`${apiAddress}/head?heightDifference=${heightDifference}`);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource.head(heightDifference);
+        this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
-        if (!response) {
+        if (!blocksAndEdgesAndHeightGroups) {
             return;
         }
-        const blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups = await response.json();
         this.cacheBlockHashes(blocksAndEdgesAndHeightGroups.blocks);
 
         // Exit early if the track function changed while we
@@ -267,7 +267,7 @@ export default class Dag {
         return [foundBlockHashes, notFoundBlockIds];
     }
 
-    private buildBlockInformation = (block: Block): BlockInformation => {
+    private buildBlockInformation = async (block: Block): Promise<BlockInformation> => {
         let notFoundIds: number[] = [];
 
         const [parentHashes, notFoundParentIds] = this.getCachedBlockHashes(block.parentIds);
@@ -288,14 +288,12 @@ export default class Dag {
         notFoundIds = notFoundIds.concat(notFoundMergeSetBlueIds);
 
         if (notFoundIds.length > 0) {
-            this.fetch(`${apiAddress}/blockHashesByIds?blockIds=${notFoundIds.join(",")}`)
-                .then(response => (response as Response).json())
-                .then(response => {
-                    const blockHashesByIds: BlockHashById[] = response;
-                    for (let blockHashById of blockHashesByIds) {
-                        this.blockHashesByIds[blockHashById.id] = blockHashById.hash
-                    }
-                });
+            const blockHashesByIds = await this.dataSource.blockHashesByIds(notFoundIds.join(","));
+            if (blockHashesByIds) {
+                for (let blockHashById of blockHashesByIds) {
+                    this.blockHashesByIds[blockHashById.id] = blockHashById.hash
+                }
+            }
         }
 
         return {
@@ -348,17 +346,6 @@ export default class Dag {
 
     setBlockInformationChangedListener = (BlockInformationChangedListener: (blockInformation: BlockInformation | null) => void) => {
         this.blockInformationChangedListener = BlockInformationChangedListener;
-    }
-
-    private fetch = (url: string): Promise<Response | void> => {
-        return fetch(url)
-            .catch(_ => {
-                // Do nothing
-            })
-            .then(response => {
-                this.isFetchFailingListener(!response);
-                return response;
-            });
     }
 
     private notifyIsTrackingChanged = () => {

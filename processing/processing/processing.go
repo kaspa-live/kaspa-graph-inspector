@@ -54,14 +54,17 @@ func (p *Processing) insertGenesisIfRequired() error {
 			return err
 		}
 		databaseGenesisBlock := &model.Block{
+			ID:                             0,
 			BlockHash:                      genesisHash.String(),
 			Timestamp:                      genesisBlock.Header.TimeInMilliseconds(),
-			ParentIDs:                      nil,
+			ParentIDs:                      []uint64{},
 			Height:                         0,
 			HeightGroupIndex:               0,
 			SelectedParentID:               nil,
 			Color:                          model.ColorGray,
 			IsInVirtualSelectedParentChain: true,
+			MergeSetRedIDs:                 []uint64{},
+			MergeSetBlueIDs:                []uint64{},
 		}
 		err = p.database.InsertBlock(databaseTransaction, genesisHash, databaseGenesisBlock)
 		if err != nil {
