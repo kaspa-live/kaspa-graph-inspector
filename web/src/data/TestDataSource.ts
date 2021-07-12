@@ -7,6 +7,10 @@ import {Edge} from "../dag/model/Edge";
 import {HeightGroup} from "../dag/model/HeightGroup";
 
 export default class TestDataSource implements DataSource {
+    getTickIntervalInMilliseconds = (): number => {
+        return 10;
+    }
+
     getBlocksBetweenHeights = async (startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
         return this.blocksAndEdgesAndHeightGroups;
     };

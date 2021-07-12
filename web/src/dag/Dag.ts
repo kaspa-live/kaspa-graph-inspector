@@ -6,10 +6,11 @@ import {BlockInformation} from "./model/BlockInformation";
 import DataSource from "../data/DataSource";
 
 export default class Dag {
-    private readonly tickIntervalInMilliseconds = 1000;
     private readonly headHeightMarginMultiplier = 0.25;
 
-    private dataSource: DataSource;
+    private readonly dataSource: DataSource;
+    private readonly tickIntervalInMilliseconds: number;
+
     private application: PIXI.Application | undefined;
     private timelineContainer: TimelineContainer | undefined;
 
@@ -28,6 +29,7 @@ export default class Dag {
 
     constructor(dataSource: DataSource) {
         this.dataSource = dataSource;
+        this.tickIntervalInMilliseconds = dataSource.getTickIntervalInMilliseconds();
 
         this.currentTickFunction = async () => {
             // Do nothing

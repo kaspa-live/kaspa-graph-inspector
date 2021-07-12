@@ -4,6 +4,10 @@ import {apiAddress} from "../addresses";
 import {BlocksAndEdgesAndHeightGroups} from "../dag/model/BlocksAndEdgesAndHeightGroups";
 
 export default class ApiDataSource implements DataSource {
+    getTickIntervalInMilliseconds = (): number => {
+        return 1000;
+    }
+
     getBlocksBetweenHeights = (startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
         return this.fetch(`${apiAddress}/blocksBetweenHeights?startHeight=${startHeight}&endHeight=${endHeight}`);
     };

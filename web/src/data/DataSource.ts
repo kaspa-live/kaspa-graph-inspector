@@ -4,6 +4,8 @@ import TestDataSource from "./TestDataSource";
 import ApiDataSource from "./ApiDataSource";
 
 export default interface DataSource {
+    getTickIntervalInMilliseconds: () => number;
+
     getBlocksBetweenHeights: (startHeight: number, endHeight: number) => Promise<BlocksAndEdgesAndHeightGroups | void>;
 
     getBlockHash: (targetHash: string, heightDifference: number) => Promise<BlocksAndEdgesAndHeightGroups | void>;
