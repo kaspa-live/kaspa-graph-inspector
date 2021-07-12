@@ -27,6 +27,8 @@ type DatumAtHeight = {
 }
 
 export default class ReplayDataSource implements DataSource {
+    private readonly resetAfterInterval: number = 5000;
+
     private readonly replayData: ReplayData;
 
     private currentReplayBlockIndex: number = 0;
@@ -47,6 +49,11 @@ export default class ReplayDataSource implements DataSource {
 
         if (this.currentReplayBlockIndex < this.replayData.blocks.length) {
             window.setTimeout(this.addNextBlockAndReschedule, this.replayData.blockInterval)
+        } else {
+            window.setTimeout(() => {
+                this.reset();
+                this.addNextBlockAndReschedule();
+            }, this.resetAfterInterval);
         }
     }
 
@@ -116,6 +123,14 @@ export default class ReplayDataSource implements DataSource {
         this.blockIdsByHashes[blockHash] = blockId;
 
         this.currentReplayBlockIndex++;
+    }
+
+    private reset = () => {
+        this.currentReplayBlockIndex = 0;
+        this.blockIdsToHeights = {};
+        this.dataAtHeight = {};
+        this.blockHashesByIds = {};
+        this.blockIdsByHashes = {};
     }
 
     getTickIntervalInMilliseconds = (): number => {
