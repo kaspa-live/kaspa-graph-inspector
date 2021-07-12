@@ -8,11 +8,9 @@ import {HeightGroup} from "../model/HeightGroup";
 
 export default class ChainDataSource implements DataSource {
     private readonly blockInterval: number;
-    private readonly startTime: Date;
 
     constructor(blockInterval: number) {
         this.blockInterval = blockInterval;
-        this.startTime = new Date();
 
         this.createNextBlockAndReschedule();
     }
