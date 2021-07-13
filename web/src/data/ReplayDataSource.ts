@@ -227,11 +227,19 @@ const registerReplayData = (name: string) => {
 }
 
 const replayDataGenerators: { [name: string]: () => Promise<ReplayData> } = {};
-registerReplayData("ghostdag5bps");
+registerReplayData("ghostdag-5bps-k18");
+registerReplayData("ghostdag-10bps-k18");
+registerReplayData("ghostdag-10bps-k102");
+registerReplayData("ghostdag-20bps-k18");
+registerReplayData("ghostdag-20bps-k196");
+registerReplayData("ghostdag-50bps-k18");
+registerReplayData("ghostdag-50bps-k469");
+registerReplayData("ghostdag-100bps-k18");
+registerReplayData("ghostdag-100bps-k402");
 
 export const buildReplayDataSource = async (name: string | null): Promise<ReplayDataSource> => {
     if (!name || !replayDataGenerators[name]) {
-        name = "ghostdag5bps";
+        name = "ghostdag-5bps-k18";
     }
     const replayData = await replayDataGenerators[name]();
     return Promise.resolve(new ReplayDataSource(replayData));
