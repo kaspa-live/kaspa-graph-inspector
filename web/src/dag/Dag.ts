@@ -3,16 +3,15 @@ import TimelineContainer from "./TimelineContainer";
 import {Block} from "../model/Block";
 import {Ticker} from "@createjs/core";
 import {BlockInformation} from "../model/BlockInformation";
-import DataSource from "../data/DataSource";
+import DataSource, {resolveDataSource} from "../data/DataSource";
 
 export default class Dag {
     private readonly headHeightMarginMultiplier = 0.25;
 
-    private readonly dataSource: DataSource;
-    private readonly tickIntervalInMilliseconds: number;
-
     private application: PIXI.Application | undefined;
     private timelineContainer: TimelineContainer | undefined;
+    private dataSource: DataSource | undefined;
+    private tickIntervalInMilliseconds: number | undefined;
 
     private currentWidth: number = 0;
     private currentHeight: number = 0;
@@ -27,10 +26,7 @@ export default class Dag {
 
     private readonly blockHashesByIds: { [id: string]: string } = {};
 
-    constructor(dataSource: DataSource) {
-        this.dataSource = dataSource;
-        this.tickIntervalInMilliseconds = dataSource.getTickIntervalInMilliseconds();
-
+    constructor() {
         this.currentTickFunction = async () => {
             // Do nothing
         }
@@ -67,7 +63,12 @@ export default class Dag {
 
         this.application.start();
 
-        this.run();
+        resolveDataSource().then(dataSource => {
+            this.dataSource = dataSource;
+            this.tickIntervalInMilliseconds = dataSource.getTickIntervalInMilliseconds();
+
+            this.run();
+        });
     }
 
     private resizeIfRequired = () => {
@@ -134,7 +135,7 @@ export default class Dag {
         this.blockInformationChangedListener(null);
 
         const [startHeight, endHeight] = this.timelineContainer!.getVisibleHeightRange(targetHeight);
-        const blocksAndEdgesAndHeightGroups = await this.dataSource.getBlocksBetweenHeights(startHeight, endHeight);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource!.getBlocksBetweenHeights(startHeight, endHeight);
         this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
@@ -167,7 +168,7 @@ export default class Dag {
         }
 
         const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
-        const blocksAndEdgesAndHeightGroups = await this.dataSource.getBlockHash(targetHash, heightDifference);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource!.getBlockHash(targetHash, heightDifference);
         this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
@@ -218,7 +219,7 @@ export default class Dag {
         }
 
         const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
-        const blocksAndEdgesAndHeightGroups = await this.dataSource.getHead(heightDifference);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource!.getHead(heightDifference);
         this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
@@ -290,7 +291,7 @@ export default class Dag {
         notFoundIds = notFoundIds.concat(notFoundMergeSetBlueIds);
 
         if (notFoundIds.length > 0) {
-            const blockHashesByIds = await this.dataSource.getBlockHashesByIds(notFoundIds.join(","));
+            const blockHashesByIds = await this.dataSource!.getBlockHashesByIds(notFoundIds.join(","));
             if (blockHashesByIds) {
                 for (let blockHashById of blockHashesByIds) {
                     this.blockHashesByIds[blockHashById.id] = blockHashById.hash

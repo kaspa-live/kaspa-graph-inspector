@@ -7,7 +7,6 @@ import ConnectionIssuesIndicator from "./components/ConnectionIssuesIndicator";
 import TrackButton from "./components/TrackButton";
 import BlockInformationPanel from "./components/BlockInformationPanel";
 import {BlockInformation} from "./model/BlockInformation";
-import {resolveDataSource} from "./data/DataSource";
 
 const App = () => {
     const [isTrackingState, setTrackingState] = useState(true);
@@ -75,7 +74,6 @@ const theme = createMuiTheme({
     }
 });
 
-const dataSource = resolveDataSource();
-const dag = new Dag(dataSource);
+const dag = new Dag();
 
 export default App;

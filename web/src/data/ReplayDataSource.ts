@@ -221,3 +221,19 @@ export default class ReplayDataSource implements DataSource {
         return blockHashesByIds;
     };
 };
+
+const registerReplayData = (name: string) => {
+    replayDataGenerators[name] = () => fetch(`replay/${name}.json`).then(response => response.json());
+}
+
+const replayDataGenerators: { [name: string]: () => Promise<ReplayData> } = {};
+registerReplayData("ghostdag5bps");
+
+export const buildReplayDataSource = async (name: string | null): Promise<ReplayDataSource> => {
+    if (!name || !replayDataGenerators[name]) {
+        const defaultReplayData = await replayDataGenerators["ghostdag5bps"]();
+        return Promise.resolve(new ReplayDataSource(defaultReplayData));
+    }
+    const replayData = await replayDataGenerators[name]();
+    return Promise.resolve(new ReplayDataSource(replayData));
+};

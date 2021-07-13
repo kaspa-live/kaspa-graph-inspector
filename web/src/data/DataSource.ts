@@ -2,9 +2,7 @@ import {BlocksAndEdgesAndHeightGroups} from "../model/BlocksAndEdgesAndHeightGro
 import {BlockHashById} from "../model/BlockHashById";
 import ApiDataSource from "./ApiDataSource";
 import ChainDataSource from "./ChainDataSource";
-import ReplayDataSource from "./ReplayDataSource";
-import {test} from "./replay/test";
-import {replayDataGenerators} from "./replay/replayDataGenerators";
+import ReplayDataSource, {buildReplayDataSource} from "./ReplayDataSource";
 
 export default interface DataSource {
     getTickIntervalInMilliseconds: () => number;
@@ -18,7 +16,7 @@ export default interface DataSource {
     getBlockHashesByIds: (blockIds: string) => Promise<BlockHashById[] | void>;
 };
 
-const resolveDataSource = (): DataSource => {
+const resolveDataSource = (): Promise<DataSource> => {
     const urlParams = new URLSearchParams(window.location.search);
     const dataSource = urlParams.get("dataSource");
     switch (dataSource) {
@@ -27,11 +25,11 @@ const resolveDataSource = (): DataSource => {
         case "replay":
             return resolveReplayDataSource(urlParams);
         default:
-            return new ApiDataSource();
+            return Promise.resolve(new ApiDataSource());
     }
 };
 
-const resolveChainDataSource = (urlParams: URLSearchParams): ChainDataSource => {
+const resolveChainDataSource = (urlParams: URLSearchParams): Promise<ChainDataSource> => {
     let blockInterval = 1000;
     const blockIntervalString = urlParams.get("blockInterval");
     if (blockIntervalString) {
@@ -40,19 +38,12 @@ const resolveChainDataSource = (urlParams: URLSearchParams): ChainDataSource => 
             blockInterval = parsedBlockInterval;
         }
     }
-    return new ChainDataSource(blockInterval);
+    return Promise.resolve(new ChainDataSource(blockInterval));
 }
 
-const resolveReplayDataSource = (urlParams: URLSearchParams): ReplayDataSource => {
+const resolveReplayDataSource = async (urlParams: URLSearchParams): Promise<ReplayDataSource> => {
     const name = urlParams.get("name");
-    if (name) {
-        const replayDataGenerator = replayDataGenerators[name];
-        if (replayDataGenerator) {
-            const replayData = replayDataGenerator();
-            return new ReplayDataSource(replayData);
-        }
-    }
-    return new ReplayDataSource(test());
+    return buildReplayDataSource(name);
 }
 
 export {
