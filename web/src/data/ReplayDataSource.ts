@@ -150,6 +150,27 @@ export default class ReplayDataSource implements DataSource {
         const heightGroups: HeightGroup[] = [];
 
         const seenEdges: { [edgeKey: string]: boolean } = {};
+        const pushEdge = (edge: Edge) => {
+            const edgeKey = `${edge.fromBlockId}-${edge.toBlockId}`;
+            if (seenEdges[edgeKey]) {
+                return;
+            }
+            seenEdges[edgeKey] = true;
+            edges.push(edge);
+        }
+
+        const seenHeightGroups: { [height: number]: boolean } = {};
+        const pushHeightGroup = (height: number) => {
+            if (seenHeightGroups[height]) {
+                return;
+            }
+            seenHeightGroups[height] = true;
+            heightGroups.push({
+                height: height,
+                size: this.dataAtHeight[height].blocks.length,
+            });
+        };
+
         for (let height = startHeight; height <= endHeight; height++) {
             const dataAtHeight = this.dataAtHeight[height];
             if (!dataAtHeight) {
@@ -159,18 +180,12 @@ export default class ReplayDataSource implements DataSource {
             blocks.push(...dataAtHeight.blocks);
 
             for (let edge of dataAtHeight.edges) {
-                const edgeKey = `${edge.fromBlockId}-${edge.toBlockId}`;
-                if (seenEdges[edgeKey]) {
-                    continue;
-                }
-                seenEdges[edgeKey] = true;
-                edges.push(edge);
+                pushEdge(edge);
+                pushHeightGroup(edge.fromHeight);
+                pushHeightGroup(edge.toHeight);
             }
 
-            heightGroups.push({
-                height: height,
-                size: dataAtHeight.blocks.length,
-            });
+            pushHeightGroup(height);
         }
 
         return {
