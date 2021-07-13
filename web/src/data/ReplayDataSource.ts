@@ -231,8 +231,7 @@ registerReplayData("ghostdag5bps");
 
 export const buildReplayDataSource = async (name: string | null): Promise<ReplayDataSource> => {
     if (!name || !replayDataGenerators[name]) {
-        const defaultReplayData = await replayDataGenerators["ghostdag5bps"]();
-        return Promise.resolve(new ReplayDataSource(defaultReplayData));
+        name = "ghostdag5bps";
     }
     const replayData = await replayDataGenerators[name]();
     return Promise.resolve(new ReplayDataSource(replayData));
