@@ -4,7 +4,7 @@ import ApiDataSource from "./ApiDataSource";
 import ChainDataSource from "./ChainDataSource";
 import ReplayDataSource from "./ReplayDataSource";
 import {test} from "./replay/test";
-import {replay} from "./replay/replay";
+import {replayDataGenerators} from "./replay/replayDataGenerators";
 
 export default interface DataSource {
     getTickIntervalInMilliseconds: () => number;
@@ -46,12 +46,13 @@ const resolveChainDataSource = (urlParams: URLSearchParams): ChainDataSource => 
 const resolveReplayDataSource = (urlParams: URLSearchParams): ReplayDataSource => {
     const name = urlParams.get("name");
     if (name) {
-        const replayData = replay[name];
-        if (replayData) {
+        const replayDataGenerator = replayDataGenerators[name];
+        if (replayDataGenerator) {
+            const replayData = replayDataGenerator();
             return new ReplayDataSource(replayData);
         }
     }
-    return new ReplayDataSource(test);
+    return new ReplayDataSource(test());
 }
 
 export {
