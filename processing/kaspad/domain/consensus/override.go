@@ -133,3 +133,7 @@ func (c *Consensus) CreateBlockLocatorFromPruningPoint(highHash *externalapi.Dom
 func (c *Consensus) PopulateMass(transaction *externalapi.DomainTransaction) {
 	c.kaspadConsensus.PopulateMass(transaction)
 }
+
+func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.BlockWithTrustedData, validateUTXO bool) (*externalapi.BlockInsertionResult, error) {
+	return c.kaspadConsensus.ValidateAndInsertBlockWithTrustedData(block, validateUTXO)
+}

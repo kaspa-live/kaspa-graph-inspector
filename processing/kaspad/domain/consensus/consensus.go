@@ -53,16 +53,6 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock, shoul
 	return blockInsertionResult, nil
 }
 
-func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.BlockWithTrustedData, validateUTXO bool) (*externalapi.BlockInsertionResult, error) {
-	c.onAddingBlockListener(block.Block)
-	blockInsertionResult, err := c.kaspadConsensus.ValidateAndInsertBlockWithTrustedData(block, validateUTXO)
-	if err != nil {
-		return nil, err
-	}
-	c.onBlockAddedListener(block.Block, blockInsertionResult)
-	return blockInsertionResult, nil
-}
-
 type OnAddingBlockListener func(*externalapi.DomainBlock)
 type OnBlockAddedListener func(*externalapi.DomainBlock, *externalapi.BlockInsertionResult)
 
