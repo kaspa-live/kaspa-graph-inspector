@@ -70,10 +70,6 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 	}, nil
 }
 
-func (k *Kaspad) SetOnAddingBlockListener(listener consensusPackage.OnAddingBlockListener) {
-	k.domain.SetOnAddingBlockListener(listener)
-}
-
 func (k *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
 	k.domain.SetOnBlockAddedListener(listener)
 }

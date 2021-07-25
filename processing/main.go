@@ -38,12 +38,6 @@ func main() {
 	if err != nil {
 		logErrorAndExit("Could not initialize processing: %s", err)
 	}
-	kaspad.SetOnAddingBlockListener(func(block *externalapi.DomainBlock) {
-		err := processing.PreprocessBlock(block)
-		if err != nil {
-			logErrorAndExit("Could not preprocess block before adding: %s", err)
-		}
-	})
 	kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock,
 		blockInsertionResult *externalapi.BlockInsertionResult) {
 		err := processing.ProcessAddedBlock(block, blockInsertionResult)

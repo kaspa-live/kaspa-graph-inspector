@@ -181,10 +181,6 @@ func (d *Domain) DeleteStagingConsensus() error {
 	return nil
 }
 
-func (d *Domain) SetOnAddingBlockListener(listener consensusPackage.OnAddingBlockListener) {
-	d.consensus.SetOnAddingBlockListener(listener)
-}
-
 func (d *Domain) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
 	d.consensus.SetOnBlockAddedListener(listener)
 }

@@ -82,7 +82,9 @@ func (p *Processing) insertGenesisIfRequired() error {
 	})
 }
 
-func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
+func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
+	blockInsertionResult *externalapi.BlockInsertionResult) error {
+
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
 		blockHash := consensushashing.BlockHash(block)
 		log.Infof("Preprocessing block %s", blockHash)
@@ -166,22 +168,6 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 			}
 		}
 
-		return nil
-	})
-}
-
-func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
-	blockInsertionResult *externalapi.BlockInsertionResult) error {
-
-	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		blockHash := consensushashing.BlockHash(block)
-		log.Infof("Processing added block %s", blockHash)
-		defer log.Infof("Finished processing added block %s", blockHash)
-
-		blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
-		if err != nil {
-			return errors.Wrapf(err, "Could not get block ID for block %s", blockHash)
-		}
 		blockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(blockHash)
 		if err != nil {
 			return errors.Wrapf(err, "Could not get GHOSTDAG data for block %s", blockHash)
