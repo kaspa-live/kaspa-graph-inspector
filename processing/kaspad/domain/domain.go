@@ -4,7 +4,6 @@ import (
 	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/mining_manager"
 	"github.com/kaspanet/kaspad/domain/consensus"
-	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/dagconfig"
 	"github.com/kaspanet/kaspad/domain/miningmanager"
@@ -190,7 +189,7 @@ func (d *Domain) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedL
 	d.consensus.SetOnBlockAddedListener(listener)
 }
 
-func (d *Domain) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
+func (d *Domain) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {
 	return d.consensus.BlockGHOSTDAGData(blockHash)
 }
 

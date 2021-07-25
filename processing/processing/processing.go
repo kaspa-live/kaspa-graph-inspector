@@ -7,7 +7,6 @@ import (
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
-	"github.com/kaspa-live/kaspa-graph-inspector/processing/processing_errors"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/pkg/errors"
@@ -100,7 +99,7 @@ func (p *Processing) PreprocessBlock(block *externalapi.DomainBlock) error {
 		parentHashes := block.Header.ParentHashes()
 		parentIDs, err := p.database.BlockIDsByHashes(databaseTransaction, parentHashes)
 		if err != nil {
-			return errors.Wrapf(processing_errors.ErrMissingParents, "Could not resolve "+
+			return errors.Errorf("Could not resolve "+
 				"parent IDs for block %s: %s", blockHash, err)
 		}
 

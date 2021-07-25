@@ -7,7 +7,6 @@ import (
 	domainPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain"
 	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 	"github.com/kaspanet/kaspad/app/protocol"
-	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	kaspadConfigPackage "github.com/kaspanet/kaspad/infrastructure/config"
 	"github.com/kaspanet/kaspad/infrastructure/network/addressmanager"
@@ -79,7 +78,7 @@ func (k *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedL
 	k.domain.SetOnBlockAddedListener(listener)
 }
 
-func (k *Kaspad) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
+func (k *Kaspad) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {
 	return k.domain.BlockGHOSTDAGData(blockHash)
 }
 
