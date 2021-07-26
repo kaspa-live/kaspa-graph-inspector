@@ -103,7 +103,7 @@ func (d *Domain) InitStagingConsensus() error {
 	}
 
 	stagingConsensusConfig := *d.consensusConfig
-	stagingConsensusConfig.ShouldNotAddGenesis = true
+	stagingConsensusConfig.SkipAddingGenesis = true
 
 	consensusInstance, err := consensusPackage.New(&stagingConsensusConfig, d.databaseContext, inactivePrefix)
 	if err != nil {
