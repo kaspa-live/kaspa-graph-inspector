@@ -174,6 +174,19 @@ func (db *Database) InsertOrUpdateHeightGroup(databaseTransaction *pg.Tx, height
 	return nil
 }
 
+func (db *Database) Clear(databaseTransaction *pg.Tx) error {
+	_, err := databaseTransaction.Exec("TRUNCATE TABLE blocks")
+	if err != nil {
+		return err
+	}
+	_, err = databaseTransaction.Exec("TRUNCATE TABLE edges")
+	if err != nil {
+		return err
+	}
+	_, err = databaseTransaction.Exec("TRUNCATE TABLE height_groups")
+	return err
+}
+
 func (db *Database) Close() {
 	db.Lock()
 	defer db.Unlock()

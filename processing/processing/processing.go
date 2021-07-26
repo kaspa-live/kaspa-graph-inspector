@@ -29,7 +29,7 @@ func NewProcessing(config *configPackage.Config,
 		kaspad:   kaspad,
 	}
 
-	err := processing.insertGenesisIfRequired()
+	err := processing.syncDatabase()
 	if err != nil {
 		return nil, err
 	}
@@ -37,25 +37,36 @@ func NewProcessing(config *configPackage.Config,
 	return processing, nil
 }
 
-func (p *Processing) insertGenesisIfRequired() error {
+func (p *Processing) syncDatabase() error {
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		genesisHash := p.config.ActiveNetParams.GenesisHash
-		exists, err := p.database.DoesBlockExist(databaseTransaction, genesisHash)
+		log.Infof("Syncing database")
+		defer log.Infof("Finished syncing database")
+
+		pruningPointHash, err := p.kaspad.Domain().Consensus().PruningPoint()
 		if err != nil {
 			return err
 		}
-		if exists {
+		pruningPointExistsInDatabase, err := p.database.DoesBlockExist(databaseTransaction, pruningPointHash)
+		if err != nil {
+			return err
+		}
+		if pruningPointExistsInDatabase {
 			return nil
 		}
-
-		genesisBlock, err := p.kaspad.Domain().Consensus().GetBlock(genesisHash)
+		pruningPointBlock, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
 		if err != nil {
 			return err
 		}
-		databaseGenesisBlock := &model.Block{
-			ID:                             0,
-			BlockHash:                      genesisHash.String(),
-			Timestamp:                      genesisBlock.Header.TimeInMilliseconds(),
+
+		log.Infof("Pruning point %s is missing from the database", pruningPointHash)
+		err = p.database.Clear(databaseTransaction)
+		if err != nil {
+			return err
+		}
+
+		pruningPointDatabaseBlock := &model.Block{
+			BlockHash:                      pruningPointHash.String(),
+			Timestamp:                      pruningPointBlock.Header.TimeInMilliseconds(),
 			ParentIDs:                      []uint64{},
 			Height:                         0,
 			HeightGroupIndex:               0,
@@ -65,19 +76,31 @@ func (p *Processing) insertGenesisIfRequired() error {
 			MergeSetRedIDs:                 []uint64{},
 			MergeSetBlueIDs:                []uint64{},
 		}
-		err = p.database.InsertBlock(databaseTransaction, genesisHash, databaseGenesisBlock)
+		err = p.database.InsertBlock(databaseTransaction, pruningPointHash, pruningPointDatabaseBlock)
 		if err != nil {
-			return errors.Wrapf(err, "Could not insert genesis block %s", genesisHash)
+			return err
 		}
-
 		heightGroup := &model.HeightGroup{
 			Height: 0,
 			Size:   1,
 		}
 		err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
 		if err != nil {
-			return errors.Wrapf(err, "Could not insert genesis height group")
+			return err
 		}
+		log.Infof("Pruning point %s has been added to the database", pruningPointHash)
+
+		virtualSelectedChainPath, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(pruningPointHash)
+		if err != nil {
+			return err
+		}
+		virtualSelectedParentChain := virtualSelectedChainPath.Added
+
+		if len(virtualSelectedParentChain) == 0 {
+			return nil
+		}
+		log.Infof("Syncing a selected parent chain of length %d", len(virtualSelectedParentChain))
+
 		return nil
 	})
 }
