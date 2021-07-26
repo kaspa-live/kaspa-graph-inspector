@@ -137,3 +137,7 @@ func (c *Consensus) PopulateMass(transaction *externalapi.DomainTransaction) {
 func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.BlockWithTrustedData, validateUTXO bool) (*externalapi.BlockInsertionResult, error) {
 	return c.kaspadConsensus.ValidateAndInsertBlockWithTrustedData(block, validateUTXO)
 }
+
+func (c *Consensus) GetMissingBlockBodyHashes(highHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
+	return c.kaspadConsensus.GetMissingBlockBodyHashes(highHash)
+}
