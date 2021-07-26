@@ -53,10 +53,6 @@ func (p *Processing) syncDatabase() error {
 		if pruningPointExistsInDatabase {
 			return nil
 		}
-		pruningPointBlock, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
-		if err != nil {
-			return err
-		}
 
 		log.Infof("Pruning point %s is missing from the database", pruningPointHash)
 		err = p.database.Clear(databaseTransaction)
@@ -64,31 +60,45 @@ func (p *Processing) syncDatabase() error {
 			return err
 		}
 
-		pruningPointDatabaseBlock := &model.Block{
-			BlockHash:                      pruningPointHash.String(),
-			Timestamp:                      pruningPointBlock.Header.TimeInMilliseconds(),
-			ParentIDs:                      []uint64{},
-			Height:                         0,
-			HeightGroupIndex:               0,
-			SelectedParentID:               nil,
-			Color:                          model.ColorGray,
-			IsInVirtualSelectedParentChain: true,
-			MergeSetRedIDs:                 []uint64{},
-			MergeSetBlueIDs:                []uint64{},
-		}
-		err = p.database.InsertBlock(databaseTransaction, pruningPointHash, pruningPointDatabaseBlock)
+		pruningPointAndItsAnticone, err := p.kaspad.Domain().Consensus().PruningPointAndItsAnticoneWithTrustedData()
 		if err != nil {
 			return err
 		}
+
+		maxDAAScore := uint64(0)
+		for _, blockWithTrustedData := range pruningPointAndItsAnticone {
+			if blockWithTrustedData.DAAScore > maxDAAScore {
+				maxDAAScore = blockWithTrustedData.DAAScore
+			}
+		}
+		for index, blockWithTrustedData := range pruningPointAndItsAnticone {
+			blockHash := consensushashing.BlockHash(blockWithTrustedData.Block)
+			databaseBlock := &model.Block{
+				BlockHash:                      blockHash.String(),
+				Timestamp:                      blockWithTrustedData.Block.Header.TimeInMilliseconds(),
+				ParentIDs:                      []uint64{},
+				Height:                         maxDAAScore,
+				HeightGroupIndex:               uint32(index),
+				SelectedParentID:               nil,
+				Color:                          model.ColorGray,
+				IsInVirtualSelectedParentChain: blockHash.Equal(pruningPointHash),
+				MergeSetRedIDs:                 []uint64{},
+				MergeSetBlueIDs:                []uint64{},
+			}
+			err = p.database.InsertBlock(databaseTransaction, blockHash, databaseBlock)
+			if err != nil {
+				return err
+			}
+		}
 		heightGroup := &model.HeightGroup{
-			Height: 0,
-			Size:   1,
+			Height: maxDAAScore,
+			Size:   uint32(len(pruningPointAndItsAnticone)),
 		}
 		err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
 		if err != nil {
 			return err
 		}
-		log.Infof("Pruning point %s has been added to the database", pruningPointHash)
+		log.Infof("Pruning point %s has been added to the database (total %d blocks)", pruningPointHash, len(pruningPointAndItsAnticone))
 
 		virtualSelectedChainPath, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(pruningPointHash)
 		if err != nil {
