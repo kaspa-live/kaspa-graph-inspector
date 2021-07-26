@@ -29,7 +29,7 @@ func NewProcessing(config *configPackage.Config,
 		kaspad:   kaspad,
 	}
 
-	err := processing.syncDatabase()
+	err := processing.SyncDatabase()
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +37,7 @@ func NewProcessing(config *configPackage.Config,
 	return processing, nil
 }
 
-func (p *Processing) syncDatabase() error {
+func (p *Processing) SyncDatabase() error {
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
 		log.Infof("Syncing database")
 		defer log.Infof("Finished syncing database")

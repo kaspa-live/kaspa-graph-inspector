@@ -45,6 +45,12 @@ func main() {
 			logErrorAndExit("Could not process added block: %s", err)
 		}
 	})
+	kaspad.SetOnConsensusResetListener(func() {
+		err = processing.SyncDatabase()
+		if err != nil {
+			logErrorAndExit("Could not sync database: %s", err)
+		}
+	})
 
 	<-make(chan struct{})
 }

@@ -74,6 +74,10 @@ func (k *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedL
 	k.domain.SetOnBlockAddedListener(listener)
 }
 
+func (k *Kaspad) SetOnConsensusResetListener(listener domainPackage.OnConsensusResetListener) {
+	k.domain.SetOnConsensusResetListener(listener)
+}
+
 func (k *Kaspad) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {
 	return k.domain.BlockGHOSTDAGData(blockHash)
 }

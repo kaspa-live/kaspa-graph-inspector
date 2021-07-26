@@ -64,7 +64,8 @@ type Domain struct {
 	stagingConsensus     *consensusPackage.Consensus
 	stagingConsensusLock sync.RWMutex
 
-	onBlockAddedListener consensusPackage.OnBlockAddedListener
+	onBlockAddedListener     consensusPackage.OnBlockAddedListener
+	onConsensusResetListener OnConsensusResetListener
 }
 
 func (d *Domain) StagingConsensus() externalapi.Consensus {
@@ -170,6 +171,8 @@ func (d *Domain) CommitStagingConsensus() error {
 	atomic.StorePointer(consensusPointer, tempConsensusPointer)
 	d.stagingConsensus = nil
 
+	d.onConsensusResetListener()
+
 	return nil
 }
 
@@ -201,4 +204,10 @@ func (d *Domain) MiningManager() miningmanager.MiningManager {
 
 func (d *Domain) Consensus() externalapi.Consensus {
 	return d.consensus
+}
+
+type OnConsensusResetListener func()
+
+func (d *Domain) SetOnConsensusResetListener(listener OnConsensusResetListener) {
+	d.onConsensusResetListener = listener
 }
