@@ -117,78 +117,84 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 		if err != nil {
 			return err
 		}
-		if blockExists {
+		if !blockExists {
+			parentHashes := block.Header.ParentHashes()
+			parentIDs, err := p.database.BlockIDsByHashes(databaseTransaction, parentHashes)
+			if err != nil {
+				return errors.Errorf("Could not resolve "+
+					"parent IDs for block %s: %s", blockHash, err)
+			}
+
+			highestParentHeight, err := p.database.HighestBlockHeight(databaseTransaction, parentIDs)
+			if err != nil {
+				return errors.Wrapf(err, "Could not resolve highest parent height for block %s", blockHash)
+			}
+			blockHeight := highestParentHeight + 1
+
+			heightGroupSize, err := p.database.HeightGroupSize(databaseTransaction, blockHeight)
+			if err != nil {
+				return err
+			}
+			blockHeightGroupIndex := heightGroupSize
+
+			databaseBlock := &model.Block{
+				BlockHash:                      blockHash.String(),
+				Timestamp:                      block.Header.TimeInMilliseconds(),
+				ParentIDs:                      parentIDs,
+				Height:                         blockHeight,
+				HeightGroupIndex:               blockHeightGroupIndex,
+				SelectedParentID:               nil,
+				Color:                          model.ColorGray,
+				IsInVirtualSelectedParentChain: false,
+			}
+			err = p.database.InsertBlock(databaseTransaction, blockHash, databaseBlock)
+			if err != nil {
+				return errors.Wrapf(err, "Could not insert block %s", blockHash)
+			}
+
+			blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
+			if err != nil {
+				return err
+			}
+			heightGroup := &model.HeightGroup{
+				Height: blockHeight,
+				Size:   blockHeightGroupIndex + 1,
+			}
+			err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
+			if err != nil {
+				return err
+			}
+
+			for _, parentID := range parentIDs {
+				parentHeight, err := p.database.BlockHeight(databaseTransaction, parentID)
+				if err != nil {
+					return err
+				}
+				parentHeightGroupIndex, err := p.database.BlockHeightGroupIndex(databaseTransaction, parentID)
+				if err != nil {
+					return err
+				}
+				edge := &model.Edge{
+					FromBlockID:          blockID,
+					ToBlockID:            parentID,
+					FromHeight:           blockHeight,
+					ToHeight:             parentHeight,
+					FromHeightGroupIndex: blockHeightGroupIndex,
+					ToHeightGroupIndex:   parentHeightGroupIndex,
+				}
+				err = p.database.InsertEdge(databaseTransaction, edge)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		blockInfo, err := p.kaspad.Domain().Consensus().GetBlockInfo(blockHash)
+		if err != nil {
+			return err
+		}
+		if blockInfo.BlockStatus == externalapi.StatusHeaderOnly {
 			return nil
-		}
-
-		parentHashes := block.Header.ParentHashes()
-		parentIDs, err := p.database.BlockIDsByHashes(databaseTransaction, parentHashes)
-		if err != nil {
-			return errors.Errorf("Could not resolve "+
-				"parent IDs for block %s: %s", blockHash, err)
-		}
-
-		highestParentHeight, err := p.database.HighestBlockHeight(databaseTransaction, parentIDs)
-		if err != nil {
-			return errors.Wrapf(err, "Could not resolve highest parent height for block %s", blockHash)
-		}
-		blockHeight := highestParentHeight + 1
-
-		heightGroupSize, err := p.database.HeightGroupSize(databaseTransaction, blockHeight)
-		if err != nil {
-			return err
-		}
-		blockHeightGroupIndex := heightGroupSize
-
-		databaseBlock := &model.Block{
-			BlockHash:                      blockHash.String(),
-			Timestamp:                      block.Header.TimeInMilliseconds(),
-			ParentIDs:                      parentIDs,
-			Height:                         blockHeight,
-			HeightGroupIndex:               blockHeightGroupIndex,
-			SelectedParentID:               nil,
-			Color:                          model.ColorGray,
-			IsInVirtualSelectedParentChain: false,
-		}
-		err = p.database.InsertBlock(databaseTransaction, blockHash, databaseBlock)
-		if err != nil {
-			return errors.Wrapf(err, "Could not insert block %s", blockHash)
-		}
-
-		blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
-		if err != nil {
-			return err
-		}
-		heightGroup := &model.HeightGroup{
-			Height: blockHeight,
-			Size:   blockHeightGroupIndex + 1,
-		}
-		err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
-		if err != nil {
-			return err
-		}
-
-		for _, parentID := range parentIDs {
-			parentHeight, err := p.database.BlockHeight(databaseTransaction, parentID)
-			if err != nil {
-				return err
-			}
-			parentHeightGroupIndex, err := p.database.BlockHeightGroupIndex(databaseTransaction, parentID)
-			if err != nil {
-				return err
-			}
-			edge := &model.Edge{
-				FromBlockID:          blockID,
-				ToBlockID:            parentID,
-				FromHeight:           blockHeight,
-				ToHeight:             parentHeight,
-				FromHeightGroupIndex: blockHeightGroupIndex,
-				ToHeightGroupIndex:   parentHeightGroupIndex,
-			}
-			err = p.database.InsertEdge(databaseTransaction, edge)
-			if err != nil {
-				return err
-			}
 		}
 
 		blockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(blockHash)
@@ -199,6 +205,10 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 		if err != nil {
 			return errors.Wrapf(err, "Could not get selected parent block ID for block %s",
 				blockGHOSTDAGData.SelectedParent())
+		}
+		blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
+		if err != nil {
+			return err
 		}
 		err = p.database.UpdateBlockSelectedParent(databaseTransaction, blockID, selectedParentID)
 		if err != nil {
