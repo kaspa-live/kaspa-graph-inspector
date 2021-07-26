@@ -110,8 +110,8 @@ func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
 		blockHash := consensushashing.BlockHash(block)
-		log.Infof("Preprocessing block %s", blockHash)
-		defer log.Infof("Finished preprocessing block %s", blockHash)
+		log.Infof("Processing block %s", blockHash)
+		defer log.Infof("Finished processing block %s", blockHash)
 
 		blockExists, err := p.database.DoesBlockExist(databaseTransaction, blockHash)
 		if err != nil {
