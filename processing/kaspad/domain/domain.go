@@ -41,7 +41,7 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 		EnableSanityCheckPruningUTXOSet: false,
 	}
 
-	consensus, err := consensusPackage.New(dagParams, databaseContext, activePrefix)
+	consensus, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix)
 	if err != nil {
 		return nil, err
 	}
@@ -61,14 +61,16 @@ type Domain struct {
 
 	databaseContext      database.Database
 	consensusConfig      *consensus.Config
-	stagingConsensus     *externalapi.Consensus
+	stagingConsensus     *consensusPackage.Consensus
 	stagingConsensusLock sync.RWMutex
+
+	onBlockAddedListener consensusPackage.OnBlockAddedListener
 }
 
 func (d *Domain) StagingConsensus() externalapi.Consensus {
 	d.stagingConsensusLock.RLock()
 	defer d.stagingConsensusLock.RUnlock()
-	return *d.stagingConsensus
+	return d.stagingConsensus
 }
 
 func (d *Domain) InitStagingConsensus() error {
@@ -103,13 +105,12 @@ func (d *Domain) InitStagingConsensus() error {
 	stagingConsensusConfig := *d.consensusConfig
 	stagingConsensusConfig.ShouldNotAddGenesis = true
 
-	consensusFactory := consensus.NewFactory()
-	consensusInstance, err := consensusFactory.NewConsensus(&stagingConsensusConfig, d.databaseContext, inactivePrefix)
+	consensusInstance, err := consensusPackage.New(&stagingConsensusConfig, d.databaseContext, inactivePrefix)
 	if err != nil {
 		return err
 	}
 
-	d.stagingConsensus = &consensusInstance
+	d.stagingConsensus = consensusInstance
 	return nil
 }
 
@@ -168,6 +169,7 @@ func (d *Domain) CommitStagingConsensus() error {
 	consensusPointer := (*unsafe.Pointer)(unsafe.Pointer(&d.consensus))
 	atomic.StorePointer(consensusPointer, tempConsensusPointer)
 	d.stagingConsensus = nil
+
 	return nil
 }
 
@@ -185,6 +187,7 @@ func (d *Domain) DeleteStagingConsensus() error {
 }
 
 func (d *Domain) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
+	d.onBlockAddedListener = listener
 	d.consensus.SetOnBlockAddedListener(listener)
 }
 

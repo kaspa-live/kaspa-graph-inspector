@@ -6,17 +6,11 @@ import (
 	"github.com/kaspanet/kaspad/domain/consensus/datastructures/ghostdagdatastore"
 	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	"github.com/kaspanet/kaspad/domain/dagconfig"
 	"github.com/kaspanet/kaspad/domain/prefixmanager/prefix"
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
 )
 
-func New(dagParams *dagconfig.Params, databaseContext database.Database, dbPrefix *prefix.Prefix) (*Consensus, error) {
-	consensusConfig := &kaspadConsensus.Config{
-		Params:                          *dagParams,
-		IsArchival:                      false,
-		EnableSanityCheckPruningUTXOSet: false,
-	}
+func New(consensusConfig *kaspadConsensus.Config, databaseContext database.Database, dbPrefix *prefix.Prefix) (*Consensus, error) {
 	kaspadConsensusFactory := kaspadConsensus.NewFactory()
 	kaspadConsensusInstance, err := kaspadConsensusFactory.NewConsensus(consensusConfig, databaseContext, dbPrefix)
 	if err != nil {
@@ -24,7 +18,7 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database, dbPrefi
 	}
 
 	dbManager := consensusDatabase.New(databaseContext)
-	pruningWindowSizeForCaches := int(dagParams.PruningDepth())
+	pruningWindowSizeForCaches := int(consensusConfig.Params.PruningDepth())
 	ghostdagDataStore := ghostdagdatastore.New(dbPrefix, pruningWindowSizeForCaches, true)
 
 	return &Consensus{
@@ -47,7 +41,9 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock, shoul
 	if err != nil {
 		return nil, err
 	}
-	c.onBlockAddedListener(block, blockInsertionResult)
+	if c.onBlockAddedListener != nil {
+		c.onBlockAddedListener(block, blockInsertionResult)
+	}
 	return blockInsertionResult, nil
 }
 
