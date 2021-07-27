@@ -10,6 +10,7 @@ import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/pkg/errors"
+	"sync"
 )
 
 var log = logging.Logger()
@@ -18,6 +19,8 @@ type Processing struct {
 	config   *configPackage.Config
 	database *databasePackage.Database
 	kaspad   *kaspadPackage.Kaspad
+
+	sync.Mutex
 }
 
 func NewProcessing(config *configPackage.Config,
@@ -38,6 +41,9 @@ func NewProcessing(config *configPackage.Config,
 }
 
 func (p *Processing) SyncDatabase() error {
+	p.Lock()
+	defer p.Unlock()
+
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
 		log.Infof("Syncing database")
 		defer log.Infof("Finished syncing database")
@@ -98,7 +104,7 @@ func (p *Processing) SyncDatabase() error {
 			if err != nil {
 				return err
 			}
-			err = p.processAddedBlockInTransaction(databaseTransaction, block, nil)
+			err = p.processAddedBlock(databaseTransaction, block, nil)
 			if err != nil {
 				return err
 			}
@@ -122,7 +128,7 @@ func (p *Processing) SyncDatabase() error {
 			blockInsertionResult := &externalapi.BlockInsertionResult{
 				VirtualSelectedParentChainChanges: virtualSelectedParentChain,
 			}
-			err = p.processAddedBlockInTransaction(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
+			err = p.processAddedBlock(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
 			if err != nil {
 				return err
 			}
@@ -136,18 +142,22 @@ func (p *Processing) SyncDatabase() error {
 func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
 	blockInsertionResult *externalapi.BlockInsertionResult) error {
 
+	p.Lock()
+	defer p.Unlock()
+
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		return p.processAddedBlockInTransaction(databaseTransaction, block, blockInsertionResult)
+		return p.processAddedBlock(databaseTransaction, block, blockInsertionResult)
 	})
 }
 
-func (p *Processing) processAddedBlockInTransaction(databaseTransaction *pg.Tx, block *externalapi.DomainBlock,
+func (p *Processing) processAddedBlock(databaseTransaction *pg.Tx, block *externalapi.DomainBlock,
 	blockInsertionResult *externalapi.BlockInsertionResult) error {
 
 	blockHash := consensushashing.BlockHash(block)
 	log.Debugf("Processing block %s", blockHash)
 	defer log.Debugf("Finished processing block %s", blockHash)
 
+	isIncompleteBlock := false
 	blockExists, err := p.database.DoesBlockExist(databaseTransaction, blockHash)
 	if err != nil {
 		return err
@@ -162,6 +172,7 @@ func (p *Processing) processAddedBlockInTransaction(databaseTransaction *pg.Tx, 
 			}
 			if !parentExists {
 				log.Warnf("Parent %s for block %s does not exist in the database", parentHash, blockHash)
+				isIncompleteBlock = true
 				continue
 			}
 			existingParentHashes = append(existingParentHashes, parentHash)
@@ -173,9 +184,13 @@ func (p *Processing) processAddedBlockInTransaction(databaseTransaction *pg.Tx, 
 				"parent IDs for block %s: %s", blockHash, err)
 		}
 
-		highestParentHeight, err := p.database.HighestBlockHeight(databaseTransaction, parentIDs)
-		if err != nil {
-			return errors.Wrapf(err, "Could not resolve highest parent height for block %s", blockHash)
+		highestParentHeight := uint64(0)
+		if len(parentIDs) > 0 {
+			var err error
+			highestParentHeight, err = p.database.HighestBlockHeight(databaseTransaction, parentIDs)
+			if err != nil {
+				return errors.Wrapf(err, "Could not resolve highest parent height for block %s", blockHash)
+			}
 		}
 		blockHeight := highestParentHeight + 1
 
@@ -241,7 +256,7 @@ func (p *Processing) processAddedBlockInTransaction(databaseTransaction *pg.Tx, 
 	if err != nil {
 		return err
 	}
-	if blockInfo.BlockStatus == externalapi.StatusHeaderOnly {
+	if blockInfo.BlockStatus == externalapi.StatusHeaderOnly || isIncompleteBlock {
 		return nil
 	}
 
@@ -276,7 +291,7 @@ func (p *Processing) processAddedBlockInTransaction(databaseTransaction *pg.Tx, 
 		return err
 	}
 
-	if blockInsertionResult.VirtualSelectedParentChainChanges == nil {
+	if blockInsertionResult == nil || blockInsertionResult.VirtualSelectedParentChainChanges == nil {
 		return nil
 	}
 
