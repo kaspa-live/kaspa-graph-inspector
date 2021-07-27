@@ -184,15 +184,14 @@ func (p *Processing) processAddedBlock(databaseTransaction *pg.Tx, block *extern
 				"parent IDs for block %s: %s", blockHash, err)
 		}
 
-		highestParentHeight := uint64(0)
+		blockHeight := uint64(0)
 		if len(parentIDs) > 0 {
-			var err error
-			highestParentHeight, err = p.database.HighestBlockHeight(databaseTransaction, parentIDs)
+			highestParentHeight, err := p.database.HighestBlockHeight(databaseTransaction, parentIDs)
 			if err != nil {
 				return errors.Wrapf(err, "Could not resolve highest parent height for block %s", blockHash)
 			}
+			blockHeight = highestParentHeight + 1
 		}
-		blockHeight := highestParentHeight + 1
 
 		heightGroupSize, err := p.database.HeightGroupSize(databaseTransaction, blockHeight)
 		if err != nil {
