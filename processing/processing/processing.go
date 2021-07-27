@@ -42,105 +42,71 @@ func (p *Processing) SyncDatabase() error {
 		log.Infof("Syncing database")
 		defer log.Infof("Finished syncing database")
 
+		err := p.database.Clear(databaseTransaction)
+		if err != nil {
+			return err
+		}
+
 		pruningPointHash, err := p.kaspad.Domain().Consensus().PruningPoint()
 		if err != nil {
 			return err
 		}
-		pruningPointExistsInDatabase, err := p.database.DoesBlockExist(databaseTransaction, pruningPointHash)
+		log.Infof("Database cleared")
+
+		pruningPointBlock, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
 		if err != nil {
 			return err
 		}
-		if pruningPointExistsInDatabase {
-			return nil
+		pruningPointDatabaseBlock := &model.Block{
+			BlockHash:                      pruningPointHash.String(),
+			Timestamp:                      pruningPointBlock.Header.TimeInMilliseconds(),
+			ParentIDs:                      []uint64{},
+			Height:                         0,
+			HeightGroupIndex:               0,
+			SelectedParentID:               nil,
+			Color:                          model.ColorGray,
+			IsInVirtualSelectedParentChain: true,
+			MergeSetRedIDs:                 []uint64{},
+			MergeSetBlueIDs:                []uint64{},
 		}
-
-		log.Infof("Pruning point %s is missing from the database", pruningPointHash)
-		err = p.database.Clear(databaseTransaction)
+		err = p.database.InsertBlock(databaseTransaction, pruningPointHash, pruningPointDatabaseBlock)
 		if err != nil {
 			return err
-		}
-
-		pruningPointAndItsAnticone, err := p.kaspad.Domain().Consensus().PruningPointAndItsAnticoneWithTrustedData()
-		if err != nil {
-			return err
-		}
-
-		maxDAAScore := uint64(0)
-		for _, blockWithTrustedData := range pruningPointAndItsAnticone {
-			if blockWithTrustedData.DAAScore > maxDAAScore {
-				maxDAAScore = blockWithTrustedData.DAAScore
-			}
-		}
-		for index, blockWithTrustedData := range pruningPointAndItsAnticone {
-			blockHash := consensushashing.BlockHash(blockWithTrustedData.Block)
-			databaseBlock := &model.Block{
-				BlockHash:                      blockHash.String(),
-				Timestamp:                      blockWithTrustedData.Block.Header.TimeInMilliseconds(),
-				ParentIDs:                      []uint64{},
-				Height:                         maxDAAScore,
-				HeightGroupIndex:               uint32(index),
-				SelectedParentID:               nil,
-				Color:                          model.ColorGray,
-				IsInVirtualSelectedParentChain: blockHash.Equal(pruningPointHash),
-				MergeSetRedIDs:                 []uint64{},
-				MergeSetBlueIDs:                []uint64{},
-			}
-			err = p.database.InsertBlock(databaseTransaction, blockHash, databaseBlock)
-			if err != nil {
-				return err
-			}
 		}
 		heightGroup := &model.HeightGroup{
-			Height: maxDAAScore,
-			Size:   uint32(len(pruningPointAndItsAnticone)),
+			Height: 0,
+			Size:   1,
 		}
 		err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
 		if err != nil {
 			return err
 		}
-		log.Infof("Pruning point %s has been added to the database (total %d blocks)", pruningPointHash, len(pruningPointAndItsAnticone))
+		log.Infof("Pruning point %s has been added to the database", pruningPointHash)
 
-		virtualSelectedChainPath, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(pruningPointHash)
+		headersSelectedTip, err := p.kaspad.Domain().Consensus().GetHeadersSelectedTip()
 		if err != nil {
 			return err
 		}
-		virtualSelectedParentChain := virtualSelectedChainPath.Added
-
-		if len(virtualSelectedParentChain) == 0 {
-			return nil
+		hashesBetweenPruningPointAndHeadersSelectedTip, _, err := p.kaspad.Domain().Consensus().GetHashesBetween(pruningPointHash, headersSelectedTip, 0)
+		if err != nil {
+			return err
 		}
-		log.Infof("Syncing a selected parent chain of length %d", len(virtualSelectedParentChain))
+		log.Infof("Adding %d blocks to the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
 
-		for _, virtualSelectedParentChainBlockHash := range virtualSelectedParentChain {
-			virtualSelectedParentChainBlockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(virtualSelectedParentChainBlockHash)
+		for i, blockHash := range hashesBetweenPruningPointAndHeadersSelectedTip {
+			block, err := p.kaspad.Domain().Consensus().GetBlockEvenIfHeaderOnly(blockHash)
 			if err != nil {
 				return err
 			}
-			mergeSetReds := virtualSelectedParentChainBlockGHOSTDAGData.MergeSetReds()
-			mergeSetBlues := virtualSelectedParentChainBlockGHOSTDAGData.MergeSetBlues()
-			mergeSet := append(mergeSetBlues, mergeSetReds...)
-			for _, mergeSetBlockHash := range mergeSet {
-				mergeSetBlock, err := p.kaspad.Domain().Consensus().GetBlock(mergeSetBlockHash)
-				if err != nil {
-					return err
-				}
-				err = p.processAddedBlockInTransaction(databaseTransaction, mergeSetBlock, nil)
-				if err != nil {
-					return err
-				}
-			}
-
-			virtualSelectedParentChainBlock, err := p.kaspad.Domain().Consensus().GetBlock(virtualSelectedParentChainBlockHash)
+			err = p.processAddedBlockInTransaction(databaseTransaction, block, nil)
 			if err != nil {
 				return err
 			}
-			blockInsertionResult := &externalapi.BlockInsertionResult{
-				VirtualSelectedParentChainChanges: &externalapi.SelectedChainPath{
-					Added:   []*externalapi.DomainHash{virtualSelectedParentChainBlockHash},
-					Removed: []*externalapi.DomainHash{},
-				},
+
+			addedCount := i + 1
+			if addedCount%1000 == 0 || addedCount == len(hashesBetweenPruningPointAndHeadersSelectedTip) {
+				log.Infof("Added %d/%d blocks to the database", addedCount, len(hashesBetweenPruningPointAndHeadersSelectedTip))
 			}
-			err = p.processAddedBlockInTransaction(databaseTransaction, virtualSelectedParentChainBlock, blockInsertionResult)
 		}
 
 		return nil
@@ -159,8 +125,8 @@ func (p *Processing) processAddedBlockInTransaction(databaseTransaction *pg.Tx, 
 	blockInsertionResult *externalapi.BlockInsertionResult) error {
 
 	blockHash := consensushashing.BlockHash(block)
-	log.Infof("Processing block %s", blockHash)
-	defer log.Infof("Finished processing block %s", blockHash)
+	log.Debugf("Processing block %s", blockHash)
+	defer log.Debugf("Finished processing block %s", blockHash)
 
 	blockExists, err := p.database.DoesBlockExist(databaseTransaction, blockHash)
 	if err != nil {
