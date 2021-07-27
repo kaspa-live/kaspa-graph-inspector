@@ -154,7 +154,20 @@ func (p *Processing) processAddedBlockInTransaction(databaseTransaction *pg.Tx, 
 	}
 	if !blockExists {
 		parentHashes := block.Header.ParentHashes()
-		parentIDs, err := p.database.BlockIDsByHashes(databaseTransaction, parentHashes)
+		existingParentHashes := make([]*externalapi.DomainHash, 0, len(parentHashes))
+		for _, parentHash := range parentHashes {
+			parentExists, err := p.database.DoesBlockExist(databaseTransaction, parentHash)
+			if err != nil {
+				return err
+			}
+			if !parentExists {
+				log.Warnf("Parent %s for block %s does not exist in the database", parentHash, blockHash)
+				continue
+			}
+			existingParentHashes = append(existingParentHashes, parentHash)
+		}
+
+		parentIDs, err := p.database.BlockIDsByHashes(databaseTransaction, existingParentHashes)
 		if err != nil {
 			return errors.Errorf("Could not resolve "+
 				"parent IDs for block %s: %s", blockHash, err)

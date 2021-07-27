@@ -141,3 +141,7 @@ func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.Blo
 func (c *Consensus) GetMissingBlockBodyHashes(highHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
 	return c.kaspadConsensus.GetMissingBlockBodyHashes(highHash)
 }
+
+func (c *Consensus) ResolveVirtual() error {
+	return c.kaspadConsensus.ResolveVirtual()
+}
