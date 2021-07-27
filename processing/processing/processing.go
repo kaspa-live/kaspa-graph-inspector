@@ -109,6 +109,26 @@ func (p *Processing) SyncDatabase() error {
 			}
 		}
 
+		virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(pruningPointHash)
+		if err != nil {
+			return err
+		}
+		if len(virtualSelectedParentChain.Added) > 0 {
+			virtualSelectedParentHash := virtualSelectedParentChain.Added[len(virtualSelectedParentChain.Added)-1]
+			virtualSelectedParentBlock, err := p.kaspad.Domain().Consensus().GetBlock(virtualSelectedParentHash)
+			if err != nil {
+				return err
+			}
+			blockInsertionResult := &externalapi.BlockInsertionResult{
+				VirtualSelectedParentChainChanges: virtualSelectedParentChain,
+			}
+			err = p.processAddedBlockInTransaction(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
+			if err != nil {
+				return err
+			}
+			log.Infof("Updated the virtual selected parent chain")
+		}
+
 		return nil
 	})
 }
