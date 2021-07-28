@@ -29,11 +29,6 @@ func main() {
 	if err != nil {
 		logErrorAndExit("Could not create kaspad: %s", err)
 	}
-	err = kaspad.Start()
-	if err != nil {
-		logErrorAndExit("Could not start kaspad: %s", err)
-	}
-
 	processing, err := processingPackage.NewProcessing(config, database, kaspad)
 	if err != nil {
 		logErrorAndExit("Could not initialize processing: %s", err)
@@ -51,6 +46,10 @@ func main() {
 			logErrorAndExit("Could not sync database: %s", err)
 		}
 	})
+	err = kaspad.Start()
+	if err != nil {
+		logErrorAndExit("Could not start kaspad: %s", err)
+	}
 
 	<-make(chan struct{})
 }
