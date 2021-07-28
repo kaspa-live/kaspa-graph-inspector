@@ -32,10 +32,6 @@ func (c *Consensus) GetHashesBetween(lowHash, highHash *externalapi.DomainHash, 
 	return c.kaspadConsensus.GetHashesBetween(lowHash, highHash, maxBlueScoreDifference)
 }
 
-func (c *Consensus) GetMissingBlockBodyHashes(highHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
-	return c.kaspadConsensus.GetMissingBlockBodyHashes(highHash)
-}
-
 func (c *Consensus) GetPruningPointUTXOs(expectedPruningPointHash *externalapi.DomainHash, fromOutpoint *externalapi.DomainOutpoint, limit int) ([]*externalapi.OutpointAndUTXOEntryPair, error) {
 	return c.kaspadConsensus.GetPruningPointUTXOs(expectedPruningPointHash, fromOutpoint, limit)
 }
@@ -56,16 +52,8 @@ func (c *Consensus) AppendImportedPruningPointUTXOs(outpointAndUTXOEntryPairs []
 	return c.kaspadConsensus.AppendImportedPruningPointUTXOs(outpointAndUTXOEntryPairs)
 }
 
-func (c *Consensus) ValidateAndInsertImportedPruningPoint(newPruningPoint *externalapi.DomainBlock) error {
-	return c.kaspadConsensus.ValidateAndInsertImportedPruningPoint(newPruningPoint)
-}
-
 func (c *Consensus) GetVirtualSelectedParent() (*externalapi.DomainHash, error) {
 	return c.kaspadConsensus.GetVirtualSelectedParent()
-}
-
-func (c *Consensus) CreateBlockLocator(lowHash, highHash *externalapi.DomainHash, limit uint32) (externalapi.BlockLocator, error) {
-	return c.kaspadConsensus.CreateBlockLocator(lowHash, highHash, limit)
 }
 
 func (c *Consensus) CreateHeadersSelectedChainBlockLocator(lowHash, highHash *externalapi.DomainHash) (externalapi.BlockLocator, error) {
@@ -118,7 +106,7 @@ func (c *Consensus) GetBlockEvenIfHeaderOnly(blockHash *externalapi.DomainHash) 
 	return c.kaspadConsensus.GetBlockEvenIfHeaderOnly(blockHash)
 }
 
-func (c *Consensus) EstimateNetworkHashesPerSecond(startHash *externalapi.DomainHash,windowSize int) (uint64, error) {
+func (c *Consensus) EstimateNetworkHashesPerSecond(startHash *externalapi.DomainHash, windowSize int) (uint64, error) {
 	return c.kaspadConsensus.EstimateNetworkHashesPerSecond(startHash, windowSize)
 }
 
@@ -126,3 +114,30 @@ func (c *Consensus) GetVirtualDAAScore() (uint64, error) {
 	return c.kaspadConsensus.GetVirtualDAAScore()
 }
 
+func (c *Consensus) Init(shouldNotAddGenesis bool) error {
+	return c.kaspadConsensus.Init(shouldNotAddGenesis)
+}
+
+func (c *Consensus) PruningPointAndItsAnticoneWithTrustedData() ([]*externalapi.BlockWithTrustedData, error) {
+	return c.kaspadConsensus.PruningPointAndItsAnticoneWithTrustedData()
+}
+
+func (c *Consensus) ValidateAndInsertImportedPruningPoint(newPruningPoint *externalapi.DomainHash) error {
+	return c.kaspadConsensus.ValidateAndInsertImportedPruningPoint(newPruningPoint)
+}
+
+func (c *Consensus) CreateBlockLocatorFromPruningPoint(highHash *externalapi.DomainHash, limit uint32) (externalapi.BlockLocator, error) {
+	return c.kaspadConsensus.CreateBlockLocatorFromPruningPoint(highHash, limit)
+}
+
+func (c *Consensus) PopulateMass(transaction *externalapi.DomainTransaction) {
+	c.kaspadConsensus.PopulateMass(transaction)
+}
+
+func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.BlockWithTrustedData, validateUTXO bool) (*externalapi.BlockInsertionResult, error) {
+	return c.kaspadConsensus.ValidateAndInsertBlockWithTrustedData(block, validateUTXO)
+}
+
+func (c *Consensus) GetMissingBlockBodyHashes(highHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
+	return c.kaspadConsensus.GetMissingBlockBodyHashes(highHash)
+}

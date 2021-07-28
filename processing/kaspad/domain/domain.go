@@ -4,7 +4,6 @@ import (
 	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/mining_manager"
 	"github.com/kaspanet/kaspad/domain/consensus"
-	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/dagconfig"
 	"github.com/kaspanet/kaspad/domain/miningmanager"
@@ -42,7 +41,7 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 		EnableSanityCheckPruningUTXOSet: false,
 	}
 
-	consensus, err := consensusPackage.New(dagParams, databaseContext, activePrefix)
+	consensus, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix)
 	if err != nil {
 		return nil, err
 	}
@@ -62,14 +61,17 @@ type Domain struct {
 
 	databaseContext      database.Database
 	consensusConfig      *consensus.Config
-	stagingConsensus     *externalapi.Consensus
+	stagingConsensus     *consensusPackage.Consensus
 	stagingConsensusLock sync.RWMutex
+
+	onBlockAddedListener     consensusPackage.OnBlockAddedListener
+	onConsensusResetListener OnConsensusResetListener
 }
 
 func (d *Domain) StagingConsensus() externalapi.Consensus {
 	d.stagingConsensusLock.RLock()
 	defer d.stagingConsensusLock.RUnlock()
-	return *d.stagingConsensus
+	return d.stagingConsensus
 }
 
 func (d *Domain) InitStagingConsensus() error {
@@ -101,13 +103,15 @@ func (d *Domain) InitStagingConsensus() error {
 		return err
 	}
 
-	consensusFactory := consensus.NewFactory()
-	consensusInstance, err := consensusFactory.NewConsensus(d.consensusConfig, d.databaseContext, inactivePrefix)
+	stagingConsensusConfig := *d.consensusConfig
+	stagingConsensusConfig.SkipAddingGenesis = true
+
+	consensusInstance, err := consensusPackage.New(&stagingConsensusConfig, d.databaseContext, inactivePrefix)
 	if err != nil {
 		return err
 	}
 
-	d.stagingConsensus = &consensusInstance
+	d.stagingConsensus = consensusInstance
 	return nil
 }
 
@@ -166,6 +170,9 @@ func (d *Domain) CommitStagingConsensus() error {
 	consensusPointer := (*unsafe.Pointer)(unsafe.Pointer(&d.consensus))
 	atomic.StorePointer(consensusPointer, tempConsensusPointer)
 	d.stagingConsensus = nil
+
+	d.onConsensusResetListener()
+
 	return nil
 }
 
@@ -182,15 +189,16 @@ func (d *Domain) DeleteStagingConsensus() error {
 	return nil
 }
 
-func (d *Domain) SetOnAddingBlockListener(listener consensusPackage.OnAddingBlockListener) {
-	d.consensus.SetOnAddingBlockListener(listener)
-}
-
 func (d *Domain) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
+	d.onBlockAddedListener = listener
 	d.consensus.SetOnBlockAddedListener(listener)
 }
 
-func (d *Domain) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
+func (d *Domain) SetOnVirtualResolvedListener(listener consensusPackage.OnVirtualResolvedListener) {
+	d.consensus.SetOnVirtualResolvedListener(listener)
+}
+
+func (d *Domain) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {
 	return d.consensus.BlockGHOSTDAGData(blockHash)
 }
 
@@ -200,4 +208,10 @@ func (d *Domain) MiningManager() miningmanager.MiningManager {
 
 func (d *Domain) Consensus() externalapi.Consensus {
 	return d.consensus
+}
+
+type OnConsensusResetListener func()
+
+func (d *Domain) SetOnConsensusResetListener(listener OnConsensusResetListener) {
+	d.onConsensusResetListener = listener
 }

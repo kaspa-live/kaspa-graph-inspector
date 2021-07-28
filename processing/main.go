@@ -29,23 +29,33 @@ func main() {
 	if err != nil {
 		logErrorAndExit("Could not create kaspad: %s", err)
 	}
-	err = kaspad.Start()
-	if err != nil {
-		logErrorAndExit("Could not start kaspad: %s", err)
-	}
-
 	processing, err := processingPackage.NewProcessing(config, database, kaspad)
 	if err != nil {
 		logErrorAndExit("Could not initialize processing: %s", err)
 	}
-	kaspad.SetOnAddingBlockListener(processing.PreprocessBlock)
 	kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock,
 		blockInsertionResult *externalapi.BlockInsertionResult) {
-		err := processing.ProcessAddedBlock(block, blockInsertionResult)
+		err := processing.ProcessBlock(block, blockInsertionResult)
 		if err != nil {
-			logErrorAndExit("Could not process added block: %s", err)
+			logErrorAndExit("Could not process block: %s", err)
 		}
 	})
+	kaspad.SetOnVirtualResolvedListener(func() {
+		err := processing.ResyncVirtualSelectedParentChain()
+		if err != nil {
+			logErrorAndExit("Could not resync the virtual selected parent chain: %s", err)
+		}
+	})
+	kaspad.SetOnConsensusResetListener(func() {
+		err := processing.ResyncDatabase()
+		if err != nil {
+			logErrorAndExit("Could not resync database: %s", err)
+		}
+	})
+	err = kaspad.Start()
+	if err != nil {
+		logErrorAndExit("Could not start kaspad: %s", err)
+	}
 
 	<-make(chan struct{})
 }

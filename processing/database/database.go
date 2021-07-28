@@ -125,6 +125,15 @@ func (db *Database) HighestBlockHeight(databaseTransaction *pg.Tx, blockIDs []ui
 	return result.Highest, nil
 }
 
+func (db *Database) HighestBlockInVirtualSelectedParentChain(databaseTransaction *pg.Tx) (*model.Block, error) {
+	result := new(model.Block)
+	_, err := databaseTransaction.Query(result, "select * from blocks where is_in_virtual_selected_parent_chain = ? order by height desc limit 1", true)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (db *Database) HeightGroupSize(databaseTransaction *pg.Tx, height uint64) (uint32, error) {
 	var result struct {
 		Size uint32
@@ -172,6 +181,19 @@ func (db *Database) InsertOrUpdateHeightGroup(databaseTransaction *pg.Tx, height
 		return err
 	}
 	return nil
+}
+
+func (db *Database) Clear(databaseTransaction *pg.Tx) error {
+	_, err := databaseTransaction.Exec("TRUNCATE TABLE blocks")
+	if err != nil {
+		return err
+	}
+	_, err = databaseTransaction.Exec("TRUNCATE TABLE edges")
+	if err != nil {
+		return err
+	}
+	_, err = databaseTransaction.Exec("TRUNCATE TABLE height_groups")
+	return err
 }
 
 func (db *Database) Close() {

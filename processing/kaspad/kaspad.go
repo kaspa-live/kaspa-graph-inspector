@@ -7,7 +7,6 @@ import (
 	domainPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain"
 	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 	"github.com/kaspanet/kaspad/app/protocol"
-	"github.com/kaspanet/kaspad/domain/consensus/model"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	kaspadConfigPackage "github.com/kaspanet/kaspad/infrastructure/config"
 	"github.com/kaspanet/kaspad/infrastructure/network/addressmanager"
@@ -71,15 +70,19 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 	}, nil
 }
 
-func (k *Kaspad) SetOnAddingBlockListener(listener consensusPackage.OnAddingBlockListener) {
-	k.domain.SetOnAddingBlockListener(listener)
-}
-
 func (k *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedListener) {
 	k.domain.SetOnBlockAddedListener(listener)
 }
 
-func (k *Kaspad) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*model.BlockGHOSTDAGData, error) {
+func (k *Kaspad) SetOnVirtualResolvedListener(listener consensusPackage.OnVirtualResolvedListener) {
+	k.domain.SetOnVirtualResolvedListener(listener)
+}
+
+func (k *Kaspad) SetOnConsensusResetListener(listener domainPackage.OnConsensusResetListener) {
+	k.domain.SetOnConsensusResetListener(listener)
+}
+
+func (k *Kaspad) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {
 	return k.domain.BlockGHOSTDAGData(blockHash)
 }
 
