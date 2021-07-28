@@ -104,7 +104,7 @@ func (p *Processing) ResyncDatabase() error {
 			if err != nil {
 				return err
 			}
-			err = p.processAddedBlock(databaseTransaction, block, nil)
+			err = p.processBlock(databaseTransaction, block, nil)
 			if err != nil {
 				return err
 			}
@@ -140,7 +140,7 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 	if err != nil {
 		return err
 	}
-	log.Infof("Resyncing selected parent chain from block %s", highestBlockHash)
+	log.Infof("Resyncing virtual selected parent chain from block %s", highestBlockHash)
 
 	virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(highestBlockHash)
 	if err != nil {
@@ -155,7 +155,7 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 		blockInsertionResult := &externalapi.BlockInsertionResult{
 			VirtualSelectedParentChainChanges: virtualSelectedParentChain,
 		}
-		err = p.processAddedBlock(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
+		err = p.processBlock(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
 		if err != nil {
 			return err
 		}
@@ -164,18 +164,18 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 	return nil
 }
 
-func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,
+func (p *Processing) ProcessBlock(block *externalapi.DomainBlock,
 	blockInsertionResult *externalapi.BlockInsertionResult) error {
 
 	p.Lock()
 	defer p.Unlock()
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		return p.processAddedBlock(databaseTransaction, block, blockInsertionResult)
+		return p.processBlock(databaseTransaction, block, blockInsertionResult)
 	})
 }
 
-func (p *Processing) processAddedBlock(databaseTransaction *pg.Tx, block *externalapi.DomainBlock,
+func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi.DomainBlock,
 	blockInsertionResult *externalapi.BlockInsertionResult) error {
 
 	blockHash := consensushashing.BlockHash(block)

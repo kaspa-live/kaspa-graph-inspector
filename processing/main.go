@@ -35,9 +35,9 @@ func main() {
 	}
 	kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock,
 		blockInsertionResult *externalapi.BlockInsertionResult) {
-		err := processing.ProcessAddedBlock(block, blockInsertionResult)
+		err := processing.ProcessBlock(block, blockInsertionResult)
 		if err != nil {
-			logErrorAndExit("Could not process added block: %s", err)
+			logErrorAndExit("Could not process block: %s", err)
 		}
 	})
 	kaspad.SetOnVirtualResolvedListener(func() {
