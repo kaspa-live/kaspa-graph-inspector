@@ -74,6 +74,10 @@ func (k *Kaspad) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedL
 	k.domain.SetOnBlockAddedListener(listener)
 }
 
+func (k *Kaspad) SetOnVirtualResolvedListener(listener consensusPackage.OnVirtualResolvedListener) {
+	k.domain.SetOnVirtualResolvedListener(listener)
+}
+
 func (k *Kaspad) SetOnConsensusResetListener(listener domainPackage.OnConsensusResetListener) {
 	k.domain.SetOnConsensusResetListener(listener)
 }

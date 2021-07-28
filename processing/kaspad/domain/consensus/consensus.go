@@ -33,7 +33,8 @@ type Consensus struct {
 	kaspadConsensus   externalapi.Consensus
 	ghostdagDataStore model.GHOSTDAGDataStore
 
-	onBlockAddedListener OnBlockAddedListener
+	onBlockAddedListener      OnBlockAddedListener
+	onVirtualResolvedListener OnVirtualResolvedListener
 }
 
 func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock, shouldValidateAgainstUTXO bool) (*externalapi.BlockInsertionResult, error) {
@@ -47,10 +48,26 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock, shoul
 	return blockInsertionResult, nil
 }
 
+func (c *Consensus) ResolveVirtual() error {
+	err := c.kaspadConsensus.ResolveVirtual()
+	if err != nil {
+		return err
+	}
+	if c.onVirtualResolvedListener != nil {
+		c.onVirtualResolvedListener()
+	}
+	return nil
+}
+
 type OnBlockAddedListener func(*externalapi.DomainBlock, *externalapi.BlockInsertionResult)
+type OnVirtualResolvedListener func()
 
 func (c *Consensus) SetOnBlockAddedListener(listener OnBlockAddedListener) {
 	c.onBlockAddedListener = listener
+}
+
+func (c *Consensus) SetOnVirtualResolvedListener(listener OnVirtualResolvedListener) {
+	c.onVirtualResolvedListener = listener
 }
 
 func (c *Consensus) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {

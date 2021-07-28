@@ -32,7 +32,7 @@ func NewProcessing(config *configPackage.Config,
 		kaspad:   kaspad,
 	}
 
-	err := processing.SyncDatabase()
+	err := processing.ResyncDatabase()
 	if err != nil {
 		return nil, err
 	}
@@ -40,13 +40,13 @@ func NewProcessing(config *configPackage.Config,
 	return processing, nil
 }
 
-func (p *Processing) SyncDatabase() error {
+func (p *Processing) ResyncDatabase() error {
 	p.Lock()
 	defer p.Unlock()
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		log.Infof("Syncing database")
-		defer log.Infof("Finished syncing database")
+		log.Infof("Resyncing database")
+		defer log.Infof("Finished resyncing database")
 
 		err := p.database.Clear(databaseTransaction)
 		if err != nil {
@@ -115,28 +115,57 @@ func (p *Processing) SyncDatabase() error {
 			}
 		}
 
-		virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(pruningPointHash)
+		return p.resyncVirtualSelectedParentChain(databaseTransaction)
+	})
+}
+
+func (p *Processing) ResyncVirtualSelectedParentChain() error {
+	p.Lock()
+	defer p.Unlock()
+
+	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
+		return p.resyncVirtualSelectedParentChain(databaseTransaction)
+	})
+}
+
+func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx) error {
+	log.Infof("Resyncing virtual selected parent chain")
+	defer log.Infof("Finished resyncing virtual selected parent chain")
+
+	pruningPointHash, err := p.kaspad.Domain().Consensus().PruningPoint()
+	if err != nil {
+		return err
+	}
+	pruningPointID, err := p.database.BlockIDByHash(databaseTransaction, pruningPointHash)
+	if err != nil {
+		return err
+	}
+	err = p.database.ResetBlockIsInVirtualSelectedParentChain(databaseTransaction, pruningPointID)
+	if err != nil {
+		return err
+	}
+	log.Infof("Reset the virtual selected parent chain to pruning point %s", pruningPointHash)
+
+	virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(pruningPointHash)
+	if err != nil {
+		return err
+	}
+	if len(virtualSelectedParentChain.Added) > 0 {
+		virtualSelectedParentHash := virtualSelectedParentChain.Added[len(virtualSelectedParentChain.Added)-1]
+		virtualSelectedParentBlock, err := p.kaspad.Domain().Consensus().GetBlock(virtualSelectedParentHash)
 		if err != nil {
 			return err
 		}
-		if len(virtualSelectedParentChain.Added) > 0 {
-			virtualSelectedParentHash := virtualSelectedParentChain.Added[len(virtualSelectedParentChain.Added)-1]
-			virtualSelectedParentBlock, err := p.kaspad.Domain().Consensus().GetBlock(virtualSelectedParentHash)
-			if err != nil {
-				return err
-			}
-			blockInsertionResult := &externalapi.BlockInsertionResult{
-				VirtualSelectedParentChainChanges: virtualSelectedParentChain,
-			}
-			err = p.processAddedBlock(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
-			if err != nil {
-				return err
-			}
-			log.Infof("Updated the virtual selected parent chain")
+		blockInsertionResult := &externalapi.BlockInsertionResult{
+			VirtualSelectedParentChainChanges: virtualSelectedParentChain,
 		}
-
-		return nil
-	})
+		err = p.processAddedBlock(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
+		if err != nil {
+			return err
+		}
+		log.Infof("Updated the virtual selected parent chain")
+	}
+	return nil
 }
 
 func (p *Processing) ProcessAddedBlock(block *externalapi.DomainBlock,

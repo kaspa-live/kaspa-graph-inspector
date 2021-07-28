@@ -40,10 +40,16 @@ func main() {
 			logErrorAndExit("Could not process added block: %s", err)
 		}
 	})
-	kaspad.SetOnConsensusResetListener(func() {
-		err = processing.SyncDatabase()
+	kaspad.SetOnVirtualResolvedListener(func() {
+		err := processing.ResyncVirtualSelectedParentChain()
 		if err != nil {
-			logErrorAndExit("Could not sync database: %s", err)
+			logErrorAndExit("Could not resync the virtual selected parent chain: %s", err)
+		}
+	})
+	kaspad.SetOnConsensusResetListener(func() {
+		err := processing.ResyncDatabase()
+		if err != nil {
+			logErrorAndExit("Could not resync database: %s", err)
 		}
 	})
 	err = kaspad.Start()

@@ -194,6 +194,10 @@ func (d *Domain) SetOnBlockAddedListener(listener consensusPackage.OnBlockAddedL
 	d.consensus.SetOnBlockAddedListener(listener)
 }
 
+func (d *Domain) SetOnVirtualResolvedListener(listener consensusPackage.OnVirtualResolvedListener) {
+	d.consensus.SetOnVirtualResolvedListener(listener)
+}
+
 func (d *Domain) BlockGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {
 	return d.consensus.BlockGHOSTDAGData(blockHash)
 }

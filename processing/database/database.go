@@ -62,6 +62,12 @@ func (db *Database) UpdateBlockMergeSet(
 	return err
 }
 
+func (db *Database) ResetBlockIsInVirtualSelectedParentChain(databaseTransaction *pg.Tx, pruningPointID uint64) error {
+	_, err := databaseTransaction.Exec("UPDATE blocks SET is_in_virtual_selected_parent_chain = ? WHERE id <> ?",
+		false, pruningPointID)
+	return err
+}
+
 func (db *Database) UpdateBlockIsInVirtualSelectedParentChain(
 	databaseTransaction *pg.Tx, blockIDsToIsInVirtualSelectedParentChain map[uint64]bool) error {
 
