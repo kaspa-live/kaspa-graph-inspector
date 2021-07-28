@@ -208,6 +208,8 @@ func (p *Processing) processAddedBlock(databaseTransaction *pg.Tx, block *extern
 			SelectedParentID:               nil,
 			Color:                          model.ColorGray,
 			IsInVirtualSelectedParentChain: false,
+			MergeSetRedIDs:                 []uint64{},
+			MergeSetBlueIDs:                []uint64{},
 		}
 		err = p.database.InsertBlock(databaseTransaction, blockHash, databaseBlock)
 		if err != nil {
