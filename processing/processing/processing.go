@@ -132,21 +132,17 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 	log.Infof("Resyncing virtual selected parent chain")
 	defer log.Infof("Finished resyncing virtual selected parent chain")
 
-	pruningPointHash, err := p.kaspad.Domain().Consensus().PruningPoint()
+	highestBlockVirtualSelectedParentChain, err := p.database.HighestBlockInVirtualSelectedParentChain(databaseTransaction)
 	if err != nil {
 		return err
 	}
-	pruningPointID, err := p.database.BlockIDByHash(databaseTransaction, pruningPointHash)
+	highestBlockHash, err := externalapi.NewDomainHashFromString(highestBlockVirtualSelectedParentChain.BlockHash)
 	if err != nil {
 		return err
 	}
-	err = p.database.ResetBlockIsInVirtualSelectedParentChain(databaseTransaction, pruningPointID)
-	if err != nil {
-		return err
-	}
-	log.Infof("Reset the virtual selected parent chain to pruning point %s", pruningPointHash)
+	log.Infof("Resyncing selected parent chain from block %s", highestBlockHash)
 
-	virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(pruningPointHash)
+	virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(highestBlockHash)
 	if err != nil {
 		return err
 	}

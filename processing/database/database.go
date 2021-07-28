@@ -62,12 +62,6 @@ func (db *Database) UpdateBlockMergeSet(
 	return err
 }
 
-func (db *Database) ResetBlockIsInVirtualSelectedParentChain(databaseTransaction *pg.Tx, pruningPointID uint64) error {
-	_, err := databaseTransaction.Exec("UPDATE blocks SET is_in_virtual_selected_parent_chain = ? WHERE id <> ?",
-		false, pruningPointID)
-	return err
-}
-
 func (db *Database) UpdateBlockIsInVirtualSelectedParentChain(
 	databaseTransaction *pg.Tx, blockIDsToIsInVirtualSelectedParentChain map[uint64]bool) error {
 
@@ -129,6 +123,15 @@ func (db *Database) HighestBlockHeight(databaseTransaction *pg.Tx, blockIDs []ui
 		return 0, err
 	}
 	return result.Highest, nil
+}
+
+func (db *Database) HighestBlockInVirtualSelectedParentChain(databaseTransaction *pg.Tx) (*model.Block, error) {
+	result := new(model.Block)
+	_, err := databaseTransaction.Query(result, "select * from blocks where is_in_virtual_selected_parent_chain = ? order by height desc limit 1", true)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (db *Database) HeightGroupSize(databaseTransaction *pg.Tx, height uint64) (uint32, error) {
