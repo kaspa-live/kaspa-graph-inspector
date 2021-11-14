@@ -141,3 +141,27 @@ func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.Blo
 func (c *Consensus) GetMissingBlockBodyHashes(highHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
 	return c.kaspadConsensus.GetMissingBlockBodyHashes(highHash)
 }
+
+func (c *Consensus) ImportPruningPoints(pruningPoints []externalapi.BlockHeader) error {
+	return c.kaspadConsensus.ImportPruningPoints(pruningPoints)
+}
+
+func (c *Consensus) BuildPruningPointProof() (*externalapi.PruningPointProof, error) {
+	return c.kaspadConsensus.BuildPruningPointProof()
+}
+
+func (c *Consensus) ValidatePruningPointProof(pruningPointProof *externalapi.PruningPointProof) error {
+	return c.kaspadConsensus.ValidatePruningPointProof(pruningPointProof)
+}
+
+func (c *Consensus) ApplyPruningPointProof(pruningPointProof *externalapi.PruningPointProof) error {
+	return c.kaspadConsensus.ApplyPruningPointProof(pruningPointProof)
+}
+
+func (c *Consensus) PruningPointHeaders() ([]externalapi.BlockHeader, error) {
+	return c.kaspadConsensus.PruningPointHeaders()
+}
+
+func (c *Consensus) ArePruningPointsViolatingFinality(pruningPoints []externalapi.BlockHeader) (bool, error) {
+	return c.kaspadConsensus.ArePruningPointsViolatingFinality(pruningPoints)
+}

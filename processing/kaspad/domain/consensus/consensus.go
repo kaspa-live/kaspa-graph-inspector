@@ -19,7 +19,8 @@ func New(consensusConfig *kaspadConsensus.Config, databaseContext database.Datab
 
 	dbManager := consensusDatabase.New(databaseContext)
 	pruningWindowSizeForCaches := int(consensusConfig.Params.PruningDepth())
-	ghostdagDataStore := ghostdagdatastore.New(dbPrefix, pruningWindowSizeForCaches, true)
+	prefixBucket := consensusDatabase.MakeBucket(dbPrefix.Serialize())
+	ghostdagDataStore := ghostdagdatastore.New(prefixBucket.Bucket([]byte{byte(0)}), pruningWindowSizeForCaches, true)
 
 	return &Consensus{
 		dbManager:         dbManager,

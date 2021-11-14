@@ -188,7 +188,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		return err
 	}
 	if !blockExists {
-		parentHashes := block.Header.ParentHashes()
+		parentHashes := block.Header.DirectParents()
 		existingParentHashes := make([]*externalapi.DomainHash, 0, len(parentHashes))
 		for _, parentHash := range parentHashes {
 			parentExists, err := p.database.DoesBlockExist(databaseTransaction, parentHash)
