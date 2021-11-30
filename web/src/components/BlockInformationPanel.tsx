@@ -13,7 +13,7 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         return <div/>;
     }
 
-    const katnipAddressForBlock = `${katnipAddress}/#/block/${blockInformation.block.blockHash}`;
+    const katnipAddressForBlock = `${katnipAddress}/block/${blockInformation.block.blockHash}`;
     const kaspaLiveDocsAddress = `${kaspaLiveAddress}/docs`;
     const howDoesKaspaWorkAddress = `${kaspaLiveDocsAddress}#how-does-kaspa-work`
 
