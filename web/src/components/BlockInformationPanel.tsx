@@ -32,7 +32,6 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         <p>A block's hash is derived directly from the block itself using a cryptographic hash function. That ensures
             that no two blocks in the DAG have the same hash, and that each hash represents only the original block from
             which it was derived.</p>
-        <p className="further-information"><a href={howDoesKaspaWorkAddress} target="_blank">Further Information</a></p>
     </div>
 
     const blockParentsTooltip = <div className="information-tooltip">
@@ -42,7 +41,6 @@ const BlockInformationPanel = ({blockInformation, onClose}:
             parent. Moving towards the left in the graph reveals increasingly older generations of blocks until we reach
             the leftmost, and oldest, block. That's the origin of the DAG, or the genesis.</p>
         <p>A block's <b>selected parent</b> is the parent that has the most accumulated proof-of-work.</p>
-        <p className="further-information"><a href={howDoesKaspaWorkAddress} target="_blank">Further Information</a></p>
     </div>;
 
     const blockMergeSetTooltip = <div className="information-tooltip">
@@ -54,7 +52,6 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         <p>For security reasons, only a certain amount of blocks in a block's merge set may
             be <b className="block-color-blue">blue</b>. The blocks that do not make the cut are regarded as
             attacker blocks and are marked <b className="block-color-red">red</b>.</p>
-        <p className="further-information"><a href={howDoesKaspaWorkAddress} target="_blank">Further Information</a></p>
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
@@ -65,7 +62,6 @@ const BlockInformationPanel = ({blockInformation, onClose}:
             not yet have any children.</p>
         <p>Like all blocks, the virtual has a selected parent block. The Selected Parent Chain of the virtual is plainly
             called the <b>Virtual Selected Parent Chain,</b> or the <b>VSPC.</b></p>
-        <p className="further-information"><a href={howDoesKaspaWorkAddress} target="_blank">Further Information</a></p>
     </div>;
 
     const blockColorTooltip = <div className="information-tooltip">
@@ -76,7 +72,6 @@ const BlockInformationPanel = ({blockInformation, onClose}:
             the blocks in the DAG. Therefore, to determine the color of a block, we find the VSPC block that contains
             our block in its merge set. The color of our block in that merge set is the color of the block in the
             DAG.</p>
-        <p className="further-information"><a href={howDoesKaspaWorkAddress} target="_blank">Further Information</a></p>
     </div>;
 
     const parentElements = [];
