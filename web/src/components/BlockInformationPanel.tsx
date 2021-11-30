@@ -3,7 +3,7 @@ import {Divider, IconButton, List, Paper, Typography} from "@material-ui/core";
 import CloseIcon from '@material-ui/icons/Close';
 import BlockInformationPanelHash from "./BlockInformationPanelHash";
 import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
-import {kaspaLiveAddress, katnipAddress} from "../addresses";
+import {katnipAddress} from "../addresses";
 import {BlockInformation} from "../model/BlockInformation";
 
 const BlockInformationPanel = ({blockInformation, onClose}:
@@ -14,8 +14,6 @@ const BlockInformationPanel = ({blockInformation, onClose}:
     }
 
     const katnipAddressForBlock = `${katnipAddress}/block/${blockInformation.block.blockHash}`;
-    const kaspaLiveDocsAddress = `${kaspaLiveAddress}/docs`;
-    const howDoesKaspaWorkAddress = `${kaspaLiveDocsAddress}#how-does-kaspa-work`
 
     let blockColorText = "Undecided";
     let blockColorClass = "block-color-undecided";
