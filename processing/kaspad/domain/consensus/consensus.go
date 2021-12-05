@@ -38,7 +38,7 @@ type Consensus struct {
 	onVirtualResolvedListener OnVirtualResolvedListener
 }
 
-func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock, shouldValidateAgainstUTXO bool) (*externalapi.BlockInsertionResult, error) {
+func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock, shouldValidateAgainstUTXO bool) (*externalapi.VirtualChangeSet, error) {
 	blockInsertionResult, err := c.kaspadConsensus.ValidateAndInsertBlock(block, shouldValidateAgainstUTXO)
 	if err != nil {
 		return nil, err
@@ -49,18 +49,18 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock, shoul
 	return blockInsertionResult, nil
 }
 
-func (c *Consensus) ResolveVirtual() error {
-	err := c.kaspadConsensus.ResolveVirtual()
+func (c *Consensus) ResolveVirtual() (*externalapi.VirtualChangeSet, bool, error) {
+	virtualChangeSet, isCompletelyResolved, err := c.kaspadConsensus.ResolveVirtual()
 	if err != nil {
-		return err
+		return nil, false, err
 	}
 	if c.onVirtualResolvedListener != nil {
 		c.onVirtualResolvedListener()
 	}
-	return nil
+	return virtualChangeSet, isCompletelyResolved, nil
 }
 
-type OnBlockAddedListener func(*externalapi.DomainBlock, *externalapi.BlockInsertionResult)
+type OnBlockAddedListener func(*externalapi.DomainBlock, *externalapi.VirtualChangeSet)
 type OnVirtualResolvedListener func()
 
 func (c *Consensus) SetOnBlockAddedListener(listener OnBlockAddedListener) {

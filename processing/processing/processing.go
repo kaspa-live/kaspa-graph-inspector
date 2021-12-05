@@ -152,7 +152,7 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 		if err != nil {
 			return err
 		}
-		blockInsertionResult := &externalapi.BlockInsertionResult{
+		blockInsertionResult := &externalapi.VirtualChangeSet{
 			VirtualSelectedParentChainChanges: virtualSelectedParentChain,
 		}
 		err = p.processBlock(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
@@ -165,7 +165,7 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 }
 
 func (p *Processing) ProcessBlock(block *externalapi.DomainBlock,
-	blockInsertionResult *externalapi.BlockInsertionResult) error {
+	blockInsertionResult *externalapi.VirtualChangeSet) error {
 
 	p.Lock()
 	defer p.Unlock()
@@ -176,7 +176,7 @@ func (p *Processing) ProcessBlock(block *externalapi.DomainBlock,
 }
 
 func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi.DomainBlock,
-	blockInsertionResult *externalapi.BlockInsertionResult) error {
+	blockInsertionResult *externalapi.VirtualChangeSet) error {
 
 	blockHash := consensushashing.BlockHash(block)
 	log.Debugf("Processing block %s", blockHash)

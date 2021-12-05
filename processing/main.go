@@ -34,7 +34,7 @@ func main() {
 		logErrorAndExit("Could not initialize processing: %s", err)
 	}
 	kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock,
-		blockInsertionResult *externalapi.BlockInsertionResult) {
+		blockInsertionResult *externalapi.VirtualChangeSet) {
 		err := processing.ProcessBlock(block, blockInsertionResult)
 		if err != nil {
 			logErrorAndExit("Could not process block: %s", err)

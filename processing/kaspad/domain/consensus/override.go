@@ -138,7 +138,7 @@ func (c *Consensus) PopulateMass(transaction *externalapi.DomainTransaction) {
 	c.kaspadConsensus.PopulateMass(transaction)
 }
 
-func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.BlockWithTrustedData, validateUTXO bool) (*externalapi.BlockInsertionResult, error) {
+func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.BlockWithTrustedData, validateUTXO bool) (*externalapi.VirtualChangeSet, error) {
 	return c.kaspadConsensus.ValidateAndInsertBlockWithTrustedData(block, validateUTXO)
 }
 
