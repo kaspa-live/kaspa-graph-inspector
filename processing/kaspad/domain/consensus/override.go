@@ -169,3 +169,19 @@ func (c *Consensus) PruningPointHeaders() ([]externalapi.BlockHeader, error) {
 func (c *Consensus) ArePruningPointsViolatingFinality(pruningPoints []externalapi.BlockHeader) (bool, error) {
 	return c.kaspadConsensus.ArePruningPointsViolatingFinality(pruningPoints)
 }
+
+func (c *Consensus) BlockDAAWindowHashes(blockHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
+	return c.kaspadConsensus.BlockDAAWindowHashes(blockHash)
+}
+
+func (c *Consensus) TrustedDataDataDAAHeader(trustedBlockHash, daaBlockHash *externalapi.DomainHash, daaBlockWindowIndex uint64) (*externalapi.TrustedDataDataDAAHeader, error) {
+	return c.kaspadConsensus.TrustedDataDataDAAHeader(trustedBlockHash, daaBlockHash, daaBlockWindowIndex)
+}
+
+func (c *Consensus) TrustedBlockAssociatedGHOSTDAGDataBlockHashes(blockHash *externalapi.DomainHash) ([]*externalapi.DomainHash, error) {
+	return c.kaspadConsensus.TrustedBlockAssociatedGHOSTDAGDataBlockHashes(blockHash)
+}
+
+func (c *Consensus) TrustedGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {
+	return c.kaspadConsensus.TrustedGHOSTDAGData(blockHash)
+}
