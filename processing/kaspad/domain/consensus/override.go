@@ -122,10 +122,6 @@ func (c *Consensus) PruningPointAndItsAnticone() ([]*externalapi.DomainHash, err
 	return c.kaspadConsensus.PruningPointAndItsAnticone()
 }
 
-func (c *Consensus) BlockWithTrustedData(blockHash *externalapi.DomainHash) (*externalapi.BlockWithTrustedData, error) {
-	return c.kaspadConsensus.BlockWithTrustedData(blockHash)
-}
-
 func (c *Consensus) ValidateAndInsertImportedPruningPoint(newPruningPoint *externalapi.DomainHash) error {
 	return c.kaspadConsensus.ValidateAndInsertImportedPruningPoint(newPruningPoint)
 }
