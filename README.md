@@ -45,7 +45,7 @@ Deployment
    2. Within the `processing` directory, edit `go.mod`:
       1. Delete the line that starts with `replace github.com/kaspanet/kaspad`
       2. Set your desired kaspad version in the line under `require` that starts with `github.com/kaspanet/kaspad`
-   3. Within the `processing` directory, run `go build . kgi-processing`. This will produce an executable file named `kgi-processing`
+   3. Within the `processing` directory, run `go build -o  kgi-processing .`. This will produce an executable file named `kgi-processing`
    4. Copy `kgi-processing` and `database` directory (also within the `processing` directory) to wherever you wish to run the node from
 3. Build `api`
    1. Make sure the nodejs build environment is set up by running `npm version`
