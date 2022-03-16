@@ -32,6 +32,10 @@ func (c *Consensus) GetHashesBetween(lowHash, highHash *externalapi.DomainHash, 
 	return c.kaspadConsensus.GetHashesBetween(lowHash, highHash, maxBlueScoreDifference)
 }
 
+func (c *Consensus) GetAnticone(blockHash, contextHash *externalapi.DomainHash, maxBlocks uint64) (hashes []*externalapi.DomainHash, err error) {
+	return c.kaspadConsensus.GetAnticone(blockHash, contextHash, maxBlocks)
+}
+
 func (c *Consensus) GetPruningPointUTXOs(expectedPruningPointHash *externalapi.DomainHash, fromOutpoint *externalapi.DomainOutpoint, limit int) ([]*externalapi.OutpointAndUTXOEntryPair, error) {
 	return c.kaspadConsensus.GetPruningPointUTXOs(expectedPruningPointHash, fromOutpoint, limit)
 }
@@ -97,7 +101,7 @@ func (c *Consensus) Anticone(blockHash *externalapi.DomainHash) ([]*externalapi.
 }
 
 func (c *Consensus) GetBlockRelations(blockHash *externalapi.DomainHash) (
-	parents []*externalapi.DomainHash, selectedParent *externalapi.DomainHash, children []*externalapi.DomainHash, err error) {
+	parents []*externalapi.DomainHash, children []*externalapi.DomainHash, err error) {
 
 	return c.kaspadConsensus.GetBlockRelations(blockHash)
 }
@@ -180,4 +184,8 @@ func (c *Consensus) TrustedBlockAssociatedGHOSTDAGDataBlockHashes(blockHash *ext
 
 func (c *Consensus) TrustedGHOSTDAGData(blockHash *externalapi.DomainHash) (*externalapi.BlockGHOSTDAGData, error) {
 	return c.kaspadConsensus.TrustedGHOSTDAGData(blockHash)
+}
+
+func (c *Consensus) IsChainBlock(blockHash *externalapi.DomainHash) (bool, error) {
+	return c.kaspadConsensus.IsChainBlock(blockHash)
 }
