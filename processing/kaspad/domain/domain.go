@@ -41,7 +41,9 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 		EnableSanityCheckPruningUTXOSet: false,
 	}
 
-	consensus, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix)
+	// warning, the 2nd returned parameter (shouldMigrate) from consensusPackage.New is ignored for now
+	// I don't know how to handle it
+	consensus, _, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +76,13 @@ func (d *Domain) StagingConsensus() externalapi.Consensus {
 	return d.stagingConsensus
 }
 
-func (d *Domain) InitStagingConsensus() error {
+func (d *Domain) InitStagingConsensusWithoutGenesis() error {
+	cfg := *d.consensusConfig
+	cfg.SkipAddingGenesis = true
+	return d.initStagingConsensus(&cfg)
+}
+
+func (d *Domain) initStagingConsensus(stagingConsensusConfig *consensus.Config) error {
 	d.stagingConsensusLock.Lock()
 	defer d.stagingConsensusLock.Unlock()
 
@@ -103,10 +111,9 @@ func (d *Domain) InitStagingConsensus() error {
 		return err
 	}
 
-	stagingConsensusConfig := *d.consensusConfig
-	stagingConsensusConfig.SkipAddingGenesis = true
-
-	consensusInstance, err := consensusPackage.New(&stagingConsensusConfig, d.databaseContext, inactivePrefix)
+	// Warning, the 2nd returned parameter (shouldMigrate) from consensusPackage.New is ignored for now
+	// I don't know how to handle it
+	consensusInstance, _, err := consensusPackage.New(stagingConsensusConfig, d.databaseContext, inactivePrefix)
 	if err != nil {
 		return err
 	}

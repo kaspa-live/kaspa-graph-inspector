@@ -10,11 +10,11 @@ import (
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
 )
 
-func New(consensusConfig *kaspadConsensus.Config, databaseContext database.Database, dbPrefix *prefix.Prefix) (*Consensus, error) {
+func New(consensusConfig *kaspadConsensus.Config, databaseContext database.Database, dbPrefix *prefix.Prefix) (*Consensus, bool, error) {
 	kaspadConsensusFactory := kaspadConsensus.NewFactory()
-	kaspadConsensusInstance, err := kaspadConsensusFactory.NewConsensus(consensusConfig, databaseContext, dbPrefix)
+	kaspadConsensusInstance, shouldMigrate, err := kaspadConsensusFactory.NewConsensus(consensusConfig, databaseContext, dbPrefix)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	dbManager := consensusDatabase.New(databaseContext)
@@ -26,7 +26,7 @@ func New(consensusConfig *kaspadConsensus.Config, databaseContext database.Datab
 		dbManager:         dbManager,
 		kaspadConsensus:   kaspadConsensusInstance,
 		ghostdagDataStore: ghostdagDataStore,
-	}, nil
+	}, shouldMigrate, nil
 }
 
 type Consensus struct {
