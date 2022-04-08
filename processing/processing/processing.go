@@ -1,6 +1,8 @@
 package processing
 
 import (
+	"sync"
+
 	"github.com/go-pg/pg/v10"
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/model"
@@ -10,7 +12,6 @@ import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/pkg/errors"
-	"sync"
 )
 
 var log = logging.Logger()
@@ -318,12 +319,22 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	mergeSetRedIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetReds())
 	if err != nil {
 		// enhanced error description
-		return errors.Wrapf(err, "Could not get ids of merge set reds for block %s", blockHash)
+		// return errors.Wrapf(err, "Could not get ids of merge set reds for block %s", blockHash)
+
+		// Let's ignore this error temporarily and just report it in the log
+		// This occures sometimes when the app was fresly started, at the end or just after ResyncDatabase
+		// The actual conditions and the way to solve this has to be determined yet.
+		log.Errorf("Could not get ids of merge set reds for block %s: %s", blockHash, blockGHOSTDAGData.MergeSetReds())
 	}
 	mergeSetBlueIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetBlues())
 	if err != nil {
 		// enhanced error description
-		return errors.Wrapf(err, "Could not get ids of merge set blues for block %s", blockHash)
+		// return errors.Wrapf(err, "Could not get ids of merge set blues for block %s", blockHash)
+
+		// Let's ignore this error temporarily and just report it in the log
+		// This occures sometimes when the app was fresly started, at the end or just after ResyncDatabase
+		// The actual conditions and the way to solve this has to be determined yet.
+		log.Errorf("Could not get ids of merge set blues for block %s: %s", blockHash, blockGHOSTDAGData.MergeSetBlues())
 	}
 	err = p.database.UpdateBlockMergeSet(databaseTransaction, blockID, mergeSetRedIDs, mergeSetBlueIDs)
 	if err != nil {
@@ -342,7 +353,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		removedBlockIDs, err := p.database.BlockIDsByHashes(databaseTransaction, removedBlockHashes)
 		if err != nil {
 			// enhanced error description
-			return errors.Wrapf(err, "Could not remove blocks for block %s", blockHash)
+			return errors.Wrapf(err, "Could not get hashes of removed blocks for block %s", blockHash)
 		}
 		for _, removedBlockID := range removedBlockIDs {
 			blockColors[removedBlockID] = model.ColorGray
