@@ -3,6 +3,7 @@ package mining_manager
 import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/miningmanager"
+	miningmanagermodel "github.com/kaspanet/kaspad/domain/miningmanager/model"
 )
 
 func New() miningmanager.MiningManager {
@@ -24,6 +25,10 @@ func (mm *miningManager) TransactionCount() int {
 }
 
 func (mm *miningManager) GetBlockTemplate(coinbaseData *externalapi.DomainCoinbaseData) (*externalapi.DomainBlock, error) {
+	panic("unimplemented")
+}
+
+func (mm *miningManager) GetBlockTemplateBuilder() miningmanagermodel.BlockTemplateBuilder {
 	panic("unimplemented")
 }
 

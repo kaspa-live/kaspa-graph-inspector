@@ -6,6 +6,10 @@ func (c *Consensus) BuildBlock(coinbaseData *externalapi.DomainCoinbaseData, tra
 	return c.kaspadConsensus.BuildBlock(coinbaseData, transactions)
 }
 
+func (c *Consensus) BuildBlockWithTemplateMetadata(coinbaseData *externalapi.DomainCoinbaseData, transactions []*externalapi.DomainTransaction) (block *externalapi.DomainBlock, coinbaseHasRedReward bool, err error) {
+	return c.kaspadConsensus.BuildBlockWithTemplateMetadata(coinbaseData, transactions)
+}
+
 func (c *Consensus) ValidateTransactionAndPopulateWithConsensusData(transaction *externalapi.DomainTransaction) error {
 	return c.kaspadConsensus.ValidateTransactionAndPopulateWithConsensusData(transaction)
 }

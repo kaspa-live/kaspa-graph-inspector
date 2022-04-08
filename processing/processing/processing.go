@@ -1,6 +1,8 @@
 package processing
 
 import (
+	"sync"
+
 	"github.com/go-pg/pg/v10"
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/model"
@@ -10,7 +12,6 @@ import (
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/pkg/errors"
-	"sync"
 )
 
 var log = logging.Logger()
@@ -185,7 +186,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	isIncompleteBlock := false
 	blockExists, err := p.database.DoesBlockExist(databaseTransaction, blockHash)
 	if err != nil {
-		return err
+		// enhanced error description
+		return errors.Wrapf(err, "Could not check if block %s does exist in database", blockHash)
 	}
 	if !blockExists {
 		parentHashes := block.Header.DirectParents()
@@ -193,7 +195,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		for _, parentHash := range parentHashes {
 			parentExists, err := p.database.DoesBlockExist(databaseTransaction, parentHash)
 			if err != nil {
-				return err
+				// enhanced error description
+				return errors.Wrapf(err, "Could not check if parent %s for block %s does exist in database", parentHash, blockHash)
 			}
 			if !parentExists {
 				log.Warnf("Parent %s for block %s does not exist in the database", parentHash, blockHash)
@@ -220,7 +223,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 
 		heightGroupSize, err := p.database.HeightGroupSize(databaseTransaction, blockHeight)
 		if err != nil {
-			return err
+			// enhanced error description
+			return errors.Wrapf(err, "Could not resolve group size for highest parent height %s for block %s", blockHeight, blockHash)
 		}
 		blockHeightGroupIndex := heightGroupSize
 
@@ -243,7 +247,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 
 		blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
 		if err != nil {
-			return err
+			// enhanced error description
+			return errors.Wrapf(err, "Could not get id for block %s", blockHash)
 		}
 		heightGroup := &model.HeightGroup{
 			Height: blockHeight,
@@ -251,17 +256,20 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		}
 		err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
 		if err != nil {
-			return err
+			// enhanced error description
+			return errors.Wrapf(err, "Could not insert or update height group %s for block %s", blockHeight, blockHash)
 		}
 
 		for _, parentID := range parentIDs {
 			parentHeight, err := p.database.BlockHeight(databaseTransaction, parentID)
 			if err != nil {
-				return err
+				// enhanced error description
+				return errors.Wrapf(err, "Could not get block height of parent id %s for block %s", parentID, blockHash)
 			}
 			parentHeightGroupIndex, err := p.database.BlockHeightGroupIndex(databaseTransaction, parentID)
 			if err != nil {
-				return err
+				// enhanced error description
+				return errors.Wrapf(err, "Could not get height group index of parent id %s for block %s", parentID, blockHash)
 			}
 			edge := &model.Edge{
 				FromBlockID:          blockID,
@@ -273,14 +281,16 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 			}
 			err = p.database.InsertEdge(databaseTransaction, edge)
 			if err != nil {
-				return err
+				// enhanced error description
+				return errors.Wrapf(err, "Could not insert edge from block %s to parent id %s", blockHash, parentID)
 			}
 		}
 	}
 
 	blockInfo, err := p.kaspad.Domain().Consensus().GetBlockInfo(blockHash)
 	if err != nil {
-		return err
+		// enhanced error description
+		return errors.Wrapf(err, "Could not get block info for block %s", blockHash)
 	}
 	if blockInfo.BlockStatus == externalapi.StatusHeaderOnly || isIncompleteBlock {
 		return nil
@@ -297,24 +307,39 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	}
 	blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
 	if err != nil {
-		return err
+		// enhanced error description
+		return errors.Wrapf(err, "Could not get id for edged block %s", blockHash)
 	}
 	err = p.database.UpdateBlockSelectedParent(databaseTransaction, blockID, selectedParentID)
 	if err != nil {
-		return err
+		// enhanced error description
+		return errors.Wrapf(err, "Could not update selected parent for block %s", blockHash)
 	}
 
 	mergeSetRedIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetReds())
 	if err != nil {
-		return err
+		// enhanced error description
+		// return errors.Wrapf(err, "Could not get ids of merge set reds for block %s", blockHash)
+
+		// Let's ignore this error temporarily and just report it in the log
+		// This occures sometimes when the app was fresly started, at the end or just after ResyncDatabase
+		// The actual conditions and the way to solve this has to be determined yet.
+		log.Errorf("Could not get ids of merge set reds for block %s: %s", blockHash, blockGHOSTDAGData.MergeSetReds())
 	}
 	mergeSetBlueIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetBlues())
 	if err != nil {
-		return err
+		// enhanced error description
+		// return errors.Wrapf(err, "Could not get ids of merge set blues for block %s", blockHash)
+
+		// Let's ignore this error temporarily and just report it in the log
+		// This occures sometimes when the app was fresly started, at the end or just after ResyncDatabase
+		// The actual conditions and the way to solve this has to be determined yet.
+		log.Errorf("Could not get ids of merge set blues for block %s: %s", blockHash, blockGHOSTDAGData.MergeSetBlues())
 	}
 	err = p.database.UpdateBlockMergeSet(databaseTransaction, blockID, mergeSetRedIDs, mergeSetBlueIDs)
 	if err != nil {
-		return err
+		// enhanced error description
+		return errors.Wrapf(err, "Could not update merge sets colors for block %s", blockHash)
 	}
 
 	if blockInsertionResult == nil || blockInsertionResult.VirtualSelectedParentChainChanges == nil {
@@ -327,7 +352,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	if len(removedBlockHashes) > 0 {
 		removedBlockIDs, err := p.database.BlockIDsByHashes(databaseTransaction, removedBlockHashes)
 		if err != nil {
-			return err
+			// enhanced error description
+			return errors.Wrapf(err, "Could not get hashes of removed blocks for block %s", blockHash)
 		}
 		for _, removedBlockID := range removedBlockIDs {
 			blockColors[removedBlockID] = model.ColorGray
@@ -339,7 +365,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	if len(addedBlockHashes) > 0 {
 		addedBlockIDs, err := p.database.BlockIDsByHashes(databaseTransaction, addedBlockHashes)
 		if err != nil {
-			return err
+			// enhanced error description
+			return errors.Wrapf(err, "Could not get hashes of added blocks for block %s", blockHash)
 		}
 		for _, addedBlockID := range addedBlockIDs {
 			blockIsInVirtualSelectedParentChain[addedBlockID] = true
@@ -347,7 +374,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	}
 	err = p.database.UpdateBlockIsInVirtualSelectedParentChain(databaseTransaction, blockIsInVirtualSelectedParentChain)
 	if err != nil {
-		return err
+		// enhanced error description
+		return errors.Wrapf(err, "Could not update blocks in virtual selected parent chain for block %s", blockHash)
 	}
 
 	for _, addedBlockHash := range addedBlockHashes {
