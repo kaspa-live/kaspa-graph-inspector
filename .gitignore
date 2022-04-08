@@ -1,3 +1,5 @@
 .idea
+env.bat
 processing/kgi-processing
 processing/kgi-processing.exe
+.vscode/launch.json
