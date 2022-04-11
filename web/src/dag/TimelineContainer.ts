@@ -6,7 +6,8 @@ import {Ease, Tween} from "@createjs/tweenjs";
 import HeightSprite from "./HeightSprite";
 import {
     areBlocksAndEdgesAndHeightGroupsEqual,
-    BlocksAndEdgesAndHeightGroups
+    BlocksAndEdgesAndHeightGroups,
+    getHeightGroupDAAScore
 } from "../model/BlocksAndEdgesAndHeightGroups";
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
@@ -144,6 +145,16 @@ export default class TimelineContainer extends PIXI.Container {
 
                 // Add the height sprite to the height container
                 this.heightContainer.addChild(heightSprite);
+            });
+
+        // Update height sprites DAAScore
+        Object.keys(heightKeysInBlocks)
+            .forEach(heightKey => {
+              const heightGroup = this.heightKeysToHeightGroups[heightKey];
+              if (this.heightKeysToHeightSprites[heightKey]) {
+                const heightSprite = this.heightKeysToHeightSprites[heightKey];
+                heightSprite.setDAAScore(getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, heightGroup.height))
+              }
             });
 
         // Add new block sprites

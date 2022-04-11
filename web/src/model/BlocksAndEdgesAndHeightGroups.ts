@@ -37,3 +37,15 @@ export function areBlocksAndEdgesAndHeightGroupsEqual(
     }
     return true;
 }
+
+export function getHeightGroupDAAScore(data: BlocksAndEdgesAndHeightGroups, height: number): number {
+  var score = 0;
+  for (let block of data.blocks) {
+    if (block.height === height) {
+        if (block.isInVirtualSelectedParentChain || score === 0) {
+          score = block.daaScore;
+        }
+    }
+  }
+  return score;
+}

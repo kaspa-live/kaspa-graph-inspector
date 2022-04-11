@@ -26,6 +26,9 @@ export default class HeightSprite extends PIXI.Container {
     private readonly spriteContainer: PIXI.Container;
     private readonly textContainer: PIXI.Container;
 
+    private daaScore: number;
+    private currentTextValue: number;
+
     private currentSprite: PIXI.Sprite;
 
     private spriteWidth: number = 0;
@@ -37,6 +40,8 @@ export default class HeightSprite extends PIXI.Container {
 
         this.application = application;
         this.blockHeight = blockHeight;
+        this.daaScore = 0;
+        this.currentTextValue = 0;
 
         this.heightClickedListener = () => {
             // Do nothing
@@ -77,7 +82,7 @@ export default class HeightSprite extends PIXI.Container {
             fill: 0xffffff,
         });
 
-        const text = new PIXI.Text(this.blockHeight.toLocaleString("en-US"), style);
+        const text = new PIXI.Text(this.getTextValue().toLocaleString("en-US"), style);
         text.anchor.set(0.5, 0.5);
         text.tint = 0x777777;
         text.y = (spriteHeight / 2) - (blockSize * this.textBottomMarginMultiplier);
@@ -85,10 +90,11 @@ export default class HeightSprite extends PIXI.Container {
     }
 
     setSize = (width: number, height: number, blockSize: number) => {
-        if (!this.currentSprite.texture || this.spriteWidth !== width || this.spriteHeight !== height) {
+        if (!this.currentSprite.texture || this.spriteWidth !== width || this.spriteHeight !== height || this.currentTextValue !== this.getTextValue()) {
             this.spriteWidth = width;
             this.spriteHeight = height;
             this.currentSprite.texture = heightTexture(this.application, width, height);
+            this.currentTextValue = this.getTextValue();
 
             const text = this.buildText(height, blockSize);
             this.textContainer.removeChildren();
@@ -98,6 +104,18 @@ export default class HeightSprite extends PIXI.Container {
 
     getHeight = (): number => {
         return this.blockHeight;
+    }
+
+    setDAAScore = (daaScore: number) => {
+      this.daaScore = daaScore;
+    }
+
+    getDAAScore = (): number => {
+        return this.daaScore
+    }
+
+    getTextValue = (): number => {
+        return (this.daaScore !== 0 ? this.daaScore : this.blockHeight);
     }
 
     setHeightClickedListener = (heightClickedListener: (height: number) => void) => {
