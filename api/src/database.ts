@@ -62,6 +62,7 @@ export default class Database {
                 timestamp: parseInt(item.timestamp),
                 parentIds: item.parent_ids,
                 height: parseInt(item.height),
+                daaScore: parseInt(item.daa_score),
                 heightGroupIndex: parseInt(item.height_group_index),
                 selectedParentId: item.selected_parent_id ? parseInt(item.selected_parent_id) : null,
                 color: item.color,

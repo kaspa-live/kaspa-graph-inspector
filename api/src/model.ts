@@ -10,6 +10,7 @@ export type Block = {
     timestamp: number,
     parentIds: number[],
     height: number,
+    daaScore: number,
     heightGroupIndex: number,
     selectedParentId: number | null,
     color: string,
