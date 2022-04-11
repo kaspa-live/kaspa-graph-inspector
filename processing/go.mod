@@ -3,18 +3,19 @@ module github.com/kaspa-live/kaspa-graph-inspector/processing
 go 1.18
 
 require (
-	github.com/go-pg/pg/extra/pgdebug v0.2.0
 	github.com/go-pg/pg/v10 v10.10.6
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jessevdk/go-flags v1.4.0
 	github.com/kaspanet/kaspad v0.11.15
 	github.com/pkg/errors v0.9.1
+	golang.org/x/exp v0.0.0-20220407100705-7b9b53b0aca4
 )
 
 require (
 	github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd // indirect
 	github.com/containerd/containerd v1.4.13 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-pg/pg/extra/pgdebug/v10 v10.10.6
 	github.com/go-pg/zerochecker v0.2.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -34,7 +35,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
-	golang.org/x/sys v0.0.0-20210923061019-b8560ed6a9b7 // indirect
+	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
 	golang.org/x/text v0.3.5 // indirect
 	google.golang.org/genproto v0.0.0-20210604141403-392c879c8b08 // indirect
 	google.golang.org/grpc v1.38.0 // indirect
