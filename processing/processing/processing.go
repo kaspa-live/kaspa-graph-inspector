@@ -62,7 +62,9 @@ func (p *Processing) ResyncDatabase() error {
 		if err != nil {
 			return err
 		}
-		if hasPruningBlock {
+
+		keepDatabase := hasPruningBlock && !p.config.ClearDB
+		if keepDatabase {
 			// The prunning block is already in the database
 			// so we keep the database as it is and sync the new blocks
 			log.Infof("Prunning point %s already in the database", pruningPointHash)
@@ -117,7 +119,7 @@ func (p *Processing) ResyncDatabase() error {
 		}
 
 		startIndex := int(0)
-		if hasPruningBlock {
+		if keepDatabase {
 			log.Infof("Syncing %d blocks with the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
 			startIndex = p.database.FindLatestStoredBlockIndex(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
 			log.Infof("First %d blocks already exist in the database", startIndex)
