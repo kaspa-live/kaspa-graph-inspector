@@ -49,3 +49,15 @@ export function getHeightGroupDAAScore(data: BlocksAndEdgesAndHeightGroups, heig
   }
   return score;
 }
+
+export function getDAAScoreGroupHeight(data: BlocksAndEdgesAndHeightGroups, daaScore: number): number {
+    var height = 0;
+    for (let block of data.blocks) {
+      if (block.daaScore === daaScore) {
+          if (block.isInVirtualSelectedParentChain || height === 0) {
+            height = block.height;
+          }
+      }
+    }
+    return height;
+  }

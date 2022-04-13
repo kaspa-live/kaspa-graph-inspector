@@ -19,6 +19,7 @@ export default class Dag {
     private currentTickFunction: () => Promise<void>;
 
     private targetHeight: number | null = null;
+    private targetDAAScore: number | null = null;
     private targetHash: string | null = null;
     private isTrackingChangedListener: (isTracking: boolean) => void;
     private isFetchFailingListener: (isFailing: boolean) => void;
@@ -57,7 +58,7 @@ export default class Dag {
 
         this.timelineContainer = new TimelineContainer(this.application);
         this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
-        this.timelineContainer.setHeightClickedListener(this.handleHeightClicked);
+        this.timelineContainer.setDAAScoreClickedListener(this.handleDAAScoreClicked);
         this.application.ticker.add(this.resizeIfRequired);
         this.application.stage.addChild(this.timelineContainer);
 
@@ -114,6 +115,16 @@ export default class Dag {
             }
         }
 
+        const daaScoreString = urlParams.get("daascore");
+        if (daaScoreString) {
+            const daaScore = parseInt(daaScoreString);
+            if (daaScore || daaScore === 0) {
+                this.targetDAAScore = daaScore;
+                this.currentTickFunction = this.trackTargetDAAScore;
+                return;
+            }
+        }
+
         const hash = urlParams.get("hash");
         if (hash) {
             this.targetHash = hash;
@@ -147,6 +158,31 @@ export default class Dag {
         // Exit early if the track function or the target
         // height changed while we were busy fetching data
         if (this.currentTickFunction !== this.trackTargetHeight || this.targetHeight !== targetHeight) {
+            return;
+        }
+
+        this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
+    }
+
+    private trackTargetDAAScore = async () => {
+        const targetDAAScore = this.targetDAAScore as number;
+        this.timelineContainer!.setTargetDAAScore(targetDAAScore);
+        this.timelineContainer!.setTargetBlock(null);
+        this.blockInformationChangedListener(null);
+
+        const heightDifference = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
+        const blocksAndEdgesAndHeightGroups = await this.dataSource!.getBlockDAAScore(targetDAAScore, heightDifference);
+        this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
+
+        // Exit early if the request failed
+        if (!blocksAndEdgesAndHeightGroups) {
+            return;
+        }
+        this.cacheBlockHashes(blocksAndEdgesAndHeightGroups.blocks);
+
+        // Exit early if the track function or the target
+        // height changed while we were busy fetching data
+        if (this.currentTickFunction !== this.trackTargetDAAScore || this.targetDAAScore !== targetDAAScore) {
             return;
         }
 
@@ -315,9 +351,9 @@ export default class Dag {
         this.setStateTrackTargetBlock(block);
     }
 
-    private handleHeightClicked = (height: number) => {
-        this.timelineContainer!.setTargetHeight(height);
-        this.setStateTrackTargetHeight(height);
+    private handleDAAScoreClicked = (daaScore: number) => {
+        this.timelineContainer!.setTargetDAAScore(daaScore);
+        this.setStateTrackTargetDAAScore(daaScore);
     }
 
     setStateTrackTargetBlock = (targetBlock: Block) => {
@@ -334,6 +370,13 @@ export default class Dag {
         this.run();
     }
 
+    setStateTrackTargetDAAScore = (targetDAAScore: number) => {
+        const urlParams = this.initializeUrlSearchParams();
+        urlParams.set("daascore", `${targetDAAScore}`);
+        window.history.pushState(null, "", `?${urlParams}`);
+        this.run();
+    }
+
     setStateTrackHead = () => {
         const urlParams = this.initializeUrlSearchParams();
         window.history.pushState(null, "", `?${urlParams}`);
@@ -344,6 +387,7 @@ export default class Dag {
         const urlParams = new URLSearchParams(window.location.search);
         urlParams.delete("hash");
         urlParams.delete("height");
+        urlParams.delete("daascore");
         return urlParams;
     }
 

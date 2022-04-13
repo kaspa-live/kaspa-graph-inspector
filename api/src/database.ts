@@ -131,4 +131,13 @@ export default class Database {
             };
         });
     }
+
+    getBlockDAAScoreHeight = async (client: pg.PoolClient, daaScore: number): Promise<number> => {
+      const result = await client.query('SELECT height FROM blocks ' +
+          'ORDER BY ABS(daa_score-($1)) LIMIT 1', [daaScore]);
+      if (result.rows.length === 0) {
+          throw new Error(`DAA scores ${daaScore} do not exist`);
+      }
+      return parseInt(result.rows[0].height);
+  }
 }

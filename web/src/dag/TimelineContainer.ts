@@ -7,7 +7,8 @@ import HeightSprite from "./HeightSprite";
 import {
     areBlocksAndEdgesAndHeightGroupsEqual,
     BlocksAndEdgesAndHeightGroups,
-    getHeightGroupDAAScore
+    getHeightGroupDAAScore,
+    getDAAScoreGroupHeight
 } from "../model/BlocksAndEdgesAndHeightGroups";
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
@@ -32,10 +33,11 @@ export default class TimelineContainer extends PIXI.Container {
     private blockKeysToBlocks: { [key: string]: Block } = {};
     private edgeKeysToEdges: { [key: string]: Edge } = {};
     private heightKeysToHeightGroups: { [key: string]: HeightGroup } = {};
-    private targetHeight: number = 0;
+    private targetHeight: number = -1;
+    private targetDAAScore: number = 0;
 
     private blockClickedListener: (block: Block) => void;
-    private heightClickedListener: (height: number) => void;
+    private daaScoreClickedListener: (daaScore: number) => void;
 
     constructor(application: PIXI.Application) {
         super();
@@ -45,7 +47,7 @@ export default class TimelineContainer extends PIXI.Container {
         this.blockClickedListener = () => {
             // Do nothing
         };
-        this.heightClickedListener = () => {
+        this.daaScoreClickedListener = () => {
             // Do nothing
         };
 
@@ -67,6 +69,11 @@ export default class TimelineContainer extends PIXI.Container {
             return;
         }
         this.currentBlocksAndEdgesAndHeightGroups = blocksAndEdgesAndHeightGroups;
+
+        // Calculate target height is necessary
+        if (this.targetHeight < 0) {
+            this.recalculateTargetHeight();
+        }
 
         const blocks = blocksAndEdgesAndHeightGroups.blocks;
         const edges = blocksAndEdgesAndHeightGroups.edges;
@@ -139,8 +146,9 @@ export default class TimelineContainer extends PIXI.Container {
             .forEach(heightKey => {
                 // Add the height to the heightSprite-by-heightKey map
                 const heightGroup = this.heightKeysToHeightGroups[heightKey];
-                const heightSprite = new HeightSprite(this.application, heightGroup.height);
-                heightSprite.setHeightClickedListener(this.heightClickedListener);
+                const heightDAAScore = getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, heightGroup.height)
+                const heightSprite = new HeightSprite(this.application, heightGroup.height, heightDAAScore);
+                heightSprite.setDAAScoreClickedListener(this.daaScoreClickedListener);
                 this.heightKeysToHeightSprites[heightKey] = heightSprite;
 
                 // Add the height sprite to the height container
@@ -153,7 +161,10 @@ export default class TimelineContainer extends PIXI.Container {
               const heightGroup = this.heightKeysToHeightGroups[heightKey];
               if (this.heightKeysToHeightSprites[heightKey]) {
                 const heightSprite = this.heightKeysToHeightSprites[heightKey];
-                heightSprite.setDAAScore(getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, heightGroup.height))
+                const heightDAAScore = getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, heightGroup.height)
+                if (heightSprite.getDAAScore() !== heightDAAScore) {
+                    heightSprite.setDAAScore(heightDAAScore)
+                }
               }
             });
 
@@ -286,6 +297,11 @@ export default class TimelineContainer extends PIXI.Container {
 
     private buildHeightKey = (height: number): string => {
         return `${height};`
+    }
+
+    recalculateTargetHeight = () => {
+        this.targetHeight = (this.currentBlocksAndEdgesAndHeightGroups !== null) ?
+            getDAAScoreGroupHeight(this.currentBlocksAndEdgesAndHeightGroups, this.targetDAAScore) : -1;
     }
 
     private recalculateSpritePositions = (animate: boolean) => {
@@ -474,14 +490,17 @@ export default class TimelineContainer extends PIXI.Container {
 
         this.y = rendererHeight / 2;
 
-        // Animate the timeline if it moved for less than a
-        // screen-length. Otherwise, just set it the x
-        const targetX = rendererWidth / 2 - blockSpriteXForTargetHeight;
-        if (Math.abs(this.x - targetX) < rendererWidth) {
-            Tween.get(this).to({x: targetX}, 500, Ease.quadOut);
-            return;
+        // If target height is undefined, do nothing
+        if (this.targetHeight >= 0) {
+            // Animate the timeline if it moved for less than a
+            // screen-length. Otherwise, just set it the x
+            const targetX = rendererWidth / 2 - blockSpriteXForTargetHeight;
+            if (Math.abs(this.x - targetX) < rendererWidth) {
+                Tween.get(this).to({x: targetX}, 500, Ease.quadOut);
+                return;
+            }
+            this.x = targetX;
         }
-        this.x = targetX;
     }
 
     getVisibleHeightRange = (targetHeight: number): [fromHeight: number, toHeight: number] => {
@@ -510,11 +529,17 @@ export default class TimelineContainer extends PIXI.Container {
         this.moveTimelineContainer();
     }
 
+    setTargetDAAScore = (targetDAAScore: number) => {
+        this.targetDAAScore = targetDAAScore;
+        this.recalculateTargetHeight();
+        this.moveTimelineContainer();
+    }
+
     setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
         this.blockClickedListener = blockClickedListener;
     }
 
-    setHeightClickedListener = (heightClickedListener: (height: number) => void) => {
-        this.heightClickedListener = heightClickedListener;
+    setDAAScoreClickedListener = (daaScoreClickedListener: (daaScore: number) => void) => {
+        this.daaScoreClickedListener = daaScoreClickedListener;
     }
 }

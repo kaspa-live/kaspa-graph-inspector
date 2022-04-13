@@ -90,6 +90,36 @@ server.get('/blockHash', async (request, response) => {
     }
 });
 
+server.get('/blockDAAScore', async (request, response) => {
+    if (!request.query.blockDAAScore) {
+        response.status(400).send("missing parameter: blockDAAScore");
+        return;
+    }
+    if (!request.query.heightDifference) {
+        response.status(400).send("missing parameter: heightDifference");
+        return;
+    }
+
+    try {
+        await database.withClient(async client => {
+            const blockDAAScore = parseInt(request.query.blockDAAScore as string)
+            const heightDifference = parseInt(request.query.heightDifference as string);
+            const height = await database.getBlockDAAScoreHeight(client, blockDAAScore);
+            let startHeight = height - heightDifference;
+            if (startHeight < 0) {
+                startHeight = 0;
+            }
+            const endHeight = height + heightDifference;
+            const blocksAndEdges = await database.getBlocksAndEdgesAndHeightGroups(client, startHeight, endHeight);
+            response.send(JSON.stringify(blocksAndEdges));
+        });
+        return;
+    } catch (error) {
+        response.status(400).send(`invalid input: ${error}`);
+        return;
+    }
+});
+
 server.get('/blockHashesByIds', async (request, response) =>{
     if (!request.query.blockIds) {
         response.status(400).send("missing parameter: blockIds");

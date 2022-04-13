@@ -33,17 +33,17 @@ export default class HeightSprite extends PIXI.Container {
 
     private spriteWidth: number = 0;
     private spriteHeight: number = 0;
-    private heightClickedListener: (height: number) => void;
+    private daaScoreClickedListener: (daaScore: number) => void;
 
-    constructor(application: PIXI.Application, blockHeight: number) {
+    constructor(application: PIXI.Application, blockHeight: number, daaScore: number) {
         super();
 
         this.application = application;
         this.blockHeight = blockHeight;
-        this.daaScore = 0;
+        this.daaScore = daaScore;
         this.currentTextValue = 0;
 
-        this.heightClickedListener = () => {
+        this.daaScoreClickedListener = () => {
             // Do nothing
         };
 
@@ -70,7 +70,7 @@ export default class HeightSprite extends PIXI.Container {
         sprite.on("pointerout", () => {
             Tween.get(sprite).to({alpha: 0.0}, 200, Ease.linear);
         });
-        sprite.on("pointertap", () => this.heightClickedListener(this.blockHeight));
+        sprite.on("pointertap", () => this.daaScoreClickedListener(this.daaScore));
 
         return sprite;
     }
@@ -118,7 +118,7 @@ export default class HeightSprite extends PIXI.Container {
         return (this.daaScore !== 0 ? this.daaScore : this.blockHeight);
     }
 
-    setHeightClickedListener = (heightClickedListener: (height: number) => void) => {
-        this.heightClickedListener = heightClickedListener;
+    setDAAScoreClickedListener = (daaScoreClickedListener: (daaScore: number) => void) => {
+        this.daaScoreClickedListener = daaScoreClickedListener;
     }
 }
