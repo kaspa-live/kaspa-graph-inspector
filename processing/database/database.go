@@ -70,6 +70,16 @@ func (db *Database) InsertBlock(databaseTransaction *pg.Tx, blockHash *externala
 	return nil
 }
 
+// Get a block from the database by its ID
+func (db *Database) GetBlock(databaseTransaction *pg.Tx, id uint64) (*model.Block, error) {
+	result := new(model.Block)
+	_, err := databaseTransaction.Query(result, "SELECT * FROM blocks WHERE id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 func (db *Database) UpdateBlockSelectedParent(databaseTransaction *pg.Tx, blockID uint64, selectedParentID uint64) error {
 	_, err := databaseTransaction.Exec("UPDATE blocks SET selected_parent_id = ? WHERE id = ?", selectedParentID, blockID)
 	return err
@@ -99,6 +109,17 @@ func (db *Database) UpdateBlockIsInVirtualSelectedParentChain(
 func (db *Database) UpdateBlockColors(databaseTransaction *pg.Tx, blockIDsToColors map[uint64]string) error {
 	for blockID, color := range blockIDsToColors {
 		_, err := databaseTransaction.Exec("UPDATE blocks SET color = ? WHERE id = ?", color, blockID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Update DAA Scores of blocks in the database
+func (db *Database) UpdateBlockDAAScores(databaseTransaction *pg.Tx, blockIDsToDAAScores map[uint64]uint64) error {
+	for blockID, daaScore := range blockIDsToDAAScores {
+		_, err := databaseTransaction.Exec("UPDATE blocks SET daa_score = ? WHERE id = ?", daaScore, blockID)
 		if err != nil {
 			return err
 		}
@@ -167,6 +188,18 @@ func (db *Database) FindLatestStoredBlockIndex(databaseTransaction *pg.Tx, block
 		}
 	}
 	return low
+}
+
+// Find the block ID of the block having the closest DAA score to a given score.
+func (db *Database) BlockIDByDAAScore(databaseTransaction *pg.Tx, blockDAAScore uint64) (uint64, error) {
+	var result struct {
+		ID uint64
+	}
+	_, err := databaseTransaction.Query(&result, "SELECT id FROM blocks ORDER BY ABS(daa_score-(?)) LIMIT 1", pg.In(blockDAAScore))
+	if err != nil {
+		return 0, err
+	}
+	return result.ID, nil
 }
 
 func (db *Database) HighestBlockHeight(databaseTransaction *pg.Tx, blockIDs []uint64) (uint64, error) {

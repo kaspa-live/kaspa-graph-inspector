@@ -120,6 +120,31 @@ func (p *Processing) ResyncDatabase() error {
 
 		startIndex := int(0)
 		if keepDatabase {
+			// Special case occuring when launching a version of KGI supporting DAA scores on a
+			// database freshly migrated and introducing DAA scores.
+			pruningPointID, err := p.database.BlockIDByHash(databaseTransaction, pruningPointHash)
+			if err != nil {
+				return err
+			}
+			pruningPointDatabaseBlock, err := p.database.GetBlock(databaseTransaction, pruningPointID)
+			if err != nil {
+				return err
+			}
+			if pruningPointDatabaseBlock.DAAScore == 0 {
+				log.Infof("Updating DAA score of %d blocks in the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
+				blockIDsToDAAScores, err := p.getBlocksDAAScores(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
+				log.Infof("DAA scores of %d blocks collected", len(blockIDsToDAAScores))
+				if err != nil {
+					return err
+				}
+				err = p.database.UpdateBlockDAAScores(databaseTransaction, blockIDsToDAAScores)
+				if err != nil {
+					return err
+				}
+				log.Infof("DAA scores of %d blocks stored in the database", len(blockIDsToDAAScores))
+			}
+			// End of special case
+
 			log.Infof("Syncing %d blocks with the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
 			startIndex = p.database.FindLatestStoredBlockIndex(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
 			log.Infof("First %d blocks already exist in the database", startIndex)
@@ -437,4 +462,24 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		}
 	}
 	return p.database.UpdateBlockColors(databaseTransaction, blockColors)
+}
+
+// Get a map of DAA Scores associated to database block ids.
+// The blocks are retrieved from the DAG by hash.
+// Their DAG DAA score is then associated to their id in the database.
+// Only matching DAG and database blocks are added to the returned map.
+func (p *Processing) getBlocksDAAScores(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) (map[uint64]uint64, error) {
+	results := make(map[uint64]uint64)
+	for _, blockHash := range blockHashes {
+		block, err := p.kaspad.Domain().Consensus().GetBlockHeader(blockHash)
+		if err != nil {
+			return nil, err
+		}
+		blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
+		// We ignore non-existing blocks in the database
+		if err == nil {
+			results[blockID] = block.DAAScore()
+		}
+	}
+	return results, nil
 }
