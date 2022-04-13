@@ -25,7 +25,8 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         blockColorClass = "block-color-red";
     }
 
-    let blockDAAScore = blockInformation.block.daaScore.toLocaleString("en-US");
+    let language = navigator.language || "en-US";
+    let blockDAAScore = blockInformation.block.daaScore.toLocaleString(language);
 
     const blockHashTooltip = <div className="information-tooltip">
         <p>The <b>hash</b> of a block is its unique identifier in the block DAG.</p>

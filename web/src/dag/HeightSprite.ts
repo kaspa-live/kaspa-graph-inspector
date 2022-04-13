@@ -82,7 +82,8 @@ export default class HeightSprite extends PIXI.Container {
             fill: 0xffffff,
         });
 
-        const text = new PIXI.Text(this.getTextValue().toLocaleString("en-US"), style);
+        const language = navigator.language || "en-US";
+        const text = new PIXI.Text(this.getTextValue().toLocaleString(language), style);
         text.anchor.set(0.5, 0.5);
         text.tint = 0x777777;
         text.y = (spriteHeight / 2) - (blockSize * this.textBottomMarginMultiplier);
