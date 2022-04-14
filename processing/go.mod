@@ -6,7 +6,7 @@ require (
 	github.com/go-pg/pg/v10 v10.10.6
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/kaspanet/kaspad v0.11.15
+	github.com/kaspanet/kaspad v0.12.0
 	github.com/pkg/errors v0.9.1
 	golang.org/x/exp v0.0.0-20220407100705-7b9b53b0aca4
 )

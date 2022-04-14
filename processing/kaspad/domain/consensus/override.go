@@ -195,7 +195,5 @@ func (c *Consensus) IsChainBlock(blockHash *externalapi.DomainHash) (bool, error
 }
 
 func (c *Consensus) VirtualMergeDepthRoot() (*externalapi.DomainHash, error) {
-	panic("unimplemented")
-	// For v0.12.0 and above
-	//return c.kaspadConsensus.VirtualMergeDepthRoot()
+	return c.kaspadConsensus.VirtualMergeDepthRoot()
 }
