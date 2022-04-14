@@ -1,6 +1,22 @@
 import * as PIXI from "pixi.js-legacy";
 import {Tween} from "@createjs/tweenjs";
 
+class EdgeGraphicsDefinition {
+    readonly color;
+    readonly lineWidth;
+    readonly arrowRadius;
+
+    constructor(color: number, lineWidth: number, arrowRadius: number) {
+        this.color = color;
+        this.lineWidth = lineWidth;
+        this.arrowRadius = arrowRadius;
+    }
+
+    key = (): string => {
+        return `${this.color}-${this.lineWidth}-${this.arrowRadius}`
+    }
+}
+
 export default class EdgeSprite extends PIXI.Container {
     private readonly normalDefinition = new EdgeGraphicsDefinition(0xaaaaaa, 2, 4);
     private readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0xb4cfed, 4, 6);
@@ -207,21 +223,5 @@ export default class EdgeSprite extends PIXI.Container {
 
     getToBlockId = (): number => {
         return this.toBlockId;
-    }
-}
-
-class EdgeGraphicsDefinition {
-    readonly color;
-    readonly lineWidth;
-    readonly arrowRadius;
-
-    constructor(color: number, lineWidth: number, arrowRadius: number) {
-        this.color = color;
-        this.lineWidth = lineWidth;
-        this.arrowRadius = arrowRadius;
-    }
-
-    key = (): string => {
-        return `${this.color}-${this.lineWidth}-${this.arrowRadius}`
     }
 }
