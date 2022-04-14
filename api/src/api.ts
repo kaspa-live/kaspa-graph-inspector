@@ -73,7 +73,8 @@ server.get('/blockHash', async (request, response) => {
 
     try {
         await database.withClient(async client => {
-            const height = await database.getBlockHeight(client, request.query.blockHash as string);
+            const blockHash = (request.query.blockHash as string).toLowerCase();
+            const height = await database.getBlockHeight(client, blockHash);
             const heightDifference = parseInt(request.query.heightDifference as string);
             let startHeight = height - heightDifference;
             if (startHeight < 0) {

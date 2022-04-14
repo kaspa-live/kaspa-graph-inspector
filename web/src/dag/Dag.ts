@@ -127,7 +127,7 @@ export default class Dag {
 
         const hash = urlParams.get("hash");
         if (hash) {
-            this.targetHash = hash;
+            this.targetHash = hash.toLowerCase();
             this.currentTickFunction = this.trackTargetHash;
             return
         }
