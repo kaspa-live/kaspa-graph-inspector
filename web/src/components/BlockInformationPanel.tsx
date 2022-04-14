@@ -25,6 +25,9 @@ const BlockInformationPanel = ({blockInformation, onClose}:
         blockColorClass = "block-color-red";
     }
 
+    let language = navigator.language || "en-US";
+    let blockDAAScore = blockInformation.block.daaScore.toLocaleString(language);
+
     const blockHashTooltip = <div className="information-tooltip">
         <p>The <b>hash</b> of a block is its unique identifier in the block DAG.</p>
         <p>A block's hash is derived directly from the block itself using a cryptographic hash function. That ensures
@@ -72,7 +75,13 @@ const BlockInformationPanel = ({blockInformation, onClose}:
             DAG.</p>
     </div>;
 
-    const parentElements = [];
+    const blockDAAScoreTooltip = <div className="information-tooltip">
+    <p>Every block in the DAG has a DAA Score.</p>
+    <p>The DAA Score is related to the number of honest blocks ever added to the DAG. Since blocks are created at a rate
+       of one per second, the score is also a metric of the elapsed time since network launch.</p>
+    </div>;
+
+const parentElements = [];
     if (blockInformation.isInformationComplete) {
         for (let parentHash of blockInformation.parentHashes) {
             const className = blockInformation.selectedParentHash === parentHash ? "selected-parent-hash" : "";
@@ -149,12 +158,20 @@ const BlockInformationPanel = ({blockInformation, onClose}:
                                     {blockColorText}
                                 </Typography>
                             </BlockInformationPanelListItem>
+
+                            <Divider className="block-information-divider"/>
+
+                            <BlockInformationPanelListItem label="DAA Score" tooltip={blockDAAScoreTooltip}>
+                                <Typography className="block-information-panel-hash" variant="h6">
+                                    {blockDAAScore}
+                                </Typography>
+                            </BlockInformationPanelListItem>
                         </List>
                     }
                 </div>
             </div>
             <div className="katnip-link-text">
-                See more details on <a href={katnipAddressForBlock} target="_blank">Katnip Block Explorer</a>
+                See more details on  <a href={katnipAddressForBlock} target="_blank" rel="noreferrer">Katnip Block Explorer</a>
             </div>
         </div>
     </Paper>

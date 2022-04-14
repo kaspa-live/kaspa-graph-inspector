@@ -193,3 +193,9 @@ func (c *Consensus) TrustedGHOSTDAGData(blockHash *externalapi.DomainHash) (*ext
 func (c *Consensus) IsChainBlock(blockHash *externalapi.DomainHash) (bool, error) {
 	return c.kaspadConsensus.IsChainBlock(blockHash)
 }
+
+func (c *Consensus) VirtualMergeDepthRoot() (*externalapi.DomainHash, error) {
+	panic("unimplemented")
+	// For v0.12.0 and above
+	//return c.kaspadConsensus.VirtualMergeDepthRoot()
+}

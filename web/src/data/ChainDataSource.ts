@@ -32,6 +32,7 @@ export default class ChainDataSource implements DataSource {
             timestamp: nextBlockId * this.blockInterval,
             parentIds: [lastBlockId],
             height: nextBlockId,
+            daaScore: nextBlockId,
             heightGroupIndex: 0,
             selectedParentId: lastBlockId,
             color: BlockColor.BLUE,
@@ -85,6 +86,14 @@ export default class ChainDataSource implements DataSource {
         return this.getBlocksBetweenHeights(startHeight, endHeight);
     };
 
+    getBlockDAAScore = async (targetDAAScore: number, heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+        const targetId = this.blockIdsByDAAScores[targetDAAScore];
+        const startHeight = targetId - heightDifference;
+        const endHeight = targetId + heightDifference;
+
+        return this.getBlocksBetweenHeights(startHeight, endHeight);
+    };
+
     getHead = async (heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
         return this.getBlocksBetweenHeights(this.blocks.length - heightDifference, this.blocks.length);
     };
@@ -109,6 +118,7 @@ export default class ChainDataSource implements DataSource {
             timestamp: 0,
             parentIds: [],
             height: 0,
+            daaScore: 0,
             heightGroupIndex: 0,
             selectedParentId: null,
             color: BlockColor.BLUE,
@@ -133,5 +143,9 @@ export default class ChainDataSource implements DataSource {
 
     private blockIdsByHashes: { [hash: string]: number } = {
         "00000000": 0,
+    };
+
+    private blockIdsByDAAScores: { [daaScore: number]: number } = {
+        1: 1,
     };
 };

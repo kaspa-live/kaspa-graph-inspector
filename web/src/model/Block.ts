@@ -4,6 +4,7 @@ export type Block = {
     timestamp: number,
     parentIds: number[],
     height: number,
+    daaScore: number,
     heightGroupIndex: number,
     selectedParentId: number | null,
     color: string,
@@ -41,6 +42,7 @@ export function areBlocksEqual(left: Block, right: Block): boolean {
         && left.blockHash === right.blockHash
         && left.timestamp === right.timestamp
         && left.height === right.height
+        && left.daaScore === right.daaScore
         && left.heightGroupIndex === right.heightGroupIndex
         && left.selectedParentId === right.selectedParentId
         && left.color === right.color

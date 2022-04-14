@@ -16,6 +16,10 @@ export default class ApiDataSource implements DataSource {
         return this.fetch(`${apiAddress}/blockHash?blockHash=${targetHash}&heightDifference=${heightDifference}`);
     };
 
+    getBlockDAAScore = (targetDAAScore: number, heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+        return this.fetch(`${apiAddress}/blockDAAScore?blockDAAScore=${targetDAAScore}&heightDifference=${heightDifference}`);
+    };
+
     getHead = (heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
         return this.fetch(`${apiAddress}/head?heightDifference=${heightDifference}`);
     };

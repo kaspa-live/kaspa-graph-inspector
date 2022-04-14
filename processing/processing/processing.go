@@ -8,6 +8,7 @@ import (
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/model"
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/tools"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
@@ -49,46 +50,64 @@ func (p *Processing) ResyncDatabase() error {
 		log.Infof("Resyncing database")
 		defer log.Infof("Finished resyncing database")
 
-		err := p.database.Clear(databaseTransaction)
-		if err != nil {
-			return err
-		}
+		p.database.LoadCache(databaseTransaction)
+		log.Infof("Cache loaded from the database")
 
 		pruningPointHash, err := p.kaspad.Domain().Consensus().PruningPoint()
 		if err != nil {
 			return err
 		}
-		log.Infof("Database cleared")
 
-		pruningPointBlock, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
+		hasPruningBlock, err := p.database.DoesBlockExist(databaseTransaction, pruningPointHash)
 		if err != nil {
 			return err
 		}
-		pruningPointDatabaseBlock := &model.Block{
-			BlockHash:                      pruningPointHash.String(),
-			Timestamp:                      pruningPointBlock.Header.TimeInMilliseconds(),
-			ParentIDs:                      []uint64{},
-			Height:                         0,
-			HeightGroupIndex:               0,
-			SelectedParentID:               nil,
-			Color:                          model.ColorGray,
-			IsInVirtualSelectedParentChain: true,
-			MergeSetRedIDs:                 []uint64{},
-			MergeSetBlueIDs:                []uint64{},
+
+		keepDatabase := hasPruningBlock && !p.config.ClearDB
+		if keepDatabase {
+			// The prunning block is already in the database
+			// so we keep the database as it is and sync the new blocks
+			log.Infof("Prunning point %s already in the database", pruningPointHash)
+			log.Infof("Database kept")
+		} else {
+			// The prunning block was not found in the database
+			// so we start from scratch.
+			err = p.database.Clear(databaseTransaction)
+			if err != nil {
+				return err
+			}
+			log.Infof("Database cleared")
+
+			pruningPointBlock, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
+			if err != nil {
+				return err
+			}
+			pruningPointDatabaseBlock := &model.Block{
+				BlockHash:                      pruningPointHash.String(),
+				Timestamp:                      pruningPointBlock.Header.TimeInMilliseconds(),
+				ParentIDs:                      []uint64{},
+				Height:                         0,
+				HeightGroupIndex:               0,
+				SelectedParentID:               nil,
+				Color:                          model.ColorGray,
+				IsInVirtualSelectedParentChain: true,
+				MergeSetRedIDs:                 []uint64{},
+				MergeSetBlueIDs:                []uint64{},
+			}
+			err = p.database.InsertBlock(databaseTransaction, pruningPointHash, pruningPointDatabaseBlock)
+			if err != nil {
+				return err
+			}
+			heightGroup := &model.HeightGroup{
+				Height: 0,
+				Size:   1,
+			}
+			err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
+			if err != nil {
+				return err
+			}
+			log.Infof("Pruning point %s has been added to the database", pruningPointHash)
 		}
-		err = p.database.InsertBlock(databaseTransaction, pruningPointHash, pruningPointDatabaseBlock)
-		if err != nil {
-			return err
-		}
-		heightGroup := &model.HeightGroup{
-			Height: 0,
-			Size:   1,
-		}
-		err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
-		if err != nil {
-			return err
-		}
-		log.Infof("Pruning point %s has been added to the database", pruningPointHash)
 
 		headersSelectedTip, err := p.kaspad.Domain().Consensus().GetHeadersSelectedTip()
 		if err != nil {
@@ -98,9 +117,46 @@ func (p *Processing) ResyncDatabase() error {
 		if err != nil {
 			return err
 		}
-		log.Infof("Adding %d blocks to the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
 
-		for i, blockHash := range hashesBetweenPruningPointAndHeadersSelectedTip {
+		startIndex := int(0)
+		if keepDatabase {
+			// Special case occuring when launching a version of KGI supporting DAA scores on a
+			// database freshly migrated and introducing DAA scores.
+			pruningPointID, err := p.database.BlockIDByHash(databaseTransaction, pruningPointHash)
+			if err != nil {
+				return err
+			}
+			pruningPointDatabaseBlock, err := p.database.GetBlock(databaseTransaction, pruningPointID)
+			if err != nil {
+				return err
+			}
+			if pruningPointDatabaseBlock.DAAScore == 0 {
+				log.Infof("Updating DAA score of %d blocks in the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
+				blockIDsToDAAScores, err := p.getBlocksDAAScores(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
+				log.Infof("DAA scores of %d blocks collected", len(blockIDsToDAAScores))
+				if err != nil {
+					return err
+				}
+				err = p.database.UpdateBlockDAAScores(databaseTransaction, blockIDsToDAAScores)
+				if err != nil {
+					return err
+				}
+				log.Infof("DAA scores of %d blocks stored in the database", len(blockIDsToDAAScores))
+			}
+			// End of special case
+
+			log.Infof("Syncing %d blocks with the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
+			startIndex = p.database.FindLatestStoredBlockIndex(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
+			log.Infof("First %d blocks already exist in the database", startIndex)
+			// We start from an earlier point (~ 5 minutes) to make sure we didn't miss any mutation
+			startIndex = tools.Max(startIndex-600, 0)
+		} else {
+			log.Infof("Adding %d blocks to the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
+		}
+
+		totalToAdd := len(hashesBetweenPruningPointAndHeadersSelectedTip) - startIndex
+		for i := startIndex; i < len(hashesBetweenPruningPointAndHeadersSelectedTip); i++ {
+			blockHash := hashesBetweenPruningPointAndHeadersSelectedTip[i]
 			block, err := p.kaspad.Domain().Consensus().GetBlockEvenIfHeaderOnly(blockHash)
 			if err != nil {
 				return err
@@ -110,9 +166,9 @@ func (p *Processing) ResyncDatabase() error {
 				return err
 			}
 
-			addedCount := i + 1
-			if addedCount%1000 == 0 || addedCount == len(hashesBetweenPruningPointAndHeadersSelectedTip) {
-				log.Infof("Added %d/%d blocks to the database", addedCount, len(hashesBetweenPruningPointAndHeadersSelectedTip))
+			addedCount := i + 1 - startIndex
+			if addedCount%1000 == 0 || addedCount == totalToAdd {
+				log.Infof("Added %d/%d blocks to the database", addedCount, totalToAdd)
 			}
 		}
 
@@ -206,19 +262,15 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 			existingParentHashes = append(existingParentHashes, parentHash)
 		}
 
-		parentIDs, err := p.database.BlockIDsByHashes(databaseTransaction, existingParentHashes)
+		parentIDs, parentHeights, err := p.database.BlockInfosByHashes(databaseTransaction, existingParentHashes)
 		if err != nil {
 			return errors.Errorf("Could not resolve "+
 				"parent IDs for block %s: %s", blockHash, err)
 		}
 
 		blockHeight := uint64(0)
-		if len(parentIDs) > 0 {
-			highestParentHeight, err := p.database.HighestBlockHeight(databaseTransaction, parentIDs)
-			if err != nil {
-				return errors.Wrapf(err, "Could not resolve highest parent height for block %s", blockHash)
-			}
-			blockHeight = highestParentHeight + 1
+		for _, height := range parentHeights {
+			blockHeight = tools.Max(blockHeight, height+1)
 		}
 
 		heightGroupSize, err := p.database.HeightGroupSize(databaseTransaction, blockHeight)
@@ -239,6 +291,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 			IsInVirtualSelectedParentChain: false,
 			MergeSetRedIDs:                 []uint64{},
 			MergeSetBlueIDs:                []uint64{},
+			DAAScore:                       block.Header.DAAScore(),
 		}
 		err = p.database.InsertBlock(databaseTransaction, blockHash, databaseBlock)
 		if err != nil {
@@ -350,26 +403,26 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	blockIsInVirtualSelectedParentChain := make(map[uint64]bool)
 	removedBlockHashes := blockInsertionResult.VirtualSelectedParentChainChanges.Removed
 	if len(removedBlockHashes) > 0 {
-		removedBlockIDs, err := p.database.BlockIDsByHashes(databaseTransaction, removedBlockHashes)
-		if err != nil {
-			// enhanced error description
-			return errors.Wrapf(err, "Could not get hashes of removed blocks for block %s", blockHash)
-		}
-		for _, removedBlockID := range removedBlockIDs {
-			blockColors[removedBlockID] = model.ColorGray
-			blockIsInVirtualSelectedParentChain[removedBlockID] = false
+		for _, removedBlockHash := range removedBlockHashes {
+			removedBlockID, err := p.database.BlockIDByHash(databaseTransaction, removedBlockHash)
+			if err == nil {
+				blockColors[removedBlockID] = model.ColorGray
+				blockIsInVirtualSelectedParentChain[removedBlockID] = false
+			} else {
+				log.Errorf("Could not get id of removed block %s", removedBlockHash)
+			}
 		}
 	}
 
 	addedBlockHashes := blockInsertionResult.VirtualSelectedParentChainChanges.Added
 	if len(addedBlockHashes) > 0 {
-		addedBlockIDs, err := p.database.BlockIDsByHashes(databaseTransaction, addedBlockHashes)
-		if err != nil {
-			// enhanced error description
-			return errors.Wrapf(err, "Could not get hashes of added blocks for block %s", blockHash)
-		}
-		for _, addedBlockID := range addedBlockIDs {
-			blockIsInVirtualSelectedParentChain[addedBlockID] = true
+		for _, addedBlockHash := range addedBlockHashes {
+			addedBlockID, err := p.database.BlockIDByHash(databaseTransaction, addedBlockHash)
+			if err == nil {
+				blockIsInVirtualSelectedParentChain[addedBlockID] = true
+			} else {
+				log.Errorf("Could not get id of added block %s", addedBlockHash)
+			}
 		}
 	}
 	err = p.database.UpdateBlockIsInVirtualSelectedParentChain(databaseTransaction, blockIsInVirtualSelectedParentChain)
@@ -386,25 +439,47 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 
 		blueHashes := addedBlockGHOSTDAGData.MergeSetBlues()
 		if len(blueHashes) > 0 {
-			blueBlockIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blueHashes)
-			if err != nil {
-				return errors.Wrapf(err, "Could not get blue block IDs for added block %s", addedBlockHash)
-			}
-			for _, blueBlockID := range blueBlockIDs {
-				blockColors[blueBlockID] = model.ColorBlue
+			for _, blueHash := range blueHashes {
+				blueBlockID, err := p.database.BlockIDByHash(databaseTransaction, blueHash)
+				if err == nil {
+					blockColors[blueBlockID] = model.ColorBlue
+				} else {
+					log.Errorf("Could not get id of merge set blue block %s", blueHash)
+				}
 			}
 		}
 
 		redHashes := addedBlockGHOSTDAGData.MergeSetReds()
 		if len(redHashes) > 0 {
-			redBlockIDs, err := p.database.BlockIDsByHashes(databaseTransaction, redHashes)
-			if err != nil {
-				return errors.Wrapf(err, "Could not get red block IDs for added block %s", addedBlockHash)
-			}
-			for _, redBlockID := range redBlockIDs {
-				blockColors[redBlockID] = model.ColorRed
+			for _, redHash := range redHashes {
+				redBlockID, err := p.database.BlockIDByHash(databaseTransaction, redHash)
+				if err == nil {
+					blockColors[redBlockID] = model.ColorRed
+				} else {
+					log.Errorf("Could not get id of merge set red block %s", redHash)
+				}
 			}
 		}
 	}
 	return p.database.UpdateBlockColors(databaseTransaction, blockColors)
+}
+
+// Get a map of DAA Scores associated to database block ids.
+// The blocks are retrieved from the DAG by hash.
+// Their DAG DAA score is then associated to their id in the database.
+// Only matching DAG and database blocks are added to the returned map.
+func (p *Processing) getBlocksDAAScores(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) (map[uint64]uint64, error) {
+	results := make(map[uint64]uint64)
+	for _, blockHash := range blockHashes {
+		block, err := p.kaspad.Domain().Consensus().GetBlockHeader(blockHash)
+		if err != nil {
+			return nil, err
+		}
+		blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
+		// We ignore non-existing blocks in the database
+		if err == nil {
+			results[blockID] = block.DAAScore()
+		}
+	}
+	return results, nil
 }

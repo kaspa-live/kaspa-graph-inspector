@@ -20,6 +20,7 @@ type Config struct {
 	ConnectPeers             []string `long:"connect" description:"Connect only to the specified peers at startup"`
 	DNSSeed                  string   `long:"dnsseed" description:"Override DNS seeds with specified hostname (Only 1 hostname allowed)"`
 	GRPCSeed                 string   `long:"grpcseed" description:"Hostname of gRPC server for seeding peers"`
+	ClearDB                  bool     `long:"clear-db" description:"Clear the postgres database and resync from scratch"`
 	kaspaConfigPackage.NetworkFlags
 }
 

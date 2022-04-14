@@ -26,19 +26,24 @@ export default class HeightSprite extends PIXI.Container {
     private readonly spriteContainer: PIXI.Container;
     private readonly textContainer: PIXI.Container;
 
+    private daaScore: number;
+    private currentTextValue: number;
+
     private currentSprite: PIXI.Sprite;
 
     private spriteWidth: number = 0;
     private spriteHeight: number = 0;
-    private heightClickedListener: (height: number) => void;
+    private daaScoreClickedListener: (daaScore: number) => void;
 
-    constructor(application: PIXI.Application, blockHeight: number) {
+    constructor(application: PIXI.Application, blockHeight: number, daaScore: number) {
         super();
 
         this.application = application;
         this.blockHeight = blockHeight;
+        this.daaScore = daaScore;
+        this.currentTextValue = 0;
 
-        this.heightClickedListener = () => {
+        this.daaScoreClickedListener = () => {
             // Do nothing
         };
 
@@ -65,7 +70,7 @@ export default class HeightSprite extends PIXI.Container {
         sprite.on("pointerout", () => {
             Tween.get(sprite).to({alpha: 0.0}, 200, Ease.linear);
         });
-        sprite.on("pointertap", () => this.heightClickedListener(this.blockHeight));
+        sprite.on("pointertap", () => this.daaScoreClickedListener(this.daaScore));
 
         return sprite;
     }
@@ -77,7 +82,8 @@ export default class HeightSprite extends PIXI.Container {
             fill: 0xffffff,
         });
 
-        const text = new PIXI.Text(this.blockHeight.toLocaleString("en-US"), style);
+        const language = navigator.language || "en-US";
+        const text = new PIXI.Text(this.getTextValue().toLocaleString(language), style);
         text.anchor.set(0.5, 0.5);
         text.tint = 0x777777;
         text.y = (spriteHeight / 2) - (blockSize * this.textBottomMarginMultiplier);
@@ -85,10 +91,11 @@ export default class HeightSprite extends PIXI.Container {
     }
 
     setSize = (width: number, height: number, blockSize: number) => {
-        if (!this.currentSprite.texture || this.spriteWidth !== width || this.spriteHeight !== height) {
+        if (!this.currentSprite.texture || this.spriteWidth !== width || this.spriteHeight !== height || this.currentTextValue !== this.getTextValue()) {
             this.spriteWidth = width;
             this.spriteHeight = height;
             this.currentSprite.texture = heightTexture(this.application, width, height);
+            this.currentTextValue = this.getTextValue();
 
             const text = this.buildText(height, blockSize);
             this.textContainer.removeChildren();
@@ -100,7 +107,19 @@ export default class HeightSprite extends PIXI.Container {
         return this.blockHeight;
     }
 
-    setHeightClickedListener = (heightClickedListener: (height: number) => void) => {
-        this.heightClickedListener = heightClickedListener;
+    setDAAScore = (daaScore: number) => {
+      this.daaScore = daaScore;
+    }
+
+    getDAAScore = (): number => {
+        return this.daaScore
+    }
+
+    getTextValue = (): number => {
+        return (this.daaScore !== 0 ? this.daaScore : this.blockHeight);
+    }
+
+    setDAAScoreClickedListener = (daaScoreClickedListener: (daaScore: number) => void) => {
+        this.daaScoreClickedListener = daaScoreClickedListener;
     }
 }

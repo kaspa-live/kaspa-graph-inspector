@@ -12,7 +12,7 @@ const Canvas = ({dag}: { dag: Dag }) => {
         return () => {
             dag.stop();
         };
-    }, []);
+    }, [dag]);
 
     return <canvas ref={canvasRef} className="canvas"/>;
 }

@@ -11,6 +11,8 @@ export default interface DataSource {
 
     getBlockHash: (targetHash: string, heightDifference: number) => Promise<BlocksAndEdgesAndHeightGroups | void>;
 
+    getBlockDAAScore: (targetDAAScore: number, heightDifference: number) => Promise<BlocksAndEdgesAndHeightGroups | void>;
+
     getHead: (heightDifference: number) => Promise<BlocksAndEdgesAndHeightGroups | void>;
 
     getBlockHashesByIds: (blockIds: string) => Promise<BlockHashById[] | void>;

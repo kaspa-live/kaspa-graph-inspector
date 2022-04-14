@@ -37,6 +37,7 @@ export default class ReplayDataSource implements DataSource {
     private dataAtHeight: { [height: number]: DatumAtHeight } = {};
     private blockHashesByIds: { [id: number]: string } = {};
     private blockIdsByHashes: { [hash: string]: number } = {};
+    private blockIdsByDAAScores: { [daaScore: number]: number } = {};
 
     constructor(replayData: ReplayData) {
         this.replayData = replayData;
@@ -91,6 +92,7 @@ export default class ReplayDataSource implements DataSource {
             timestamp: this.currentReplayBlockIndex * this.replayData.blockInterval,
             parentIds: nextReplayBlock.parentIds,
             height: height,
+            daaScore: height,
             heightGroupIndex: heightGroupIndex,
             selectedParentId: nextReplayBlock.selectedParentId,
             color: nextReplayBlock.color,
@@ -197,6 +199,14 @@ export default class ReplayDataSource implements DataSource {
 
     getBlockHash = async (targetHash: string, heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
         const targetId = this.blockIdsByHashes[targetHash];
+        const startHeight = targetId - heightDifference;
+        const endHeight = targetId + heightDifference;
+
+        return this.getBlocksBetweenHeights(startHeight, endHeight);
+    };
+
+    getBlockDAAScore = async (targetDAAScore: number, heightDifference: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
+        const targetId = this.blockIdsByDAAScores[targetDAAScore];
         const startHeight = targetId - heightDifference;
         const endHeight = targetId + heightDifference;
 

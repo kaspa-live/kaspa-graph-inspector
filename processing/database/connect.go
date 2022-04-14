@@ -2,12 +2,13 @@ package database
 
 import (
 	"fmt"
-	"github.com/go-pg/pg/extra/pgdebug"
+	"strings"
+
+	"github.com/go-pg/pg/extra/pgdebug/v10"
 	"github.com/go-pg/pg/v10"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	"github.com/pkg/errors"
-	"strings"
 )
 
 var (
@@ -42,7 +43,7 @@ func Connect(connectionString string) (*Database, error) {
 	}
 
 	pgDB := pg.Connect(connectionOptions)
-	pgDB.AddQueryHook(pgdebug.DebugHook{
+	pgDB.AddQueryHook(&pgdebug.DebugHook{
 		Verbose: false, // Set to `true` to print all queries
 	})
 
