@@ -363,6 +363,13 @@ export default class Dag {
         this.run();
     }
 
+    setStateTrackTargetHash = (targethash: string) => {
+        const urlParams = this.initializeUrlSearchParams();
+        urlParams.set("hash", `${targethash}`);
+        window.history.pushState(null, "", `?${urlParams}`);
+        this.run();
+    }
+
     setStateTrackTargetHeight = (targetHeight: number) => {
         const urlParams = this.initializeUrlSearchParams();
         urlParams.set("height", `${targetHeight}`);
