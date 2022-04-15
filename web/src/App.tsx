@@ -55,6 +55,9 @@ const App = () => {
                                                onClose={() => {
                                                    setBlockInformationPanelCloseRequested(true);
                                                    setBlockInformationPanelOpenState(false);
+                                               }}
+                                               onSelectHash={(hash: string) => {
+                                                    dag.setStateTrackTargetHash(hash);
                                                }}/>
                     </div>
                 }

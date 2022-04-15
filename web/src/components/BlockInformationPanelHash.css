@@ -3,6 +3,7 @@
     flex-direction: row;
     text-transform: uppercase;
     width: 100%;
+    cursor: pointer;
 }
 
 .block-information-panel-hash .hash-start {

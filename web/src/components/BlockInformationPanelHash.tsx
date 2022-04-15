@@ -2,16 +2,15 @@ import './BlockInformationPanelHash.css'
 import {Typography} from "@material-ui/core";
 import BlockInformationPanelTooltip from "./BlockInformationPanelTooltip";
 
-const BlockInformationPanelHash = ({className, hash}: { className?: string | undefined, hash: string }) => {
+const BlockInformationPanelHash = ({className, hash, onSelect}: { className?: string | undefined, hash: string, onSelect: (hash: string) => void }) => {
     const hashStart = hash.substring(0, 16);
     const hashEnd = hash.substring(hash.length - 8);
-    const addressForHash = `/?hash=${hash.toLowerCase()}`;
 
     return <BlockInformationPanelTooltip title={<div className="block-information-panel-tooltip">{hash}</div>}>
         <Typography className={`block-information-panel-hash ${className}`} variant="h6">
-              <div className="hash-start"><a href={addressForHash}>{hashStart}</a></div>
-              <div className="hash-ellipsis"><a href={addressForHash}>…</a></div>
-              <div className="hash-end"><a href={addressForHash}>{hashEnd}</a></div>
+              <div onClick={ () => { onSelect(hash) } } className="hash-start">{hashStart}</div>
+              <div onClick={ () => { onSelect(hash) } } className="hash-ellipsis">…</div>
+              <div onClick={ () => { onSelect(hash) } } className="hash-end">{hashEnd}</div>
         </Typography>
     </BlockInformationPanelTooltip>;
 };

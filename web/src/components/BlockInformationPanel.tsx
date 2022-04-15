@@ -6,8 +6,8 @@ import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
 import {katnipAddress} from "../addresses";
 import {BlockInformation} from "../model/BlockInformation";
 
-const BlockInformationPanel = ({blockInformation, onClose}:
-                                   { blockInformation: BlockInformation | null, onClose: () => void }) => {
+const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
+                                  { blockInformation: BlockInformation | null, onClose: () => void, onSelectHash: (hash: string) => void }) => {
 
     if (!blockInformation) {
         return <div/>;
@@ -85,7 +85,7 @@ const parentElements = [];
     if (blockInformation.isInformationComplete) {
         for (let parentHash of blockInformation.parentHashes) {
             const className = blockInformation.selectedParentHash === parentHash ? "selected-parent-hash" : "";
-            parentElements.push(<BlockInformationPanelHash hash={parentHash} className={className}/>)
+            parentElements.push(<BlockInformationPanelHash hash={parentHash} className={className} onSelect={onSelectHash}/>)
         }
     }
 
@@ -93,11 +93,11 @@ const parentElements = [];
     if (blockInformation.isInformationComplete) {
         for (let mergeSetBlueHash of blockInformation.mergeSetBlueHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash className="block-color-blue" hash={mergeSetBlueHash}/>);
+                <BlockInformationPanelHash className="block-color-blue" hash={mergeSetBlueHash} onSelect={onSelectHash}/>);
         }
         for (let mergeSetRedHash of blockInformation.mergeSetRedHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash className="block-color-red" hash={mergeSetRedHash}/>);
+                <BlockInformationPanelHash className="block-color-red" hash={mergeSetRedHash} onSelect={onSelectHash}/>);
         }
     }
 
@@ -117,7 +117,7 @@ const parentElements = [];
                         ? undefined
                         : <List>
                             <BlockInformationPanelListItem label="Block Hash" tooltip={blockHashTooltip}>
-                                <BlockInformationPanelHash hash={blockInformation.block.blockHash}/>
+                                <BlockInformationPanelHash hash={blockInformation.block.blockHash} onSelect={onSelectHash}/>
                             </BlockInformationPanelListItem>
 
                             <Divider className="block-information-divider"/>
