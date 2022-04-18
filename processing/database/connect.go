@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-pg/pg/extra/pgdebug/v10"
 	"github.com/go-pg/pg/v10"
-	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	"github.com/pkg/errors"
 )
@@ -52,10 +51,7 @@ func Connect(connectionString string) (*Database, error) {
 		return nil, errors.Wrapf(err, "could not validate database timezone")
 	}
 
-	return &Database{
-		database:         pgDB,
-		blockHashesToIDs: block_hashes_to_ids.New(),
-	}, nil
+	return New(pgDB), nil
 }
 
 func validateTimeZone(db *pg.DB) error {

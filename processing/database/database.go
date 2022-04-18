@@ -2,19 +2,35 @@ package database
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/go-pg/pg/v10"
-	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/block_hashes_to_ids"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/model"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/utils/lrucache"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 )
 
 type Database struct {
-	database         *pg.DB
-	blockHashesToIDs *block_hashes_to_ids.BlockHashesToIDs
+	database       *pg.DB
+	blockBaseCache *lrucache.LRUCache[blockBase]
 	sync.Mutex
+}
+
+// The cache capacity is set to embed ~1.5x the blocks provided
+// by the node between the prunning point and the selected tip
+const blockbaseCacheCapacity = 400000
+
+type blockBase struct {
+	ID     uint64
+	Height uint64
+}
+
+func New(pgDatabase *pg.DB) *Database {
+	database := &Database{
+		database:       pgDatabase,
+		blockBaseCache: lrucache.New[blockBase](blockbaseCacheCapacity, true),
+	}
+	return database
 }
 
 func (db *Database) RunInTransaction(transactionFunction func(*pg.Tx) error) error {
@@ -24,14 +40,14 @@ func (db *Database) RunInTransaction(transactionFunction func(*pg.Tx) error) err
 	return db.database.RunInTransaction(context.Background(), transactionFunction)
 }
 
-// Load existing block infos into the memory cache
-func (db *Database) LoadCache(databaseTransaction *pg.Tx) error {
+// Load block infos into the memory cache for all blocks having a height geater or equal to minHeight
+func (db *Database) LoadCache(databaseTransaction *pg.Tx, minHeight uint64) error {
 	var infos []struct {
 		ID        uint64
 		BlockHash string
 		Height    uint64
 	}
-	_, err := databaseTransaction.Query(&infos, "SELECT id, block_hash, height FROM blocks")
+	_, err := databaseTransaction.Query(&infos, "SELECT id, block_hash, height FROM blocks WHERE height >= ?", minHeight)
 	if err != nil {
 		return err
 	}
@@ -41,24 +57,46 @@ func (db *Database) LoadCache(databaseTransaction *pg.Tx) error {
 		if err != nil {
 			return err
 		}
-		db.blockHashesToIDs.Set(blockHash, info.ID, info.Height)
+
+		bb := &blockBase{
+			ID:     info.ID,
+			Height: info.Height,
+		}
+		db.blockBaseCache.Add(blockHash, bb)
 	}
 	return nil
 }
 
 func (db *Database) clearCache() {
-	db.blockHashesToIDs = block_hashes_to_ids.New()
+	db.blockBaseCache = lrucache.New[blockBase](blockbaseCacheCapacity, true)
 }
 
 func (db *Database) DoesBlockExist(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash) (bool, error) {
-	if db.blockHashesToIDs.Has(blockHash) {
+	// Search cache
+	if db.blockBaseCache.Has(blockHash) {
 		return true, nil
 	}
 
-	return false, nil
+	// Search database
+	var infos []struct {
+		ID     uint64
+		Height uint64
+	}
+	_, err := databaseTransaction.Query(&infos, "SELECT id, height FROM blocks WHERE block_hash = ?", blockHash.String())
+	if err != nil {
+		return false, err
+	}
+	if len(infos) != 1 {
+		return false, nil
+	}
 
-	// We no longer try to query the database since the existing blocks are loaded in the cache
-	// and no block can be created without a cache insertion.
+	bb := &blockBase{
+		ID:     infos[0].ID,
+		Height: infos[0].Height,
+	}
+	db.blockBaseCache.Add(blockHash, bb)
+
+	return true, nil
 }
 
 func (db *Database) InsertBlock(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash, block *model.Block) error {
@@ -66,7 +104,13 @@ func (db *Database) InsertBlock(databaseTransaction *pg.Tx, blockHash *externala
 	if err != nil {
 		return err
 	}
-	db.blockHashesToIDs.Set(blockHash, block.ID, block.Height)
+
+	bb := &blockBase{
+		ID:     block.ID,
+		Height: block.Height,
+	}
+	db.blockBaseCache.Add(blockHash, bb)
+
 	return nil
 }
 
@@ -128,28 +172,50 @@ func (db *Database) UpdateBlockDAAScores(databaseTransaction *pg.Tx, blockIDsToD
 }
 
 func (db *Database) BlockIDByHash(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash) (uint64, error) {
-	if cachedBlockID, _, ok := db.blockHashesToIDs.Get(blockHash); ok {
-		return cachedBlockID, nil
+	bb, err := db.blockBaseByHash(databaseTransaction, blockHash)
+	if err != nil {
+		return 0, err
 	}
-
-	return 0, fmt.Errorf("block hash %s does not exist in cache", blockHash)
-
-	// We no longer try to query the database since the existing blocks are loaded in the cache
-	// and no block can be created without a cache insertion.
+	return bb.ID, err
 }
 
-func (db *Database) BlockInfoByHash(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash) (uint64, uint64, error) {
-	if cachedBlockID, cachedBlockHeight, ok := db.blockHashesToIDs.Get(blockHash); ok {
-		return cachedBlockID, cachedBlockHeight, nil
+func (db *Database) BlockHeightByHash(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash) (uint64, error) {
+	bb, err := db.blockBaseByHash(databaseTransaction, blockHash)
+	if err != nil {
+		return 0, err
+	}
+	return bb.Height, err
+}
+
+func (db *Database) blockBaseByHash(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash) (*blockBase, error) {
+	// Search cache
+	if cachedBlockBase, ok := db.blockBaseCache.Get(blockHash); ok {
+		return cachedBlockBase, nil
 	}
 
-	return 0, 0, fmt.Errorf("block hash %s does not exist in cache", blockHash)
+	// Search database
+	var info struct {
+		ID     uint64
+		Height uint64
+	}
+	_, err := databaseTransaction.Query(&info, "SELECT id, height FROM blocks WHERE block_hash = ?", blockHash.String())
+	if err != nil {
+		return nil, err
+	}
+
+	bb := &blockBase{
+		ID:     info.ID,
+		Height: info.Height,
+	}
+	db.blockBaseCache.Add(blockHash, bb)
+
+	return bb, nil
 }
 
 func (db *Database) BlockIDsByHashes(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) ([]uint64, error) {
 	blockIDs := make([]uint64, len(blockHashes))
 	for i, blockHash := range blockHashes {
-		blockID, _, err := db.BlockInfoByHash(databaseTransaction, blockHash)
+		blockID, err := db.BlockIDByHash(databaseTransaction, blockHash)
 		if err != nil {
 			return nil, err
 		}
@@ -158,36 +224,40 @@ func (db *Database) BlockIDsByHashes(databaseTransaction *pg.Tx, blockHashes []*
 	return blockIDs, nil
 }
 
-func (db *Database) BlockInfosByHashes(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) ([]uint64, []uint64, error) {
+func (db *Database) BlockIDsAndHeightsByHashes(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) ([]uint64, []uint64, error) {
 	blockIDs := make([]uint64, len(blockHashes))
 	blockHeights := make([]uint64, len(blockHashes))
 	for i, blockHash := range blockHashes {
-		blockID, height, err := db.BlockInfoByHash(databaseTransaction, blockHash)
+		bb, err := db.blockBaseByHash(databaseTransaction, blockHash)
 		if err != nil {
 			return nil, nil, err
 		}
-		blockIDs[i] = blockID
-		blockHeights[i] = height
+		blockIDs[i] = bb.ID
+		blockHeights[i] = bb.Height
 	}
 	return blockIDs, blockHeights, nil
 }
 
 // Find the index in a DAG ordered block hash array of the latest block hash
 // that is stored in the database
-func (db *Database) FindLatestStoredBlockIndex(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) int {
+func (db *Database) FindLatestStoredBlockIndex(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) (int, error) {
 	// We use binary search since hash array is ordered from oldest to latest and
 	// this ordering is also applied when storing blocks in the database
 	low := int(0)
 	high := int(len(blockHashes))
 	for (high - low) > 1 {
 		cur := (high + low) / 2
-		if db.blockHashesToIDs.Has(blockHashes[cur]) {
+		hasBlock, err := db.DoesBlockExist(databaseTransaction, blockHashes[cur])
+		if err != nil {
+			return 0, err
+		}
+		if hasBlock {
 			low = cur
 		} else {
 			high = cur
 		}
 	}
-	return low
+	return low, nil
 }
 
 // Find the block ID of the block having the closest DAA score to a given score.

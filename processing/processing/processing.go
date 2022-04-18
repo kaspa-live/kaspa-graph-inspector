@@ -50,9 +50,6 @@ func (p *Processing) ResyncDatabase() error {
 		log.Infof("Resyncing database")
 		defer log.Infof("Finished resyncing database")
 
-		p.database.LoadCache(databaseTransaction)
-		log.Infof("Cache loaded from the database")
-
 		pruningPointHash, err := p.kaspad.Domain().Consensus().PruningPoint()
 		if err != nil {
 			return err
@@ -69,6 +66,15 @@ func (p *Processing) ResyncDatabase() error {
 			// so we keep the database as it is and sync the new blocks
 			log.Infof("Prunning point %s already in the database", pruningPointHash)
 			log.Infof("Database kept")
+
+			pruningBlockHeight, err := p.database.BlockHeightByHash(databaseTransaction, pruningPointHash)
+			if err != nil {
+				return err
+			}
+
+			log.Infof("Loading cache")
+			p.database.LoadCache(databaseTransaction, pruningBlockHeight)
+			log.Infof("Cache loaded from the database")
 		} else {
 			// The prunning block was not found in the database
 			// so we start from scratch.
@@ -113,10 +119,12 @@ func (p *Processing) ResyncDatabase() error {
 		if err != nil {
 			return err
 		}
+		log.Infof("Load node blocks")
 		hashesBetweenPruningPointAndHeadersSelectedTip, _, err := p.kaspad.Domain().Consensus().GetHashesBetween(pruningPointHash, headersSelectedTip, 0)
 		if err != nil {
 			return err
 		}
+		log.Infof("Node blocks loaded")
 
 		startIndex := int(0)
 		if keepDatabase {
@@ -146,7 +154,10 @@ func (p *Processing) ResyncDatabase() error {
 			// End of special case
 
 			log.Infof("Syncing %d blocks with the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
-			startIndex = p.database.FindLatestStoredBlockIndex(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
+			startIndex, err = p.database.FindLatestStoredBlockIndex(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
+			if err != nil {
+				return err
+			}
 			log.Infof("First %d blocks already exist in the database", startIndex)
 			// We start from an earlier point (~ 5 minutes) to make sure we didn't miss any mutation
 			startIndex = tools.Max(startIndex-600, 0)
@@ -262,7 +273,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 			existingParentHashes = append(existingParentHashes, parentHash)
 		}
 
-		parentIDs, parentHeights, err := p.database.BlockInfosByHashes(databaseTransaction, existingParentHashes)
+		parentIDs, parentHeights, err := p.database.BlockIDsAndHeightsByHashes(databaseTransaction, existingParentHashes)
 		if err != nil {
 			return errors.Errorf("Could not resolve "+
 				"parent IDs for block %s: %s", blockHash, err)
