@@ -61,6 +61,8 @@ export default class TimelineContainer extends PIXI.Container {
         this.addChild(this.blockContainer);
     }
 
+    gettBlocksAndEdgesAndHeightGroups = (): BlocksAndEdgesAndHeightGroups | null => this.currentBlocksAndEdgesAndHeightGroups;
+
     setBlocksAndEdgesAndHeightGroups = (blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups, targetBlock: Block | null = null) => {
         // Don't bother updating anything if there's nothing to update
         // noinspection JSSuspiciousNameCombination

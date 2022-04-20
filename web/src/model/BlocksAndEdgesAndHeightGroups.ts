@@ -76,3 +76,31 @@ export function getDAAScoreGroupHeight(data: BlocksAndEdgesAndHeightGroups, daaS
     }
     return maxHeight;
 }
+
+function getBlockById(data: BlocksAndEdgesAndHeightGroups, blockId: number): Block | null {
+    if (data) {
+        for (let block of data.blocks) {
+            if (block.id === blockId) {
+                return block;
+            }
+        }
+    }
+    return null;
+}
+
+export function getBlockChildIds(data: BlocksAndEdgesAndHeightGroups, block: Block): [number[], number | null] {
+    let children: number[] = [];
+    let selectedChild = null;
+    if (data) { 
+        for (let edge of data.edges) {
+            if (edge.toBlockId === block.id) {
+                children = children.concat(edge.fromBlockId);
+                const childBlock = getBlockById(data, edge.fromBlockId);
+                if (childBlock && childBlock.isInVirtualSelectedParentChain) {
+                    selectedChild = childBlock.id;
+                }
+            }
+        }
+    }
+    return [children, selectedChild];
+}
