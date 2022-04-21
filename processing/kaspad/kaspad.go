@@ -3,7 +3,7 @@ package kaspad
 import (
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/database"
-	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	//"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	domainPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain"
 	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 	"github.com/kaspanet/kaspad/app/protocol"
@@ -33,9 +33,9 @@ func New(config *configPackage.Config) (*Kaspad, error) {
 	kaspadConfig.NetworkFlags = config.NetworkFlags
 	kaspadConfig.Lookup = net.LookupIP
 
-	logging.UpdateLogLevels()
+	//logging.UpdateLogLevels()
 
-	databaseContext, err := database.Open()
+	databaseContext, err := database.Open(config)
 	if err != nil {
 		return nil, err
 	}

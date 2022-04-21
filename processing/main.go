@@ -1,20 +1,22 @@
 package main
 
 import (
+	"os"
+	"time"
+
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
 	processingPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/processing"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	"os"
-	"time"
+	"github.com/kaspanet/kaspad/infrastructure/logger"
 )
 
 var log = logging.Logger()
 
 func main() {
-	config, err := configPackage.Parse()
+	config, err := configPackage.LoadConfig()
 	if err != nil {
 		logErrorAndExit("Could not parse command line arguments.\n%s", err)
 	}
@@ -61,6 +63,12 @@ func main() {
 }
 
 func logErrorAndExit(errorLog string, logParameters ...interface{}) {
+	// If LoadConfig failed, the logger backend may not have been run yet
+	if !log.Backend().IsRunning() {
+		logger.InitLogStdout(logger.LevelInfo)
+		logging.UpdateLogLevels()
+	}
+
 	log.Errorf(errorLog, logParameters...)
 
 	exitHandlerDone := make(chan struct{})
