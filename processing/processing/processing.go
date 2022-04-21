@@ -287,7 +287,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		heightGroupSize, err := p.database.HeightGroupSize(databaseTransaction, blockHeight)
 		if err != nil {
 			// enhanced error description
-			return errors.Wrapf(err, "Could not resolve group size for highest parent height %s for block %s", blockHeight, blockHash)
+			return errors.Wrapf(err, "Could not resolve group size for highest parent height %d for block %s", blockHeight, blockHash)
 		}
 		blockHeightGroupIndex := heightGroupSize
 
@@ -321,19 +321,19 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
 		if err != nil {
 			// enhanced error description
-			return errors.Wrapf(err, "Could not insert or update height group %s for block %s", blockHeight, blockHash)
+			return errors.Wrapf(err, "Could not insert or update height group %d for block %s", blockHeight, blockHash)
 		}
 
 		for _, parentID := range parentIDs {
 			parentHeight, err := p.database.BlockHeight(databaseTransaction, parentID)
 			if err != nil {
 				// enhanced error description
-				return errors.Wrapf(err, "Could not get block height of parent id %s for block %s", parentID, blockHash)
+				return errors.Wrapf(err, "Could not get block height of parent id %d for block %s", parentID, blockHash)
 			}
 			parentHeightGroupIndex, err := p.database.BlockHeightGroupIndex(databaseTransaction, parentID)
 			if err != nil {
 				// enhanced error description
-				return errors.Wrapf(err, "Could not get height group index of parent id %s for block %s", parentID, blockHash)
+				return errors.Wrapf(err, "Could not get height group index of parent id %d for block %s", parentID, blockHash)
 			}
 			edge := &model.Edge{
 				FromBlockID:          blockID,
@@ -346,7 +346,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 			err = p.database.InsertEdge(databaseTransaction, edge)
 			if err != nil {
 				// enhanced error description
-				return errors.Wrapf(err, "Could not insert edge from block %s to parent id %s", blockHash, parentID)
+				return errors.Wrapf(err, "Could not insert edge from block %s to parent id %d", blockHash, parentID)
 			}
 		}
 	}
