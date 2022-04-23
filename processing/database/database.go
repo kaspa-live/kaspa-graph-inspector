@@ -8,6 +8,7 @@ import (
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/model"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/database/utils/lrucache"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
+	"github.com/pkg/errors"
 )
 
 type Database struct {
@@ -23,6 +24,13 @@ const blockbaseCacheCapacity = 400000
 type blockBase struct {
 	ID     uint64
 	Height uint64
+}
+
+func (bb *blockBase) Clone() *blockBase {
+	return &blockBase{
+		ID:     bb.ID,
+		Height: bb.Height,
+	}
 }
 
 func New(pgDatabase *pg.DB) *Database {
@@ -42,25 +50,25 @@ func (db *Database) RunInTransaction(transactionFunction func(*pg.Tx) error) err
 
 // Load block infos into the memory cache for all blocks having a height geater or equal to minHeight
 func (db *Database) LoadCache(databaseTransaction *pg.Tx, minHeight uint64) error {
-	var infos []struct {
+	var results []struct {
 		ID        uint64
 		BlockHash string
 		Height    uint64
 	}
-	_, err := databaseTransaction.Query(&infos, "SELECT id, block_hash, height FROM blocks WHERE height >= ?", minHeight)
+	_, err := databaseTransaction.Query(&results, "SELECT id, block_hash, height FROM blocks WHERE height >= ?", minHeight)
 	if err != nil {
 		return err
 	}
 	db.clearCache()
-	for _, info := range infos {
-		blockHash, err := externalapi.NewDomainHashFromString(info.BlockHash)
+	for _, result := range results {
+		blockHash, err := externalapi.NewDomainHashFromString(result.BlockHash)
 		if err != nil {
 			return err
 		}
 
 		bb := &blockBase{
-			ID:     info.ID,
-			Height: info.Height,
+			ID:     result.ID,
+			Height: result.Height,
 		}
 		db.blockBaseCache.Add(blockHash, bb)
 	}
@@ -78,23 +86,16 @@ func (db *Database) DoesBlockExist(databaseTransaction *pg.Tx, blockHash *extern
 	}
 
 	// Search database
-	var infos []struct {
-		ID     uint64
-		Height uint64
-	}
-	_, err := databaseTransaction.Query(&infos, "SELECT id, height FROM blocks WHERE block_hash = ?", blockHash.String())
+	var results []blockBase
+
+	_, err := databaseTransaction.Query(&results, "SELECT id, height FROM blocks WHERE block_hash = ?", blockHash.String())
 	if err != nil {
 		return false, err
 	}
-	if len(infos) != 1 {
+	if len(results) != 1 {
 		return false, nil
 	}
-
-	bb := &blockBase{
-		ID:     infos[0].ID,
-		Height: infos[0].Height,
-	}
-	db.blockBaseCache.Add(blockHash, bb)
+	db.blockBaseCache.Add(blockHash, results[0].Clone())
 
 	return true, nil
 }
@@ -114,10 +115,11 @@ func (db *Database) InsertBlock(databaseTransaction *pg.Tx, blockHash *externala
 	return nil
 }
 
-// Get a block from the database by its ID
+// GetBlock returns a block identified by `id`.
+// Returns an error if the block `id` does not exist
 func (db *Database) GetBlock(databaseTransaction *pg.Tx, id uint64) (*model.Block, error) {
 	result := new(model.Block)
-	_, err := databaseTransaction.Query(result, "SELECT * FROM blocks WHERE id = ?", id)
+	_, err := databaseTransaction.QueryOne(result, "SELECT * FROM blocks WHERE id = ?", id)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +162,7 @@ func (db *Database) UpdateBlockColors(databaseTransaction *pg.Tx, blockIDsToColo
 	return nil
 }
 
-// Update DAA Scores of blocks in the database
+// UpdateBlockDAAScores updates DAA Scores of block ids
 func (db *Database) UpdateBlockDAAScores(databaseTransaction *pg.Tx, blockIDsToDAAScores map[uint64]uint64) error {
 	for blockID, daaScore := range blockIDsToDAAScores {
 		_, err := databaseTransaction.Exec("UPDATE blocks SET daa_score = ? WHERE id = ?", daaScore, blockID)
@@ -171,6 +173,8 @@ func (db *Database) UpdateBlockDAAScores(databaseTransaction *pg.Tx, blockIDsToD
 	return nil
 }
 
+// blockBaseByHash returns the id of a block idendified by `blockHash`.
+// Returns an error if `blockHash` does not exist in the database
 func (db *Database) BlockIDByHash(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash) (uint64, error) {
 	bb, err := db.blockBaseByHash(databaseTransaction, blockHash)
 	if err != nil {
@@ -179,6 +183,8 @@ func (db *Database) BlockIDByHash(databaseTransaction *pg.Tx, blockHash *externa
 	return bb.ID, err
 }
 
+// blockBaseByHash returns the height of a block idendified by `blockHash`.
+// Returns an error if `blockHash` does not exist in the database
 func (db *Database) BlockHeightByHash(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash) (uint64, error) {
 	bb, err := db.blockBaseByHash(databaseTransaction, blockHash)
 	if err != nil {
@@ -187,6 +193,8 @@ func (db *Database) BlockHeightByHash(databaseTransaction *pg.Tx, blockHash *ext
 	return bb.Height, err
 }
 
+// blockBaseByHash returns a `blockBase` for a block idendified by `blockHash`.
+// Returns an error if `blockHash` does not exist in the database
 func (db *Database) blockBaseByHash(databaseTransaction *pg.Tx, blockHash *externalapi.DomainHash) (*blockBase, error) {
 	// Search cache
 	if cachedBlockBase, ok := db.blockBaseCache.Get(blockHash); ok {
@@ -194,24 +202,18 @@ func (db *Database) blockBaseByHash(databaseTransaction *pg.Tx, blockHash *exter
 	}
 
 	// Search database
-	var info struct {
-		ID     uint64
-		Height uint64
-	}
-	_, err := databaseTransaction.Query(&info, "SELECT id, height FROM blocks WHERE block_hash = ?", blockHash.String())
+	var result blockBase
+	_, err := databaseTransaction.QueryOne(&result, "SELECT id, height FROM blocks WHERE block_hash = ?", blockHash.String())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "block hash %s not found in blocks table", blockHash.String())
 	}
+	db.blockBaseCache.Add(blockHash, &result)
 
-	bb := &blockBase{
-		ID:     info.ID,
-		Height: info.Height,
-	}
-	db.blockBaseCache.Add(blockHash, bb)
-
-	return bb, nil
+	return &result, nil
 }
 
+// BlockIDsByHashes returns an arrays of ids for `blockHashes` hashes.
+// Returns an error if any hash in `blockHash` does not exist in the database
 func (db *Database) BlockIDsByHashes(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) ([]uint64, error) {
 	blockIDs := make([]uint64, len(blockHashes))
 	for i, blockHash := range blockHashes {
@@ -224,6 +226,8 @@ func (db *Database) BlockIDsByHashes(databaseTransaction *pg.Tx, blockHashes []*
 	return blockIDs, nil
 }
 
+// BlockIDsAndHeightsByHashes returns two arrays, one of ids and one of heights
+// for `blockHashes` hashes
 func (db *Database) BlockIDsAndHeightsByHashes(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) ([]uint64, []uint64, error) {
 	blockIDs := make([]uint64, len(blockHashes))
 	blockHeights := make([]uint64, len(blockHashes))
@@ -238,8 +242,9 @@ func (db *Database) BlockIDsAndHeightsByHashes(databaseTransaction *pg.Tx, block
 	return blockIDs, blockHeights, nil
 }
 
-// Find the index in a DAG ordered block hash array of the latest block hash
-// that is stored in the database
+// FindLatestStoredBlockIndex returns the index in a DAG ordered block hash
+// array `blockHashes` of the latest block hash that is stored in the
+// database
 func (db *Database) FindLatestStoredBlockIndex(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) (int, error) {
 	// We use binary search since hash array is ordered from oldest to latest and
 	// this ordering is also applied when storing blocks in the database
@@ -260,16 +265,29 @@ func (db *Database) FindLatestStoredBlockIndex(databaseTransaction *pg.Tx, block
 	return low, nil
 }
 
-// Find the block ID of the block having the closest DAA score to a given score.
+// BlockIDByDAAScore returns the block ID of one block having the closest DAA
+// score to `blockDAAScore`
 func (db *Database) BlockIDByDAAScore(databaseTransaction *pg.Tx, blockDAAScore uint64) (uint64, error) {
 	var result struct {
 		ID uint64
 	}
-	_, err := databaseTransaction.Query(&result, "SELECT id FROM blocks ORDER BY ABS(daa_score-(?)) LIMIT 1", pg.In(blockDAAScore))
+	_, err := databaseTransaction.QueryOne(&result, "SELECT id FROM blocks ORDER BY ABS(daa_score-(?)) LIMIT 1", blockDAAScore)
 	if err != nil {
 		return 0, err
 	}
 	return result.ID, nil
+}
+
+// BlockCountAtDAAScore returns the number of blocks having a DAA Score of `blockDAAScore`
+func (db *Database) BlockCountAtDAAScore(databaseTransaction *pg.Tx, blockDAAScore uint64) (uint32, error) {
+	var result struct {
+		N uint32
+	}
+	_, err := databaseTransaction.Query(&result, "SELECT COUNT(*) AS N FROM blocks WHERE daa_score = (?)", blockDAAScore)
+	if err != nil {
+		return 0, err
+	}
+	return result.N, nil
 }
 
 func (db *Database) HighestBlockHeight(databaseTransaction *pg.Tx, blockIDs []uint64) (uint64, error) {

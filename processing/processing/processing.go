@@ -10,6 +10,7 @@ import (
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/tools"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/processing/batch"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/pkg/errors"
@@ -55,6 +56,11 @@ func (p *Processing) ResyncDatabase() error {
 			return err
 		}
 
+		pruningPointBlock, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
+		if err != nil {
+			return err
+		}
+
 		hasPruningBlock, err := p.database.DoesBlockExist(databaseTransaction, pruningPointHash)
 		if err != nil {
 			return err
@@ -84,10 +90,6 @@ func (p *Processing) ResyncDatabase() error {
 			}
 			log.Infof("Database cleared")
 
-			pruningPointBlock, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
-			if err != nil {
-				return err
-			}
 			pruningPointDatabaseBlock := &model.Block{
 				BlockHash:                      pruningPointHash.String(),
 				Timestamp:                      pruningPointBlock.Header.TimeInMilliseconds(),
@@ -138,7 +140,11 @@ func (p *Processing) ResyncDatabase() error {
 			if err != nil {
 				return err
 			}
-			if pruningPointDatabaseBlock.DAAScore == 0 {
+			noDAAScoreCount, err := p.database.BlockCountAtDAAScore(databaseTransaction, 0)
+			if err != nil {
+				return err
+			}
+			if pruningPointDatabaseBlock.DAAScore == 0 && noDAAScoreCount > uint32(p.config.NetParams().K) {
 				log.Infof("Updating DAA score of %d blocks in the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
 				blockIDsToDAAScores, err := p.getBlocksDAAScores(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
 				log.Infof("DAA scores of %d blocks collected", len(blockIDsToDAAScores))
@@ -154,13 +160,15 @@ func (p *Processing) ResyncDatabase() error {
 			// End of special case
 
 			log.Infof("Syncing %d blocks with the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
-			startIndex, err = p.database.FindLatestStoredBlockIndex(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
-			if err != nil {
-				return err
+			if !p.config.Resync {
+				startIndex, err = p.database.FindLatestStoredBlockIndex(databaseTransaction, hashesBetweenPruningPointAndHeadersSelectedTip)
+				if err != nil {
+					return err
+				}
+				log.Infof("First %d blocks already exist in the database", startIndex)
+				// We start from an earlier point (~ 10 minutes) to make sure we didn't miss any mutation
+				startIndex = tools.Max(startIndex-600, 0)
 			}
-			log.Infof("First %d blocks already exist in the database", startIndex)
-			// We start from an earlier point (~ 5 minutes) to make sure we didn't miss any mutation
-			startIndex = tools.Max(startIndex-600, 0)
 		} else {
 			log.Infof("Adding %d blocks to the database", len(hashesBetweenPruningPointAndHeadersSelectedTip))
 		}
@@ -172,7 +180,7 @@ func (p *Processing) ResyncDatabase() error {
 			if err != nil {
 				return err
 			}
-			err = p.processBlock(databaseTransaction, block, nil)
+			err = p.processBlockAndDependencies(databaseTransaction, blockHash, block, pruningPointBlock, nil)
 			if err != nil {
 				return err
 			}
@@ -223,7 +231,7 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 		blockInsertionResult := &externalapi.VirtualChangeSet{
 			VirtualSelectedParentChainChanges: virtualSelectedParentChain,
 		}
-		err = p.processBlock(databaseTransaction, virtualSelectedParentBlock, blockInsertionResult)
+		err = p.processBlockAndDependencies(databaseTransaction, virtualSelectedParentHash, virtualSelectedParentBlock, nil, blockInsertionResult)
 		if err != nil {
 			return err
 		}
@@ -239,8 +247,37 @@ func (p *Processing) ProcessBlock(block *externalapi.DomainBlock,
 	defer p.Unlock()
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		return p.processBlock(databaseTransaction, block, blockInsertionResult)
+		return p.processBlockAndDependencies(databaseTransaction, consensushashing.BlockHash(block), block, nil, blockInsertionResult)
 	})
+}
+
+// processBlockAndDependencies processes `block` and all its missing dependencies
+func (p *Processing) processBlockAndDependencies(databaseTransaction *pg.Tx, hash *externalapi.DomainHash,
+	block, pruningBlock *externalapi.DomainBlock, blockInsertionResult *externalapi.VirtualChangeSet) error {
+
+	batch := batch.New(p.database, p.kaspad, pruningBlock)
+	err := batch.CollectBlockAndDependencies(databaseTransaction, hash, block)
+	if err != nil {
+		return err
+	}
+	for {
+		_, block, ok := batch.Pop()
+		if !ok {
+			break
+		}
+		// The VirtualChangeSet `blockInsertionResult` only applies to
+		// `block`, not to its dependencies
+		var virtualChangeSet *externalapi.VirtualChangeSet
+		if batch.Empty() {
+			virtualChangeSet = blockInsertionResult
+		}
+
+		err = p.processBlock(databaseTransaction, block, virtualChangeSet)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi.DomainBlock,
@@ -287,7 +324,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		heightGroupSize, err := p.database.HeightGroupSize(databaseTransaction, blockHeight)
 		if err != nil {
 			// enhanced error description
-			return errors.Wrapf(err, "Could not resolve group size for highest parent height %s for block %s", blockHeight, blockHash)
+			return errors.Wrapf(err, "Could not resolve group size for highest parent height %d for block %s", blockHeight, blockHash)
 		}
 		blockHeightGroupIndex := heightGroupSize
 
@@ -321,19 +358,19 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		err = p.database.InsertOrUpdateHeightGroup(databaseTransaction, heightGroup)
 		if err != nil {
 			// enhanced error description
-			return errors.Wrapf(err, "Could not insert or update height group %s for block %s", blockHeight, blockHash)
+			return errors.Wrapf(err, "Could not insert or update height group %d for block %s", blockHeight, blockHash)
 		}
 
 		for _, parentID := range parentIDs {
 			parentHeight, err := p.database.BlockHeight(databaseTransaction, parentID)
 			if err != nil {
 				// enhanced error description
-				return errors.Wrapf(err, "Could not get block height of parent id %s for block %s", parentID, blockHash)
+				return errors.Wrapf(err, "Could not get block height of parent id %d for block %s", parentID, blockHash)
 			}
 			parentHeightGroupIndex, err := p.database.BlockHeightGroupIndex(databaseTransaction, parentID)
 			if err != nil {
 				// enhanced error description
-				return errors.Wrapf(err, "Could not get height group index of parent id %s for block %s", parentID, blockHash)
+				return errors.Wrapf(err, "Could not get height group index of parent id %d for block %s", parentID, blockHash)
 			}
 			edge := &model.Edge{
 				FromBlockID:          blockID,
@@ -346,7 +383,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 			err = p.database.InsertEdge(databaseTransaction, edge)
 			if err != nil {
 				// enhanced error description
-				return errors.Wrapf(err, "Could not insert edge from block %s to parent id %s", blockHash, parentID)
+				return errors.Wrapf(err, "Could not insert edge from block %s to parent id %d", blockHash, parentID)
 			}
 		}
 	}
@@ -372,7 +409,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
 	if err != nil {
 		// enhanced error description
-		return errors.Wrapf(err, "Could not get id for edged block %s", blockHash)
+		return errors.Wrapf(err, "Could not get id for block %s", blockHash)
 	}
 	err = p.database.UpdateBlockSelectedParent(databaseTransaction, blockID, selectedParentID)
 	if err != nil {
@@ -388,6 +425,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		// Let's ignore this error temporarily and just report it in the log
 		// This occures sometimes when the app was fresly started, at the end or just after ResyncDatabase
 		// The actual conditions and the way to solve this has to be determined yet.
+		// Update 2022-04-22: processBlockAndDependencies should solve the issue
 		log.Errorf("Could not get ids of merge set reds for block %s: %s", blockHash, blockGHOSTDAGData.MergeSetReds())
 	}
 	mergeSetBlueIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetBlues())
@@ -398,6 +436,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		// Let's ignore this error temporarily and just report it in the log
 		// This occures sometimes when the app was fresly started, at the end or just after ResyncDatabase
 		// The actual conditions and the way to solve this has to be determined yet.
+		// Update 2022-04-22: processBlockAndDependencies should solve the issue
 		log.Errorf("Could not get ids of merge set blues for block %s: %s", blockHash, blockGHOSTDAGData.MergeSetBlues())
 	}
 	err = p.database.UpdateBlockMergeSet(databaseTransaction, blockID, mergeSetRedIDs, mergeSetBlueIDs)

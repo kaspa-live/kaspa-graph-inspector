@@ -38,7 +38,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
     const blockParentsTooltip = <div className="information-tooltip">
         <p>Every block in the block DAG (aside from the genesis) has one or more <b>parents.</b> A <b>parent</b> is
             simply the hash of another block that had been added to the DAG at a prior time.</p>
-        <p>Here, we represent each parent with an arrow. Note that all arrows point from right to left—from child to
+        <p>Here, we represent each parent with an arrow. Note that all arrows point from right to left — from child to
             parent. Moving towards the left in the graph reveals increasingly older generations of blocks until we reach
             the leftmost, and oldest, block. That's the origin of the DAG, or the genesis.</p>
         <p>A block's <b>selected parent</b> is the parent that has the most accumulated proof-of-work.</p>
@@ -76,12 +76,21 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
     </div>;
 
     const blockDAAScoreTooltip = <div className="information-tooltip">
-    <p>Every block in the DAG has a DAA Score.</p>
-    <p>The DAA Score is related to the number of honest blocks ever added to the DAG. Since blocks are created at a rate
-       of one per second, the score is also a metric of the elapsed time since network launch.</p>
+        <p>Every block in the DAG has a DAA Score.</p>
+        <p>The DAA Score is related to the number of honest blocks ever added to the DAG. Since blocks are created at a
+            rate of one per second, the score is a metric of the elapsed time since network launch.</p>
     </div>;
 
-const parentElements = [];
+    const blockChildrenTooltip = <div className="information-tooltip">
+        <p>Every block in the block DAG (aside from the blocks forming the tips) has one or more <b>children.</b> A <b>child</b> is
+           simply the hash of another block that has been added to the DAG at a later time and that has the block
+            hash in its parents.</p>
+        <p>Here, we represent each child with an arrow. Note that all arrows point from right to left — from child to
+            parent. Moving towards the right in the graph reveals increasingly younger generations of blocks until we
+            reach the rightmosts, and youngest, blocks. That's the tips of the DAG.</p>
+    </div>;
+
+    const parentElements = [];
     if (blockInformation.isInformationComplete) {
         for (let parentHash of blockInformation.parentHashes) {
             const className = blockInformation.selectedParentHash === parentHash ? "selected-parent-hash" : "";
@@ -101,6 +110,14 @@ const parentElements = [];
         }
     }
 
+    const childElements = [];
+    if (blockInformation.isInformationComplete) {
+        for (let childHash of blockInformation.childHashes) {
+            const className = blockInformation.selectedChildHash === childHash ? "selected-child-hash" : "";
+            childElements.push(<BlockInformationPanelHash hash={childHash} className={className} onSelect={onSelectHash}/>)
+        }
+    }
+
     return <Paper elevation={4}>
         <div className="block-information-panel">
             <div className="block-information-header">
@@ -116,13 +133,13 @@ const parentElements = [];
                     {!blockInformation.isInformationComplete
                         ? undefined
                         : <List>
-                            <BlockInformationPanelListItem label="Block Hash" tooltip={blockHashTooltip}>
+                            <BlockInformationPanelListItem itemKey="block-hash" label="Block Hash" tooltip={blockHashTooltip}>
                                 <BlockInformationPanelHash hash={blockInformation.block.blockHash} onSelect={onSelectHash}/>
                             </BlockInformationPanelListItem>
 
                             <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem label="Block Parents" tooltip={blockParentsTooltip}>
+                            <BlockInformationPanelListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
                                 {parentElements.length === 0
                                     ?
                                     <Typography className="block-information-panel-hash"
@@ -133,7 +150,7 @@ const parentElements = [];
 
                             <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem label="Block Merge Set" tooltip={blockMergeSetTooltip}>
+                            <BlockInformationPanelListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
                                 {mergeSetHashElements.length === 0
                                     ?
                                     <Typography className="block-information-panel-hash"
@@ -144,7 +161,18 @@ const parentElements = [];
 
                             <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem label="Is Block In VSPC"
+                            <BlockInformationPanelListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
+                                {childElements.length === 0
+                                    ?
+                                    <Typography className="block-information-panel-hash"
+                                                variant="h6">None</Typography>
+                                    : childElements
+                                }
+                            </BlockInformationPanelListItem>
+
+                            <Divider className="block-information-divider"/>
+
+                            <BlockInformationPanelListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
                                                            tooltip={isBlockInVirtualSelectedParentChainTooltip}>
                                 <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
                                     {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
@@ -153,7 +181,7 @@ const parentElements = [];
 
                             <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem label="Block Color" tooltip={blockColorTooltip}>
+                            <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
                                 <Typography className={`block-color ${blockColorClass}`} variant="h6">
                                     {blockColorText}
                                 </Typography>
@@ -161,8 +189,8 @@ const parentElements = [];
 
                             <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem label="DAA Score" tooltip={blockDAAScoreTooltip}>
-                                <Typography className="block-information-panel-hash" variant="h6">
+                            <BlockInformationPanelListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
+                                <Typography className="block-daa-score" variant="h6">
                                     {blockDAAScore}
                                 </Typography>
                             </BlockInformationPanelListItem>

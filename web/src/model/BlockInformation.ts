@@ -6,6 +6,8 @@ export type BlockInformation = {
     selectedParentHash: string | null,
     mergeSetRedHashes: string[],
     mergeSetBlueHashes: string[],
+    childHashes: string[],
+    selectedChildHash: string | null,
 
     isInformationComplete: boolean,
 };

@@ -15,11 +15,10 @@ const (
 
 var (
 	log = logging.Logger()
-
-	databaseDirectory = filepath.Join(config.HomeDir, databaseDirectoryName)
 )
 
-func Open() (database.Database, error) {
+func Open(config *config.Config) (database.Database, error) {
+	databaseDirectory := filepath.Join(config.AppDir, databaseDirectoryName)
 	log.Infof("Loading database from '%s'", databaseDirectory)
 	return ldb.NewLevelDB(databaseDirectory, levelDBCacheSizeMiB)
 }

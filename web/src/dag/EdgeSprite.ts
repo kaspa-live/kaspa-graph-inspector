@@ -18,13 +18,15 @@ class EdgeGraphicsDefinition {
 }
 
 export default class EdgeSprite extends PIXI.Container {
-    private readonly normalDefinition = new EdgeGraphicsDefinition(0xaaaaaa, 2, 4);
-    private readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0xb4cfed, 4, 6);
-    private readonly highlightedParentDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
-    private readonly highlightedChildDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
-    private readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(0x4de3bb, 6, 8);
-    private readonly highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
-    private readonly highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
+    private static readonly normalDefinition = new EdgeGraphicsDefinition(0xaaaaaa, 2, 4);
+    private static readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0xb4cfed, 4, 6);
+    private static readonly highlightedParentDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
+    private static readonly highlightedChildDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
+    private static readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(0x4de3bb, 6, 8);
+    private static readonly highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
+    private static readonly highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
+
+    private static readonly definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = EdgeSprite.initializeDefinitionMap();
 
     private readonly application: PIXI.Application;
     private readonly fromBlockId: number;
@@ -41,7 +43,6 @@ export default class EdgeSprite extends PIXI.Container {
     private isHighlightedChild: boolean = false;
     private isSelectedParent: boolean = false;
 
-    private definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = {};
     private graphicsMap: { [definitionKey: string]: PIXI.Graphics } = {};
 
     constructor(application: PIXI.Application, fromBlockId: number, toBlockId: number) {
@@ -51,18 +52,22 @@ export default class EdgeSprite extends PIXI.Container {
         this.fromBlockId = fromBlockId;
         this.toBlockId = toBlockId;
 
-        this.definitionMap[this.normalDefinition.key()] = this.normalDefinition;
-        this.definitionMap[this.inVirtualSelectedParentChainDefinition.key()] = this.inVirtualSelectedParentChainDefinition;
-        this.definitionMap[this.highlightedParentDefinition.key()] = this.highlightedParentDefinition;
-        this.definitionMap[this.highlightedChildDefinition.key()] = this.highlightedChildDefinition;
-        this.definitionMap[this.highlightedSelectedParentDefinition.key()] = this.highlightedSelectedParentDefinition;
-        this.definitionMap[this.highlightedParentInVirtualSelectedParentChainDefinition.key()] = this.highlightedParentInVirtualSelectedParentChainDefinition;
-        this.definitionMap[this.highlightedChildInVirtualSelectedParentChainDefinition.key()] = this.highlightedChildInVirtualSelectedParentChainDefinition;
-
-        for (let definitionKey in this.definitionMap) {
+        for (let definitionKey in EdgeSprite.definitionMap) {
             this.graphicsMap[definitionKey] = this.addNewGraphics();
         }
-        this.graphicsMap[this.normalDefinition.key()].alpha = 1.0;
+        this.graphicsMap[EdgeSprite.normalDefinition.key()].alpha = 1.0;
+    }
+
+    private static initializeDefinitionMap(): Record<string, EdgeGraphicsDefinition> {
+        let definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = {};
+        definitionMap[EdgeSprite.normalDefinition.key()] = EdgeSprite.normalDefinition;
+        definitionMap[EdgeSprite.inVirtualSelectedParentChainDefinition.key()] = EdgeSprite.inVirtualSelectedParentChainDefinition;
+        definitionMap[EdgeSprite.highlightedParentDefinition.key()] = EdgeSprite.highlightedParentDefinition;
+        definitionMap[EdgeSprite.highlightedChildDefinition.key()] = EdgeSprite.highlightedChildDefinition;
+        definitionMap[EdgeSprite.highlightedSelectedParentDefinition.key()] = EdgeSprite.highlightedSelectedParentDefinition;
+        definitionMap[EdgeSprite.highlightedParentInVirtualSelectedParentChainDefinition.key()] = EdgeSprite.highlightedParentInVirtualSelectedParentChainDefinition;
+        definitionMap[EdgeSprite.highlightedChildInVirtualSelectedParentChainDefinition.key()] = EdgeSprite.highlightedChildInVirtualSelectedParentChainDefinition;
+        return definitionMap;
     }
 
     private addNewGraphics = (): PIXI.Graphics => {
@@ -83,8 +88,8 @@ export default class EdgeSprite extends PIXI.Container {
             this.blockBoundsVectorX = blockBoundsVectorX;
             this.blockBoundsVectorY = blockBoundsVectorY;
 
-            for (let definitionKey in this.definitionMap) {
-                const definition = this.definitionMap[definitionKey];
+            for (let definitionKey in EdgeSprite.definitionMap) {
+                const definition = EdgeSprite.definitionMap[definitionKey];
                 const graphics = this.graphicsMap[definitionKey];
                 this.renderGraphics(graphics, definition);
             }
@@ -181,23 +186,23 @@ export default class EdgeSprite extends PIXI.Container {
         let definition;
         if (this.isInVirtualSelectedParentChain) {
             if (this.isHighlightedParent) {
-                definition = this.highlightedParentInVirtualSelectedParentChainDefinition;
+                definition = EdgeSprite.highlightedParentInVirtualSelectedParentChainDefinition;
             } else if (this.isHighlightedChild) {
-                definition = this.highlightedChildInVirtualSelectedParentChainDefinition;
+                definition = EdgeSprite.highlightedChildInVirtualSelectedParentChainDefinition;
             } else {
-                definition = this.inVirtualSelectedParentChainDefinition;
+                definition = EdgeSprite.inVirtualSelectedParentChainDefinition;
             }
         } else {
             if (this.isHighlightedParent) {
                 if (this.isSelectedParent) {
-                    definition = this.highlightedSelectedParentDefinition;
+                    definition = EdgeSprite.highlightedSelectedParentDefinition;
                 } else {
-                    definition = this.highlightedParentDefinition;
+                    definition = EdgeSprite.highlightedParentDefinition;
                 }
             } else if (this.isHighlightedChild) {
-                definition = this.highlightedChildDefinition;
+                definition = EdgeSprite.highlightedChildDefinition;
             } else {
-                definition = this.normalDefinition;
+                definition = EdgeSprite.normalDefinition;
             }
         }
         this.changeShownGraphics(definition);

@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 import TimelineContainer from "./TimelineContainer";
 import {Block} from "../model/Block";
+import {getBlockChildIds} from "../model/BlocksAndEdgesAndHeightGroups"
 import {Ticker} from "@createjs/core";
 import {BlockInformation} from "../model/BlockInformation";
 import DataSource, {resolveDataSource} from "../data/DataSource";
@@ -309,7 +310,7 @@ export default class Dag {
     private buildBlockInformation = async (block: Block): Promise<BlockInformation> => {
         let notFoundIds: number[] = [];
 
-        const [parentHashes, notFoundParentIds] = this.getCachedBlockHashes(block.parentIds);
+        let [parentHashes, notFoundParentIds] = this.getCachedBlockHashes(block.parentIds);
         notFoundIds = notFoundIds.concat(notFoundParentIds);
 
         let selectedParentHash = null;
@@ -320,17 +321,54 @@ export default class Dag {
             selectedParentHash = selectedParentHashes[0];
         }
 
-        const [mergeSetRedHashes, notFoundMergeSetRedIds] = this.getCachedBlockHashes(block.mergeSetRedIds);
+        let [mergeSetRedHashes, notFoundMergeSetRedIds] = this.getCachedBlockHashes(block.mergeSetRedIds);
         notFoundIds = notFoundIds.concat(notFoundMergeSetRedIds);
 
-        const [mergeSetBlueHashes, notFoundMergeSetBlueIds] = this.getCachedBlockHashes(block.mergeSetBlueIds);
+        let [mergeSetBlueHashes, notFoundMergeSetBlueIds] = this.getCachedBlockHashes(block.mergeSetBlueIds);
         notFoundIds = notFoundIds.concat(notFoundMergeSetBlueIds);
+
+        const [childIds, selectedChildId] = getBlockChildIds(this.timelineContainer!.gettBlocksAndEdgesAndHeightGroups()!, block);
+        let [childHashes, notFoundChildIds] = this.getCachedBlockHashes(childIds);
+        notFoundIds = notFoundIds.concat(notFoundChildIds);
+
+        let selectedChildHash = null;
+        if (selectedChildId) {
+            const [selectedChildHashes] = this.getCachedBlockHashes([selectedChildId]);
+            selectedChildHash = selectedChildHashes[0];
+        }
 
         if (notFoundIds.length > 0) {
             const blockHashesByIds = await this.dataSource!.getBlockHashesByIds(notFoundIds.join(","));
             if (blockHashesByIds) {
                 for (let blockHashById of blockHashesByIds) {
-                    this.blockHashesByIds[blockHashById.id] = blockHashById.hash
+                    // Feed the cache
+                    this.blockHashesByIds[blockHashById.id] = blockHashById.hash;
+
+                    // Propagate the found hashes
+
+                    if (notFoundParentIds.includes(blockHashById.id)) {
+                        parentHashes = parentHashes.concat(blockHashById.hash);
+                    }
+                    
+                    if (block.selectedParentId === blockHashById.id) {
+                        selectedParentHash = blockHashById.hash;
+                    }
+                    
+                    if (notFoundMergeSetRedIds.includes(blockHashById.id)) {
+                        mergeSetBlueHashes = mergeSetBlueHashes.concat(blockHashById.hash);
+                    }
+                    
+                    if (notFoundMergeSetBlueIds.includes(blockHashById.id)) {
+                        mergeSetBlueHashes = mergeSetBlueHashes.concat(blockHashById.hash);
+                    }
+                    
+                    if (notFoundChildIds.includes(blockHashById.id)) {
+                        childHashes = childHashes.concat(blockHashById.hash);
+                    }
+                    
+                    if (selectedChildId === blockHashById.id) {
+                        selectedChildHash = blockHashById.hash;
+                    }
                 }
             }
         }
@@ -341,6 +379,8 @@ export default class Dag {
             selectedParentHash: selectedParentHash,
             mergeSetRedHashes: mergeSetRedHashes,
             mergeSetBlueHashes: mergeSetBlueHashes,
+            childHashes: childHashes,
+            selectedChildHash: selectedChildHash,
 
             isInformationComplete: notFoundIds.length === 0,
         };
