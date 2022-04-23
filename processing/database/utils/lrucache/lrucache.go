@@ -32,7 +32,7 @@ func (c *LRUCache[T]) Add(key *externalapi.DomainHash, value *T) {
 	if len(c.cache) > c.capacity {
 		c.evictRandom()
 	}
-	}
+}
 
 // Get returns the entry for the given key, or (nil, false) otherwise
 func (c *LRUCache[T]) Get(key *externalapi.DomainHash) (*T, bool) {
