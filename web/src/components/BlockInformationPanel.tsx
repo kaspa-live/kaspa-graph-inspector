@@ -1,6 +1,6 @@
 import './BlockInformationPanel.css'
-import {Divider, IconButton, List, Paper, Typography} from "@material-ui/core";
-import CloseIcon from '@material-ui/icons/Close';
+import {Divider, IconButton, List, Paper, Typography} from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 import BlockInformationPanelHash from "./BlockInformationPanelHash";
 import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
 import {katnipAddress} from "../addresses";
@@ -118,91 +118,93 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
         }
     }
 
-    return <Paper elevation={4}>
-        <div className="block-information-panel">
-            <div className="block-information-header">
-                <Typography variant="h4">
-                    Block Information
-                </Typography>
-                <IconButton className="close-button" color="primary" onClick={onClose}>
-                    <CloseIcon/>
-                </IconButton>
-            </div>
-            <div className="block-information-content-container">
-                <div className="block-information-content">
-                    {!blockInformation.isInformationComplete
-                        ? undefined
-                        : <List>
-                            <BlockInformationPanelListItem itemKey="block-hash" label="Block Hash" tooltip={blockHashTooltip}>
-                                <BlockInformationPanelHash hash={blockInformation.block.blockHash} onSelect={onSelectHash}/>
-                            </BlockInformationPanelListItem>
+    return (
+        <Paper elevation={4}>
+            <div className="block-information-panel">
+                <div className="block-information-header">
+                    <Typography variant="h4">
+                        Block Information
+                    </Typography>
+                    <IconButton className="close-button" color="primary" onClick={onClose} size="large">
+                        <CloseIcon/>
+                    </IconButton>
+                </div>
+                <div className="block-information-content-container">
+                    <div className="block-information-content">
+                        {!blockInformation.isInformationComplete
+                            ? undefined
+                            : <List>
+                                <BlockInformationPanelListItem itemKey="block-hash" label="Block Hash" tooltip={blockHashTooltip}>
+                                    <BlockInformationPanelHash hash={blockInformation.block.blockHash} onSelect={onSelectHash}/>
+                                </BlockInformationPanelListItem>
 
-                            <Divider className="block-information-divider"/>
+                                <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
-                                {parentElements.length === 0
-                                    ?
-                                    <Typography className="block-information-panel-hash"
-                                                variant="h6">None</Typography>
-                                    : parentElements
-                                }
-                            </BlockInformationPanelListItem>
+                                <BlockInformationPanelListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
+                                    {parentElements.length === 0
+                                        ?
+                                        <Typography className="block-information-panel-hash"
+                                                    variant="h6">None</Typography>
+                                        : parentElements
+                                    }
+                                </BlockInformationPanelListItem>
 
-                            <Divider className="block-information-divider"/>
+                                <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
-                                {mergeSetHashElements.length === 0
-                                    ?
-                                    <Typography className="block-information-panel-hash"
-                                                variant="h6">None</Typography>
-                                    : mergeSetHashElements
-                                }
-                            </BlockInformationPanelListItem>
+                                <BlockInformationPanelListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
+                                    {mergeSetHashElements.length === 0
+                                        ?
+                                        <Typography className="block-information-panel-hash"
+                                                    variant="h6">None</Typography>
+                                        : mergeSetHashElements
+                                    }
+                                </BlockInformationPanelListItem>
 
-                            <Divider className="block-information-divider"/>
+                                <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
-                                {childElements.length === 0
-                                    ?
-                                    <Typography className="block-information-panel-hash"
-                                                variant="h6">None</Typography>
-                                    : childElements
-                                }
-                            </BlockInformationPanelListItem>
+                                <BlockInformationPanelListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
+                                    {childElements.length === 0
+                                        ?
+                                        <Typography className="block-information-panel-hash"
+                                                    variant="h6">None</Typography>
+                                        : childElements
+                                    }
+                                </BlockInformationPanelListItem>
 
-                            <Divider className="block-information-divider"/>
+                                <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
-                                                           tooltip={isBlockInVirtualSelectedParentChainTooltip}>
-                                <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
-                                    {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
-                                </Typography>
-                            </BlockInformationPanelListItem>
+                                <BlockInformationPanelListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
+                                                               tooltip={isBlockInVirtualSelectedParentChainTooltip}>
+                                    <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
+                                        {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
+                                    </Typography>
+                                </BlockInformationPanelListItem>
 
-                            <Divider className="block-information-divider"/>
+                                <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
-                                <Typography className={`block-color ${blockColorClass}`} variant="h6">
-                                    {blockColorText}
-                                </Typography>
-                            </BlockInformationPanelListItem>
+                                <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
+                                    <Typography className={`block-color ${blockColorClass}`} variant="h6">
+                                        {blockColorText}
+                                    </Typography>
+                                </BlockInformationPanelListItem>
 
-                            <Divider className="block-information-divider"/>
+                                <Divider className="block-information-divider"/>
 
-                            <BlockInformationPanelListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
-                                <Typography className="block-daa-score" variant="h6">
-                                    {blockDAAScore}
-                                </Typography>
-                            </BlockInformationPanelListItem>
-                        </List>
-                    }
+                                <BlockInformationPanelListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
+                                    <Typography className="block-daa-score" variant="h6">
+                                        {blockDAAScore}
+                                    </Typography>
+                                </BlockInformationPanelListItem>
+                            </List>
+                        }
+                    </div>
+                </div>
+                <div className="katnip-link-text">
+                    See more details on  <a href={katnipAddressForBlock} target="_blank" rel="noreferrer">Katnip Block Explorer</a>
                 </div>
             </div>
-            <div className="katnip-link-text">
-                See more details on  <a href={katnipAddressForBlock} target="_blank" rel="noreferrer">Katnip Block Explorer</a>
-            </div>
-        </div>
-    </Paper>
+        </Paper>
+    );
 }
 
 export default BlockInformationPanel;

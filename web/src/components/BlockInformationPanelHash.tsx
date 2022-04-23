@@ -1,5 +1,5 @@
 import './BlockInformationPanelHash.css'
-import {Typography} from "@material-ui/core";
+import {Typography} from "@mui/material";
 import BlockInformationPanelTooltip from "./BlockInformationPanelTooltip";
 
 const BlockInformationPanelHash = ({className, hash, onSelect}: { className?: string | undefined, hash: string, onSelect: (hash: string) => void }) => {

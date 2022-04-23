@@ -1,12 +1,19 @@
 import './App.css';
 import Canvas from "./components/Canvas";
-import {createMuiTheme, ThemeProvider} from '@material-ui/core';
+import { createTheme, ThemeProvider, Theme, StyledEngineProvider, adaptV4Theme } from '@mui/material';
 import Dag from "./dag/Dag";
 import {useState} from "react";
 import ConnectionIssuesIndicator from "./components/ConnectionIssuesIndicator";
 import TrackButton from "./components/TrackButton";
 import BlockInformationPanel from "./components/BlockInformationPanel";
 import {BlockInformation} from "./model/BlockInformation";
+
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
+
 
 const App = () => {
     const [isTrackingState, setTrackingState] = useState(true);
@@ -39,34 +46,36 @@ const App = () => {
     });
 
     return (
-        <ThemeProvider theme={theme}>
-            <div className="container">
-                <Canvas dag={dag}/>
-                <div className="track-button-container">
-                    {isTrackingState ? undefined : <TrackButton onClick={() => dag.setStateTrackHead()}/>}
-                </div>
-                <div className="connection-issue-indicator-container">
-                    {isHavingConnectionIssuesState ? <ConnectionIssuesIndicator/> : undefined}
-                </div>
-                {!wasBlockSetState ? undefined :
-                    <div
-                        className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
-                        <BlockInformationPanel blockInformation={blockInformationState}
-                                               onClose={() => {
-                                                   setBlockInformationPanelCloseRequested(true);
-                                                   setBlockInformationPanelOpenState(false);
-                                               }}
-                                               onSelectHash={(hash: string) => {
-                                                    dag.setStateTrackTargetHash(hash);
-                                               }}/>
+        <StyledEngineProvider injectFirst>
+            <ThemeProvider theme={theme}>
+                <div className="container">
+                    <Canvas dag={dag}/>
+                    <div className="track-button-container">
+                        {isTrackingState ? undefined : <TrackButton onClick={() => dag.setStateTrackHead()}/>}
                     </div>
-                }
-            </div>
-        </ThemeProvider>
+                    <div className="connection-issue-indicator-container">
+                        {isHavingConnectionIssuesState ? <ConnectionIssuesIndicator/> : undefined}
+                    </div>
+                    {!wasBlockSetState ? undefined :
+                        <div
+                            className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
+                            <BlockInformationPanel blockInformation={blockInformationState}
+                                                   onClose={() => {
+                                                       setBlockInformationPanelCloseRequested(true);
+                                                       setBlockInformationPanelOpenState(false);
+                                                   }}
+                                                   onSelectHash={(hash: string) => {
+                                                        dag.setStateTrackTargetHash(hash);
+                                                   }}/>
+                        </div>
+                    }
+                </div>
+            </ThemeProvider>
+        </StyledEngineProvider>
     );
 };
 
-const theme = createMuiTheme({
+const theme = createTheme(adaptV4Theme({
     palette: {
         primary: {
             main: "#ffffff"
@@ -75,7 +84,7 @@ const theme = createMuiTheme({
             main: "#000000"
         }
     }
-});
+}));
 
 const dag = new Dag();
 
