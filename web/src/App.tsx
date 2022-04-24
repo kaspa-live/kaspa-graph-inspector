@@ -1,6 +1,6 @@
 import './App.css';
 import Canvas from "./components/Canvas";
-import { createTheme, ThemeProvider, Theme, StyledEngineProvider, adaptV4Theme } from '@mui/material';
+import { createTheme, ThemeProvider, Theme, StyledEngineProvider } from '@mui/material';
 import Dag from "./dag/Dag";
 import {useState} from "react";
 import ConnectionIssuesIndicator from "./components/ConnectionIssuesIndicator";
@@ -75,7 +75,7 @@ const App = () => {
     );
 };
 
-const theme = createTheme(adaptV4Theme({
+const theme = createTheme({
     palette: {
         primary: {
             main: "#ffffff"
@@ -84,7 +84,7 @@ const theme = createTheme(adaptV4Theme({
             main: "#000000"
         }
     }
-}));
+});
 
 const dag = new Dag();
 
