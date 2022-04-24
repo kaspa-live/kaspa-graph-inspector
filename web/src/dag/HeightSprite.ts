@@ -11,7 +11,11 @@ const heightTexture = (application: PIXI.Application, width: number, height: num
         graphics.drawRect(0, 0, width, height);
         graphics.endFill();
 
-        heightTextures[key] = application.renderer.generateTexture(graphics, PIXI.SCALE_MODES.LINEAR, 1);
+        let textureOptions: PIXI.IGenerateTextureOptions  = {
+            scaleMode: PIXI.SCALE_MODES.LINEAR,
+            resolution: 1,
+        }
+        heightTextures[key] = application.renderer.generateTexture(graphics, textureOptions);
     }
 
     return heightTextures[key];

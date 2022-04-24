@@ -1,3 +1,4 @@
+import '@pixi/graphics-extras';
 import * as PIXI from "pixi.js-legacy";
 import {Tween} from "@createjs/tweenjs";
 
@@ -142,7 +143,7 @@ export default class EdgeSprite extends PIXI.Container {
         const arrowX = toX + arrowOffsetX;
         const arrowY = toY + arrowOffsetY;
         graphics.beginFill(color);
-        graphics.drawStar(arrowX, arrowY, 3, arrowRadius, undefined, angleRadians);
+        graphics.drawStar!(arrowX, arrowY, 3, arrowRadius, 0, angleRadians);
         graphics.endFill();
     }
 

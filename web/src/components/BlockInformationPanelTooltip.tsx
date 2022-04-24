@@ -1,5 +1,7 @@
 import {ReactChild, ReactElement, ReactFragment, ReactPortal} from "react";
-import {makeStyles, Tooltip} from "@material-ui/core";
+import { Tooltip } from "@mui/material";
+
+import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles(() => ({
     tooltip: {
@@ -21,7 +23,7 @@ const BlockInformationPanelTooltip = ({children, title}:
 
     const classes = useStyles();
 
-    return <Tooltip title={title} arrow interactive placement="right"
+    return <Tooltip title={title} arrow placement="right"
                     classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
         {children}
     </Tooltip>
