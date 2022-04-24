@@ -17,7 +17,11 @@ const blockTexture = (application: PIXI.Application, blockSize: number): PIXI.Re
         graphics.drawRoundedRect(0, 0, blockSize, blockSize, blockRoundingRadius);
         graphics.endFill();
 
-        blockTextures[key] = application.renderer.generateTexture(graphics, PIXI.SCALE_MODES.LINEAR, 1);
+        let textureOptions: PIXI.IGenerateTextureOptions  = {
+            scaleMode: PIXI.SCALE_MODES.LINEAR,
+            resolution: 1,
+        }
+        blockTextures[key] = application.renderer.generateTexture(graphics, textureOptions);
     }
 
     return blockTextures[key];
