@@ -94,7 +94,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
     if (blockInformation.isInformationComplete) {
         for (let parentHash of blockInformation.parentHashes) {
             const className = blockInformation.selectedParentHash === parentHash ? "selected-parent-hash" : "";
-            parentElements.push(<BlockInformationPanelHash hash={parentHash} className={className} onSelect={onSelectHash}/>)
+            parentElements.push(<BlockInformationPanelHash key={parentHash} className={className} hash={parentHash} onSelect={onSelectHash}/>)
         }
     }
 
@@ -102,11 +102,11 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
     if (blockInformation.isInformationComplete) {
         for (let mergeSetBlueHash of blockInformation.mergeSetBlueHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash className="block-color-blue" hash={mergeSetBlueHash} onSelect={onSelectHash}/>);
+                <BlockInformationPanelHash key={mergeSetBlueHash} className="block-color-blue" hash={mergeSetBlueHash} onSelect={onSelectHash}/>);
         }
         for (let mergeSetRedHash of blockInformation.mergeSetRedHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash className="block-color-red" hash={mergeSetRedHash} onSelect={onSelectHash}/>);
+                <BlockInformationPanelHash key={mergeSetRedHash} className="block-color-red" hash={mergeSetRedHash} onSelect={onSelectHash}/>);
         }
     }
 
@@ -114,7 +114,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
     if (blockInformation.isInformationComplete) {
         for (let childHash of blockInformation.childHashes) {
             const className = blockInformation.selectedChildHash === childHash ? "selected-child-hash" : "";
-            childElements.push(<BlockInformationPanelHash hash={childHash} className={className} onSelect={onSelectHash}/>)
+            childElements.push(<BlockInformationPanelHash key={childHash} className={className}hash={childHash}  onSelect={onSelectHash}/>)
         }
     }
 
