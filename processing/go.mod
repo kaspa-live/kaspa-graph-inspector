@@ -15,6 +15,7 @@ require (
 	github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd // indirect
 	github.com/containerd/containerd v1.4.13 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/go-pg/pg/extra/pgdebug/v10 v10.10.6
 	github.com/go-pg/zerochecker v0.2.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -27,6 +28,7 @@ require (
 	github.com/kaspanet/go-muhash v0.0.4 // indirect
 	github.com/kaspanet/go-secp256k1 v0.0.7 // indirect
 	github.com/lib/pq v1.8.0 // indirect
+	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
 	github.com/vmihailenco/bufpool v0.1.11 // indirect
