@@ -423,6 +423,11 @@ export default class Dag {
         this.run();
     }
 
+    setStateTrackCurrent = () => {
+        const targetDAAScore = this.timelineContainer!.getTargetDAAScore();
+        this.setStateTrackTargetDAAScore(targetDAAScore);
+    }
+
     setStateTrackHead = () => {
         const urlParams = this.initializeUrlSearchParams();
         window.history.pushState(null, "", `?${urlParams}`);

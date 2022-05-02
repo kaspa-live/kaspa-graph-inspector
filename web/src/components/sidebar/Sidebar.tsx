@@ -49,8 +49,8 @@ const Sidebar = ({dag}: {dag: Dag}) => {
                 <ZoomItem visible={true}>
                     <SearchButton onClick={() => {}}/>
                 </ZoomItem>
-                <ZoomItem visible={!isTrackingState}>
-                    <TrackButton onClick={() => dag.setStateTrackHead()}/>
+                <ZoomItem visible={true}>
+                    <TrackButton isTracking={isTrackingState} onClick={() => isTrackingState ? dag.setStateTrackCurrent() : dag.setStateTrackHead()}/>
                 </ZoomItem>
             </Box>
         </Box>

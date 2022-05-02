@@ -528,14 +528,21 @@ export default class TimelineContainer extends PIXI.Container {
 
     setTargetHeight = (targetHeight: number) => {
         this.targetHeight = targetHeight;
+        this.targetDAAScore = this.currentBlocksAndEdgesAndHeightGroups
+            ? getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, this.targetHeight)
+            : -1;
         this.moveTimelineContainer();
     }
+
+    getTargetHeight = () => this.targetHeight;
 
     setTargetDAAScore = (targetDAAScore: number) => {
         this.targetDAAScore = targetDAAScore;
         this.recalculateTargetHeight();
         this.moveTimelineContainer();
     }
+
+    getTargetDAAScore = () => this.targetDAAScore;
 
     setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
         this.blockClickedListener = blockClickedListener;
