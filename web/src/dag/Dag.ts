@@ -50,7 +50,7 @@ export default class Dag {
 
     initialize = (canvas: HTMLCanvasElement) => {
         this.application = new PIXI.Application({
-            backgroundColor: 0xffffff,
+            backgroundColor: 0xeeeeee,
             view: canvas,
             resizeTo: canvas,
             antialias: true,
