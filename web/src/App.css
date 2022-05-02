@@ -1,22 +1,3 @@
-.container {
-    min-height: 100vh;
-    min-width: 100vw;
-    display: flex;
-    flex-direction: column;
-}
-
-.connection-issue-indicator-container {
-    position: absolute;
-    top: 5vw;
-    right: 5vw;
-}
-
-.track-button-container {
-    position: absolute;
-    bottom: 5vw;
-    right: 5vw;
-}
-
 .block-information-container {
     position: absolute;
     width: 20vw;
