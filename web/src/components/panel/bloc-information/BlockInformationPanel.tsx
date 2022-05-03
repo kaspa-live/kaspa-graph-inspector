@@ -3,8 +3,8 @@ import {Divider, IconButton, List, Paper, Typography} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import BlockInformationPanelHash from "./BlockInformationPanelHash";
 import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
-import {katnipAddress} from "../addresses";
-import {BlockInformation} from "../model/BlockInformation";
+import {katnipAddress} from "../../../addresses";
+import {BlockInformation} from "../../../model/BlockInformation";
 
 const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
                                   { blockInformation: BlockInformation | null, onClose: () => void, onSelectHash: (hash: string) => void }) => {
