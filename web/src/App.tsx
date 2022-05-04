@@ -1,5 +1,5 @@
 import './App.css';
-import { createTheme, ThemeProvider, Theme, StyledEngineProvider, Box } from '@mui/material';
+import { createTheme, ThemeProvider, StyledEngineProvider, Box } from '@mui/material';
 import Dag from "./dag/Dag";
 import {useState} from "react";
 import BlockInformationPanel from "./components/panel/bloc-information/BlockInformationPanel";
@@ -8,10 +8,10 @@ import Sidebar from './components/sidebar/Sidebar';
 import {BlockInformation} from "./model/BlockInformation";
 
 
-declare module '@mui/styles/defaultTheme' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
-}
+// declare module '@mui/styles/defaultTheme' {
+//   // eslint-disable-next-line @typescript-eslint/no-empty-interface
+//   interface DefaultTheme extends Theme {}
+// }
 
 
 const App = () => {
@@ -61,7 +61,7 @@ const App = () => {
                                                        setBlockInformationPanelCloseRequested(true);
                                                        setBlockInformationPanelOpenState(false);
                                                    }}
-                                                   onSelectHash={(hash: string) => {
+                                                   onClickHash={(hash: string) => {
                                                         dag.setStateTrackTargetHash(hash);
                                                    }}/>
                         </div>
@@ -82,6 +82,16 @@ const theme = createTheme({
         },
         background: {
             paper: "#fff"
+        },
+
+        blueBlock: {
+            main: "#b4cfed"
+        },
+        redBlock: {
+            main: "#ff5972"
+        },
+        newBlock: {
+            main: "#aaaaaa"
         }
     }
 });
