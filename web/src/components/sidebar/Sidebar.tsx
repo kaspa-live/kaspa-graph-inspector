@@ -46,7 +46,7 @@ const Sidebar = ({dag}: {dag: Dag}) => {
                     alignItems: 'center',
                     gap: '12px',
                 }}>
-                <ZoomItem visible={true}>
+                <ZoomItem visible={false}>
                     <SearchButton onClick={() => {}}/>
                 </ZoomItem>
                 <ZoomItem visible={true}>
