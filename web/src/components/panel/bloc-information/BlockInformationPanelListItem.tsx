@@ -1,23 +1,39 @@
-import {ListItem, Typography} from "@mui/material";
-import './BlockInformationPanelListItem.css'
-import {ReactChild, ReactNode} from "react";
+import {Box, ListItem, Typography} from "@mui/material";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { styled } from '@mui/material/styles';
+import {ReactChild, ReactNode} from "react";
 import BlockInformationPanelTooltip from "./BlockInformationPanelTooltip";
+
+const Item = styled(ListItem)({
+    display: "flex",
+    flexDirection: "column",
+})
+
+const Header = styled(Box)({
+    display: "flex",
+    flexDirection: "row",
+    width: "100%",
+})
+
+const Label = styled(Typography)({
+    marginLeft: "0",
+    marginRight: "auto",
+})
 
 const BlockInformationPanelListItem = ({itemKey, children, label, tooltip}:
                                            { itemKey: string, children: ReactNode, label: string, tooltip: ReactChild }) => {
 
-    return <ListItem key={itemKey} className="block-information-panel-list-item" disableGutters>
-        <div className="header">
-            <Typography className="label" variant="h6">
+    return <Item key={itemKey} className="block-information-panel-list-item" disableGutters>
+        <Header>
+            <Label variant="h6">
                 {label}
-            </Typography>
+            </Label>
             <BlockInformationPanelTooltip title={tooltip}>
-                <InfoOutlinedIcon className="info-icon"/>
+                <InfoOutlinedIcon sx={{marginRight: "0", marginLeft: "auto"}}/>
             </BlockInformationPanelTooltip>
-        </div>
+        </Header>
         {children}
-    </ListItem>
+    </Item>
 };
 
 export default BlockInformationPanelListItem;

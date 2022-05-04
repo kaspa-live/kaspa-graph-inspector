@@ -1,32 +1,33 @@
 import {ReactChild, ReactElement, ReactFragment, ReactPortal} from "react";
-import { Tooltip } from "@mui/material";
+import { Tooltip, TooltipProps } from "@mui/material";
+import { styled } from '@mui/material/styles';
 
-import makeStyles from '@mui/styles/makeStyles';
+const StyledTooltip = styled(
+        ({ className, ...props }: TooltipProps) => (<Tooltip {...props} classes={{ popper: className }}/>),
+        {name: "StyledTooltip"}
+    )<TooltipProps>(({ theme }) => ({
 
-const useStyles = makeStyles(() => ({
-    tooltip: {
+    '& .MuiTooltip-tooltip': {
         maxWidth: "none",
-        backgroundColor: "#175676",
+        backgroundColor: theme.palette.primary.main,
         border: "1px solid #ffffff",
         fontSize: "0.9rem",
     },
-    arrow: {
+    
+    '& .MuiTooltip-arrow': {
         "&::before": {
-            backgroundColor: "#175676",
+            backgroundColor: theme.palette.primary.main,
             border: "1px solid #ffffff",
-        },
+        }
     }
 }));
 
 const BlockInformationPanelTooltip = ({children, title}:
-                                          { children: ReactElement, title: boolean | ReactChild | ReactFragment | ReactPortal }) => {
+                                      { children: ReactElement, title: boolean | ReactChild | ReactFragment | ReactPortal }) => {
 
-    const classes = useStyles();
-
-    return <Tooltip title={title} arrow placement="right"
-                    classes={{tooltip: classes.tooltip, arrow: classes.arrow}}>
+    return <StyledTooltip title={title} arrow placement="right">
         {children}
-    </Tooltip>
+    </StyledTooltip>
 };
 
 export default BlockInformationPanelTooltip;
