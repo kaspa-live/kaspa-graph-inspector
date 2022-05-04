@@ -302,8 +302,9 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     recalculateTargetHeight = () => {
-        this.targetHeight = (this.currentBlocksAndEdgesAndHeightGroups !== null) ?
-            getDAAScoreGroupHeight(this.currentBlocksAndEdgesAndHeightGroups, this.targetDAAScore) : -1;
+        if  (this.currentBlocksAndEdgesAndHeightGroups !== null) {
+            this.targetHeight = getDAAScoreGroupHeight(this.currentBlocksAndEdgesAndHeightGroups, this.targetDAAScore);
+        }
     }
 
     private recalculateSpritePositions = (animate: boolean) => {
@@ -526,11 +527,12 @@ export default class TimelineContainer extends PIXI.Container {
         return Math.ceil(maxBlockAmountOnScreen / 2) + this.visibleHeightRangePadding;
     }
 
-    setTargetHeight = (targetHeight: number) => {
+    setTargetHeight = (targetHeight: number, newData?: BlocksAndEdgesAndHeightGroups) => {
         this.targetHeight = targetHeight;
-        this.targetDAAScore = this.currentBlocksAndEdgesAndHeightGroups
-            ? getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, this.targetHeight)
-            : -1;
+        const data = !newData ? this.currentBlocksAndEdgesAndHeightGroups : newData;
+        if (data !== null) {
+            this.targetDAAScore = getHeightGroupDAAScore(data!, this.targetHeight)
+        }
         this.moveTimelineContainer();
     }
 

@@ -161,6 +161,7 @@ export default class Dag {
             return;
         }
 
+        this.timelineContainer!.setTargetHeight(targetHeight, blocksAndEdgesAndHeightGroups);
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
     }
 
@@ -187,6 +188,7 @@ export default class Dag {
         }
 
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
+        this.timelineContainer!.setTargetDAAScore(targetDAAScore);
     }
 
     private trackTargetHash = async () => {
@@ -234,7 +236,7 @@ export default class Dag {
             return;
         }
 
-        this.timelineContainer!.setTargetHeight(targetBlock.height);
+        this.timelineContainer!.setTargetHeight(targetBlock.height, blocksAndEdgesAndHeightGroups);
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups, targetBlock);
 
         const blockInformation = await this.buildBlockInformation(targetBlock);
@@ -282,7 +284,7 @@ export default class Dag {
             targetHeight = 0;
         }
 
-        this.timelineContainer!.setTargetHeight(targetHeight);
+        this.timelineContainer!.setTargetHeight(targetHeight, blocksAndEdgesAndHeightGroups);
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);
     }
 
