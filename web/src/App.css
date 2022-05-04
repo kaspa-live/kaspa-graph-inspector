@@ -1,20 +1,22 @@
-.container {
-    min-height: 100vh;
-    min-width: 100vw;
-    display: flex;
-    flex-direction: column;
+.information-tooltip {
+  display: flex;
+  flex-direction: column;
+  max-width: 20vw;
+  text-align: justify;
+  text-justify: inter-character;
 }
 
-.connection-issue-indicator-container {
-    position: absolute;
-    top: 5vw;
-    right: 5vw;
+.information-tooltip a {
+  text-decoration: underline;
 }
 
-.track-button-container {
-    position: absolute;
-    bottom: 5vw;
-    right: 5vw;
+.information-tooltip p {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.information-tooltip .further-information {
+  font-weight: bold;
 }
 
 .block-information-container {

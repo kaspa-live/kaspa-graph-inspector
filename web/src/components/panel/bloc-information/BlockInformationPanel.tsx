@@ -1,13 +1,24 @@
-import './BlockInformationPanel.css'
-import {Divider, IconButton, List, Paper, Typography} from "@mui/material";
+import {Box, Divider, IconButton, Link, List, Paper, Typography, useTheme} from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
+import { styled } from '@mui/material/styles';
+import { BlockColor } from '@mui/material/styles/createPalette';
 import BlockInformationPanelHash from "./BlockInformationPanelHash";
 import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
-import {katnipAddress} from "../addresses";
-import {BlockInformation} from "../model/BlockInformation";
+import {katnipAddress} from "../../../addresses";
+import {BlockInformation} from "../../../model/BlockInformation";
 
-const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
-                                  { blockInformation: BlockInformation | null, onClose: () => void, onSelectHash: (hash: string) => void }) => {
+const InfoDivider = () => <Divider sx={{backgroundColor: 'primary.contrastText'}}/>
+
+const RedBlock = styled('b')(({ theme }) => ({ color: theme.palette.redBlock.main }));
+const BlueBlock = styled('b')(({ theme }) => ({ color: theme.palette.blueBlock.main }));
+
+const LeftTypography = styled(Typography)({
+    alignSelf: "flex-start",
+})
+
+const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
+                               { blockInformation: BlockInformation | null, onClose: () => void, onClickHash: (hash: string) => void }) => {
+    const theme = useTheme();
 
     if (!blockInformation) {
         return <div/>;
@@ -16,13 +27,13 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
     const katnipAddressForBlock = `${katnipAddress}/block/${blockInformation.block.blockHash}`;
 
     let blockColorText = "Undecided";
-    let blockColorClass = "block-color-undecided";
+    let blockColorClass: BlockColor = "newBlock";
     if (blockInformation.block.color === "blue") {
         blockColorText = "Blue";
-        blockColorClass = "block-color-blue";
+        blockColorClass = "blueBlock";
     } else if (blockInformation.block.color === "red") {
         blockColorText = "Red";
-        blockColorClass = "block-color-red";
+        blockColorClass = "redBlock";
     }
 
     let language = navigator.language || "en-US";
@@ -48,11 +59,11 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
         <p>The <b>merge set</b> of a block is the set of blocks that are an ancestor (either a direct or an indirect
             parent) of the block but are not an ancestor of the block's selected parent. Note that this includes the
             block's selected parent itself.</p>
-        <p>Every block in the merge set is classified as one of two <b>colors</b>: <b className="block-color-red">
-            red</b> and <b className="block-color-blue">blue</b>.</p>
+        <p>Every block in the merge set is classified as one of two <b>colors</b>: <RedBlock>
+            red</RedBlock> and <BlueBlock>blue</BlueBlock>.</p>
         <p>For security reasons, only a certain amount of blocks in a block's merge set may
-            be <b className="block-color-blue">blue</b>. The blocks that do not make the cut are regarded as
-            attacker blocks and are marked <b className="block-color-red">red</b>.</p>
+            be <BlueBlock>blue</BlueBlock>. The blocks that do not make the cut are regarded as
+            attacker blocks and are marked <RedBlock>red</RedBlock>.</p>
     </div>;
 
     const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
@@ -67,7 +78,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
 
     const blockColorTooltip = <div className="information-tooltip">
         <p>Every block in the DAG is classified as one of two <b>colors:</b>
-            <b className="block-color-red"> red (attacker)</b> and <b className="block-color-blue">blue (honest)</b>.
+            <RedBlock> red (attacker)</RedBlock> and <BlueBlock>blue (honest)</BlueBlock>.
         </p>
         <p>If we were to combine all the merge sets of all the blocks in the VSPC, we would get a combined set of all
             the blocks in the DAG. Therefore, to determine the color of a block, we find the VSPC block that contains
@@ -93,8 +104,8 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
     const parentElements = [];
     if (blockInformation.isInformationComplete) {
         for (let parentHash of blockInformation.parentHashes) {
-            const className = blockInformation.selectedParentHash === parentHash ? "selected-parent-hash" : "";
-            parentElements.push(<BlockInformationPanelHash key={parentHash} className={className} hash={parentHash} onSelect={onSelectHash}/>)
+            const selectedParent = (blockInformation.selectedParentHash === parentHash);
+            parentElements.push(<BlockInformationPanelHash key={parentHash} selected={selectedParent} hash={parentHash} onClickHash={onClickHash}/>)
         }
     }
 
@@ -102,107 +113,142 @@ const BlockInformationPanel = ({blockInformation, onClose, onSelectHash}:
     if (blockInformation.isInformationComplete) {
         for (let mergeSetBlueHash of blockInformation.mergeSetBlueHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash key={mergeSetBlueHash} className="block-color-blue" hash={mergeSetBlueHash} onSelect={onSelectHash}/>);
+                <BlockInformationPanelHash key={mergeSetBlueHash} color="blueBlock" hash={mergeSetBlueHash} onClickHash={onClickHash}/>);
         }
         for (let mergeSetRedHash of blockInformation.mergeSetRedHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash key={mergeSetRedHash} className="block-color-red" hash={mergeSetRedHash} onSelect={onSelectHash}/>);
+                <BlockInformationPanelHash key={mergeSetRedHash} color="redBlock" hash={mergeSetRedHash} onClickHash={onClickHash}/>);
         }
     }
 
     const childElements = [];
     if (blockInformation.isInformationComplete) {
         for (let childHash of blockInformation.childHashes) {
-            const className = blockInformation.selectedChildHash === childHash ? "selected-child-hash" : "";
-            childElements.push(<BlockInformationPanelHash key={childHash} className={className}hash={childHash}  onSelect={onSelectHash}/>)
+            const selectedChild = (blockInformation.selectedChildHash === childHash);
+            childElements.push(<BlockInformationPanelHash key={childHash} selected={selectedChild} hash={childHash}  onClickHash={onClickHash}/>)
         }
     }
 
     return (
         <Paper elevation={4}>
-            <div className="block-information-panel">
-                <div className="block-information-header">
+            <Box className="block-information-panel" sx={{
+                height: '100vh',
+                width: '100%',
+                backgroundColor: 'primary.main',
+                color: 'primary.contrastText',
+                display: 'flex',
+                flexDirection: 'column',
+            }}>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    padding: '20px 20px 0',
+                }}>
                     <Typography variant="h4">
                         Block Information
                     </Typography>
-                    <IconButton className="close-button" color="primary" onClick={onClose} size="large">
+                    <IconButton
+                        onClick={onClose} 
+                        size="large"
+                        sx={{
+                            color: 'primary.contrastText',
+                            padding: '20px',
+                            margin: '-20px -20px auto auto',
+                        }}
+                    >
                         <CloseIcon/>
                     </IconButton>
-                </div>
-                <div className="block-information-content-container">
-                    <div className="block-information-content">
+                </Box>
+                <Box sx={{
+                    flex: '1 1 auto',
+                    overflowY: 'auto',
+                    paddingLeft: '20px',
+                    paddingRight: '20px',
+                    scrollbarWidth: 'none', /* Hide the scrollbar in Firefox */
+                    msOverflowStyle: 'none', /* Hide the scrollbar in IE */
+                    '&::-webkit-scrollbar': {
+                        width: '0',
+                    }
+                }}>
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}>
                         {!blockInformation.isInformationComplete
                             ? undefined
                             : <List>
                                 <BlockInformationPanelListItem itemKey="block-hash" label="Block Hash" tooltip={blockHashTooltip}>
-                                    <BlockInformationPanelHash hash={blockInformation.block.blockHash} onSelect={onSelectHash}/>
+                                    <BlockInformationPanelHash hash={blockInformation.block.blockHash} onClickHash={onClickHash}/>
                                 </BlockInformationPanelListItem>
 
-                                <Divider className="block-information-divider"/>
+                                <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
                                     {parentElements.length === 0
                                         ?
-                                        <Typography className="block-information-panel-hash"
-                                                    variant="h6">None</Typography>
+                                        <LeftTypography variant="h6">None</LeftTypography>
                                         : parentElements
                                     }
                                 </BlockInformationPanelListItem>
 
-                                <Divider className="block-information-divider"/>
+                                <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
                                     {mergeSetHashElements.length === 0
                                         ?
-                                        <Typography className="block-information-panel-hash"
-                                                    variant="h6">None</Typography>
+                                        <LeftTypography variant="h6">None</LeftTypography>
                                         : mergeSetHashElements
                                     }
                                 </BlockInformationPanelListItem>
 
-                                <Divider className="block-information-divider"/>
+                                <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
                                     {childElements.length === 0
                                         ?
-                                        <Typography className="block-information-panel-hash"
-                                                    variant="h6">None</Typography>
+                                        <LeftTypography variant="h6">None</LeftTypography>
                                         : childElements
                                     }
                                 </BlockInformationPanelListItem>
 
-                                <Divider className="block-information-divider"/>
+                                <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
                                                                tooltip={isBlockInVirtualSelectedParentChainTooltip}>
-                                    <Typography className="is-block-in-virtual-selected-parent-chain" variant="h6">
+                                    <LeftTypography variant="h6">
                                         {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
-                                    </Typography>
+                                    </LeftTypography>
                                 </BlockInformationPanelListItem>
 
-                                <Divider className="block-information-divider"/>
+                                <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
-                                    <Typography className={`block-color ${blockColorClass}`} variant="h6">
+                                    <LeftTypography variant="h6" sx={{ color: theme.palette[blockColorClass].main }}>
                                         {blockColorText}
-                                    </Typography>
+                                    </LeftTypography>
                                 </BlockInformationPanelListItem>
 
-                                <Divider className="block-information-divider"/>
+                                <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
-                                    <Typography className="block-daa-score" variant="h6">
+                                    <LeftTypography variant="h6">
                                         {blockDAAScore}
-                                    </Typography>
+                                    </LeftTypography>
                                 </BlockInformationPanelListItem>
                             </List>
                         }
-                    </div>
-                </div>
-                <div className="katnip-link-text">
-                    See more details on  <a href={katnipAddressForBlock} target="_blank" rel="noreferrer">Katnip Block Explorer</a>
-                </div>
-            </div>
+                    </Box>
+                </Box>
+                <Box sx={{
+                    alignSelf: 'flex-end',
+                    fontWeight: 'bold',
+                    textAlign: 'end',
+                    width: '100%',
+                    padding: '0 20px 20px',
+                }}>
+                    See more details on <Link href={katnipAddressForBlock} target="_blank" rel="noreferrer" sx={{textDecoration: 'underline', color: 'primary.contrastText'}}>Katnip Block Explorer</Link>
+                </Box>
+            </Box>
         </Paper>
     );
 }

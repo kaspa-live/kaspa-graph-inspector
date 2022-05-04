@@ -1,30 +1,25 @@
 import './App.css';
-import Canvas from "./components/Canvas";
-import { createTheme, ThemeProvider, Theme, StyledEngineProvider } from '@mui/material';
+import { createTheme, ThemeProvider, StyledEngineProvider, Box } from '@mui/material';
 import Dag from "./dag/Dag";
 import {useState} from "react";
-import ConnectionIssuesIndicator from "./components/ConnectionIssuesIndicator";
-import TrackButton from "./components/TrackButton";
-import BlockInformationPanel from "./components/BlockInformationPanel";
+import BlockInformationPanel from "./components/panel/bloc-information/BlockInformationPanel";
+import Canvas from "./components/Canvas";
+import Sidebar from './components/sidebar/Sidebar';
 import {BlockInformation} from "./model/BlockInformation";
 
 
-declare module '@mui/styles/defaultTheme' {
-  // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface DefaultTheme extends Theme {}
-}
+// declare module '@mui/styles/defaultTheme' {
+//   // eslint-disable-next-line @typescript-eslint/no-empty-interface
+//   interface DefaultTheme extends Theme {}
+// }
 
 
 const App = () => {
-    const [isTrackingState, setTrackingState] = useState(true);
-    const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
     const [wasBlockInformationPanelCloseRequested, setBlockInformationPanelCloseRequested] = useState(false);
     const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
 
-    dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
-    dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
     dag.setBlockInformationChangedListener(blockInformation => {
         const hasBlockChanged = blockInformation?.block.blockHash !== blockInformationState?.block.blockHash;
 
@@ -48,14 +43,16 @@ const App = () => {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
-                <div className="container">
+                <Box sx={{
+                        minHeight: '100vh',
+                        minWidth: '100vw',
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}
+                >
                     <Canvas dag={dag}/>
-                    <div className="track-button-container">
-                        {isTrackingState ? undefined : <TrackButton onClick={() => dag.setStateTrackHead()}/>}
-                    </div>
-                    <div className="connection-issue-indicator-container">
-                        {isHavingConnectionIssuesState ? <ConnectionIssuesIndicator/> : undefined}
-                    </div>
+                    <Sidebar dag={dag}/>
+
                     {!wasBlockSetState ? undefined :
                         <div
                             className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
@@ -64,12 +61,12 @@ const App = () => {
                                                        setBlockInformationPanelCloseRequested(true);
                                                        setBlockInformationPanelOpenState(false);
                                                    }}
-                                                   onSelectHash={(hash: string) => {
+                                                   onClickHash={(hash: string) => {
                                                         dag.setStateTrackTargetHash(hash);
                                                    }}/>
                         </div>
                     }
-                </div>
+                </Box>
             </ThemeProvider>
         </StyledEngineProvider>
     );
@@ -78,10 +75,23 @@ const App = () => {
 const theme = createTheme({
     palette: {
         primary: {
-            main: "#ffffff"
+            main: "#175676"
         },
         secondary: {
-            main: "#000000"
+            main: "#26c6da"
+        },
+        background: {
+            paper: "#fff"
+        },
+
+        blueBlock: {
+            main: "#b4cfed"
+        },
+        redBlock: {
+            main: "#ff5972"
+        },
+        newBlock: {
+            main: "#aaaaaa"
         }
     }
 });

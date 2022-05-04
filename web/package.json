@@ -5,6 +5,7 @@
   "dependencies": {
     "@createjs/core": "2.0.0-beta.4",
     "@createjs/tweenjs": "2.0.0-beta.4",
+    "@emotion/babel-plugin": "^11.9.2",
     "@emotion/react": "^11.9.0",
     "@emotion/styled": "^11.8.1",
     "@mui/icons-material": "^5.6.2",
@@ -19,7 +20,8 @@
     "pixi.js-legacy": "^6.3.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "react-spring": "^9.4.5-beta.1"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -65,6 +65,7 @@ export default class HeightSprite extends PIXI.Container {
         const sprite = new PIXI.Sprite();
         sprite.anchor.set(0.5, 0.5);
         sprite.alpha = 0.0;
+        sprite.tint = 0xe8e8e8;
 
         sprite.interactive = true;
         sprite.buttonMode = true;
