@@ -2,7 +2,7 @@ import DataSource from "./DataSource";
 import {BlocksAndEdgesAndHeightGroups} from "../model/BlocksAndEdgesAndHeightGroups";
 import {BlockHashById} from "../model/BlockHashById";
 import {Block} from "../model/Block";
-import {BlockColor} from "../model/BlockColor";
+import {BlockColorConst} from "../model/BlockColor";
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
 
@@ -35,7 +35,7 @@ export default class ChainDataSource implements DataSource {
             daaScore: nextBlockId,
             heightGroupIndex: 0,
             selectedParentId: lastBlockId,
-            color: BlockColor.BLUE,
+            color: BlockColorConst.BLUE,
             isInVirtualSelectedParentChain: true,
             mergeSetRedIds: [],
             mergeSetBlueIds: [lastBlockId],
@@ -121,7 +121,7 @@ export default class ChainDataSource implements DataSource {
             daaScore: 0,
             heightGroupIndex: 0,
             selectedParentId: null,
-            color: BlockColor.BLUE,
+            color: BlockColorConst.BLUE,
             isInVirtualSelectedParentChain: true,
             mergeSetRedIds: [],
             mergeSetBlueIds: [],

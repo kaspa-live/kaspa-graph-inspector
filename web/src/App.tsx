@@ -84,15 +84,18 @@ const theme = createTheme({
             paper: "#fff"
         },
 
-        blueBlock: {
-            main: "#b4cfed"
+        block: {
+            blue: {
+                main: "#b4cfed"
+            },
+            red: {
+                main: "#ff5972"
+            },
+            gray: {
+                main: "#aaaaaa"
+            },
         },
-        redBlock: {
-            main: "#ff5972"
-        },
-        newBlock: {
-            main: "#aaaaaa"
-        }
+
     }
 });
 

@@ -31,7 +31,7 @@ const HashTypography = styled(
     ),
     ...(
         color && {
-            color: theme.palette[color].main,
+            color: theme.palette.block[color].main,
         }
     )
 }));

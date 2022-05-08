@@ -1,17 +1,22 @@
 import '@mui/material/styles/createPalette';
+import { BlockColor as BaseBlockColor } from "./Base";
 
 declare module '@mui/material/styles/createPalette' {
-    interface PaletteOptions {    
-        blueBlock?: PaletteColorOptions;
-        redBlock?: PaletteColorOptions;
-        newBlock?: PaletteColorOptions;
+    interface PaletteOptions {
+        block: {
+            blue?: PaletteColorOptions;
+            red?: PaletteColorOptions;
+            gray?: PaletteColorOptions;
+        }    
     }
 
     interface Palette {
-        blueBlock: PaletteColor;
-        redBlock: PaletteColor;
-        newBlock: PaletteColor;
+        block: {
+            blue: PaletteColor;
+            red: PaletteColor;
+            gray: PaletteColor;
+        }
     }
 
-    type BlockColor = "blueBlock" | "redBlock" | "newBlock" | undefined
+    type BlockColor = BaseBlockColor
 }

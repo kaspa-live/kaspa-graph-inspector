@@ -9,8 +9,8 @@ import {BlockInformation} from "../../../model/BlockInformation";
 
 const InfoDivider = () => <Divider sx={{backgroundColor: 'primary.contrastText'}}/>
 
-const RedBlock = styled('b')(({ theme }) => ({ color: theme.palette.redBlock.main }));
-const BlueBlock = styled('b')(({ theme }) => ({ color: theme.palette.blueBlock.main }));
+const RedBlock = styled('b')(({ theme }) => ({ color: theme.palette.block.red.main }));
+const BlueBlock = styled('b')(({ theme }) => ({ color: theme.palette.block.blue.main }));
 
 const LeftTypography = styled(Typography)({
     alignSelf: "flex-start",
@@ -27,13 +27,13 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
     const katnipAddressForBlock = `${katnipAddress}/block/${blockInformation.block.blockHash}`;
 
     let blockColorText = "Undecided";
-    let blockColorClass: BlockColor = "newBlock";
+    let blockColorClass: BlockColor = "gray";
     if (blockInformation.block.color === "blue") {
         blockColorText = "Blue";
-        blockColorClass = "blueBlock";
+        blockColorClass = "blue";
     } else if (blockInformation.block.color === "red") {
         blockColorText = "Red";
-        blockColorClass = "redBlock";
+        blockColorClass = "red";
     }
 
     let language = navigator.language || "en-US";
@@ -113,11 +113,11 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
     if (blockInformation.isInformationComplete) {
         for (let mergeSetBlueHash of blockInformation.mergeSetBlueHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash key={mergeSetBlueHash} color="blueBlock" hash={mergeSetBlueHash} onClickHash={onClickHash}/>);
+                <BlockInformationPanelHash key={mergeSetBlueHash} color="blue" hash={mergeSetBlueHash} onClickHash={onClickHash}/>);
         }
         for (let mergeSetRedHash of blockInformation.mergeSetRedHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash key={mergeSetRedHash} color="redBlock" hash={mergeSetRedHash} onClickHash={onClickHash}/>);
+                <BlockInformationPanelHash key={mergeSetRedHash} color="red" hash={mergeSetRedHash} onClickHash={onClickHash}/>);
         }
     }
 
@@ -223,7 +223,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                                 <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
-                                    <LeftTypography variant="h6" sx={{ color: theme.palette[blockColorClass].main }}>
+                                    <LeftTypography variant="h6" sx={{ color: theme.palette.block[blockColorClass].main }}>
                                         {blockColorText}
                                     </LeftTypography>
                                 </BlockInformationPanelListItem>

@@ -4,6 +4,7 @@ import {BlockHashById} from "../model/BlockHashById";
 import {Block} from "../model/Block";
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
+import { BlockColor } from "../model/BlockColor";
 
 export type ReplayData = {
     blocks: ReplayDataBlock[],
@@ -14,7 +15,7 @@ export type ReplayDataBlock = {
     id: number,
     parentIds: number[],
     selectedParentId: number | null,
-    color: string,
+    color: BlockColor,
     isInVirtualSelectedParentChain: boolean,
     mergeSetRedIds: number[],
     mergeSetBlueIds: number[],
