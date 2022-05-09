@@ -108,41 +108,27 @@ export default class EdgeSprite extends PIXI.Container {
         const color = definition.color;
         const arrowRadius = definition.arrowRadius;
 
-        // Compensate for line width in block bounds vectors
-        let blockBoundsVectorX = this.blockBoundsVectorX;
-        if (blockBoundsVectorX < 0) {
-            blockBoundsVectorX += lineWidth;
-        }
-        if (blockBoundsVectorX > 0) {
-            blockBoundsVectorX -= lineWidth;
-        }
-        let blockBoundsVectorY = this.blockBoundsVectorY;
-        if (blockBoundsVectorY < 0) {
-            // noinspection JSSuspiciousNameCombination
-            blockBoundsVectorY += lineWidth;
-        }
-        if (blockBoundsVectorY > 0) {
-            // noinspection JSSuspiciousNameCombination
-            blockBoundsVectorY -= lineWidth;
-        }
+        // Compute the edge
+        const fromX = this.blockBoundsVectorX;
+        const fromY = this.blockBoundsVectorY;
+        const toX = this.vectorX - this.blockBoundsVectorX;
+        const toY = this.vectorY - this.blockBoundsVectorY;
 
-        // Draw the edge
-        const fromX = blockBoundsVectorX;
-        const fromY = blockBoundsVectorY;
-        const toX = this.vectorX - blockBoundsVectorX;
-        const toY = this.vectorY - blockBoundsVectorY;
-        graphics.clear();
-        graphics.lineStyle(lineWidth, color);
-        graphics.moveTo(fromX, fromY);
-        graphics.lineTo(toX, toY);
-
-        // Draw the arrow head
+        //Compute the arrow head
         const angleRadians = Math.atan2(this.vectorY, this.vectorX) + (Math.PI / 2);
         const toVectorMagnitude = Math.sqrt(toX ** 2 + toY ** 2);
         const arrowOffsetX = -toX * (arrowRadius + lineWidth) / toVectorMagnitude;
         const arrowOffsetY = -toY * (arrowRadius + lineWidth) / toVectorMagnitude;
         const arrowX = toX + arrowOffsetX;
         const arrowY = toY + arrowOffsetY;
+
+        // Draw the edge
+        graphics.clear();
+        graphics.lineStyle(lineWidth, color);
+        graphics.moveTo(fromX, fromY);
+        graphics.lineTo(toX + arrowOffsetX, toY + arrowOffsetY);
+
+        // Draw the arrow head
         graphics.beginFill(color);
         graphics.drawStar!(arrowX, arrowY, 3, arrowRadius, 0, angleRadians);
         graphics.endFill();

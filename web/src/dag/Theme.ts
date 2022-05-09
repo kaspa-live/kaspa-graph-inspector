@@ -158,7 +158,7 @@ export const theme: Theme = {
             normal: {
                 color: 0xaaaaaa,            // Stas original: 0xaaaaaa
                 lineWidth: 2,               // Stas original: 2
-                arrowRadius: 4,             // Stas original: 4
+                arrowRadius: 4.5,           // Stas original: 4
             },
             virtualChain: {
                 color: 0x82a2cf,            // Stas original: 0xb4cfed

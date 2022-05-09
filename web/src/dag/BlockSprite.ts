@@ -13,7 +13,7 @@ const blockTexture = (application: PIXI.Application, blockSize: number, blockCol
     const key = `${blockSize}-${blockColor}`
     if (!blockTextures[key]) {
         const graphics = new PIXI.Graphics();
-        graphics.lineStyle(theme.components.block[blockColor].border.width, theme.components.block[blockColor].border.color);
+        graphics.lineStyle(theme.components.block[blockColor].border.width, theme.components.block[blockColor].border.color, 1, 0.5);
         graphics.beginFill(0xffffff);
         graphics.drawRoundedRect(0, 0, blockSize, blockSize, theme.components.block.roundingRadius);
         graphics.endFill();
@@ -216,10 +216,19 @@ export default class BlockSprite extends PIXI.Container {
         return this.hasFocus ? theme.components.block.focus : theme.components.block.highlight;
     }
 
+    // getRealBlockSize returns the actual block size based on
+    // a theoretical block size, taking into account the theme properties
+    static getRealBlockSize = (blockSize: number): number => {
+        // As we have no knowledge of an actual block, we base the calculation
+        // on theme blue block, considered the most relevant
+        return (blockSize + (theme.components.block.blue.border.width / 2.0)) * theme.components.block.scale.default;
+    }
+
     // clampVectorToBounds clamps the given vector's magnitude
     // to be fully within the block's shape
     static clampVectorToBounds = (blockSize: number, vectorX: number, vectorY: number): { blockBoundsVectorX: number, blockBoundsVectorY: number } => {
-        const halfBlockSize = blockSize / 2;
+        const realBlockSize = BlockSprite.getRealBlockSize(blockSize);
+        const halfBlockSize = realBlockSize / 2;
 
         // Don't bother with any fancy calculations if the y
         // coordinate is exactly 0
