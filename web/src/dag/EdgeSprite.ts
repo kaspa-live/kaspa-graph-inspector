@@ -1,16 +1,17 @@
 import '@pixi/graphics-extras';
 import * as PIXI from "pixi.js-legacy";
 import {Tween} from "@createjs/tweenjs";
+import { EdgeLayout, theme } from "./Theme";
 
 class EdgeGraphicsDefinition {
     readonly color;
     readonly lineWidth;
     readonly arrowRadius;
 
-    constructor(color: number, lineWidth: number, arrowRadius: number) {
-        this.color = color;
-        this.lineWidth = lineWidth;
-        this.arrowRadius = arrowRadius;
+    constructor(props: EdgeLayout) {
+        this.color = props.color;
+        this.lineWidth = props.lineWidth;
+        this.arrowRadius = props.arrowRadius;
     }
 
     key = (): string => {
@@ -19,13 +20,13 @@ class EdgeGraphicsDefinition {
 }
 
 export default class EdgeSprite extends PIXI.Container {
-    private static readonly normalDefinition = new EdgeGraphicsDefinition(0xaaaaaa, 2, 4);
-    private static readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0xb4cfed, 4, 6);
-    private static readonly highlightedParentDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
-    private static readonly highlightedChildDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
-    private static readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(0x4de3bb, 6, 8);
-    private static readonly highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
-    private static readonly highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
+    private static readonly normalDefinition = new EdgeGraphicsDefinition(theme.components.edge.normal);
+    private static readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.virtualChain);
+    private static readonly highlightedParentDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.parent);
+    private static readonly highlightedChildDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.child);
+    private static readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.selected);
+    private static readonly highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.virtualChain.parent);
+    private static readonly highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.virtualChain.child);
 
     private static readonly definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = EdgeSprite.initializeDefinitionMap();
 
