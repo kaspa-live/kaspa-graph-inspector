@@ -15,6 +15,7 @@ export interface BlockLayout {
 }
 
 export interface HighlightFrame {
+    alpha: number,
     lineWidth: number
     offset: number;
 }
@@ -126,12 +127,14 @@ export const theme: Theme = {
                 },
             },
             focus: {
-                lineWidth: 8,               // Stas original: 5
-                offset: 15,                 // Stas original: 11
+                alpha: 0.6,                 // Stas original: 1.0
+                lineWidth: 10,              // Stas original: 5
+                offset: 24,                 // Stas original: 11
             },
             highlight: {
+                alpha: 0.6,                 // Stas original: 1.0
                 lineWidth: 5,               // Stas original: 5
-                offset: 11,                 // Stas original: 11
+                offset: 13,                 // Stas original: 11
             },
             scale: {
                 default: 0.9,               // Stas original: 0.9

@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js-legacy";
 import { Ease, Tween } from "@createjs/tweenjs";
 import { Block } from "../model/Block";
 import { BlockColorConst, BlockColor } from "../model/BlockColor";
-import { theme } from "./Theme";
+import { HighlightFrame, theme } from "./Theme";
 
 //const blockColors: { [color: string]: number } = {"gray": 0xf5faff, "red": 0xfc606f, "blue": 0xb4cfed};
 //const highlightColors: { [color: string]: number } = {"gray": 0x78869e, "red": 0x9e4949, "blue": 0x49849e};
@@ -113,7 +113,7 @@ export default class BlockSprite extends PIXI.Container {
     }
 
     private buildHighlight = (): PIXI.Graphics => {
-        const blockHighlight = this.hasFocus ? theme.components.block.focus : theme.components.block.highlight;
+        const blockHighlight = this.getHighlightFrame();
         const highlightSize = this.blockSize + blockHighlight.offset;
         const highlightRoundingRadius = theme.components.block.roundingRadius + (blockHighlight.offset / 2);
 
@@ -179,10 +179,11 @@ export default class BlockSprite extends PIXI.Container {
             this.isHighlighted = isHighlighted;
             this.hasFocus = hasFocus;
             this.highlightColor = highlightColor;
+            const blockHighlight = this.getHighlightFrame();
 
             const oldHighlight = this.currentHighlight;
 
-            if (oldHighlight.alpha > 0.0) {
+            if (oldHighlight.alpha > 0.0 && this.highlightContainer.alpha > 0.0) {
                 Tween.get(oldHighlight)
                 .to({alpha: 0.0}, 300)
                 .call(() => this.highlightContainer.removeChild(oldHighlight));
@@ -199,7 +200,7 @@ export default class BlockSprite extends PIXI.Container {
                 .to({alpha: 1.0}, 300);
             }
  
-            const toAlpha = this.isHighlighted ? 1.0 : 0.0;
+            const toAlpha = this.isHighlighted ? blockHighlight.alpha : 0.0;
             if (toAlpha !== this.highlightContainer.alpha) {
                 Tween.get(this.highlightContainer)
                 .to({alpha: toAlpha}, 300);
@@ -209,6 +210,10 @@ export default class BlockSprite extends PIXI.Container {
 
     setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
         this.blockClickedListener = blockClickedListener;
+    }
+
+    private getHighlightFrame = (): HighlightFrame => {
+        return this.hasFocus ? theme.components.block.focus : theme.components.block.highlight;
     }
 
     // clampVectorToBounds clamps the given vector's magnitude
