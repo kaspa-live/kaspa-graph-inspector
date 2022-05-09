@@ -13,12 +13,9 @@ import {
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
 import {BlockColorConst, BlockColor} from "../model/BlockColor";
+import { theme } from "./Theme";
 
 export default class TimelineContainer extends PIXI.Container {
-    private readonly maxBlocksPerHeightGroup = 12;
-    private readonly marginMultiplier = 2.0;
-    private readonly visibleHeightRangePadding: number = 2;
-
     private readonly application: PIXI.Application;
     private readonly heightContainer: PIXI.Container;
     private readonly edgeContainer: PIXI.Container;
@@ -472,11 +469,11 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private calculateBlockSize = (rendererHeight: number): number => {
-        return Math.floor(rendererHeight / this.maxBlocksPerHeightGroup);
+        return Math.floor(rendererHeight / theme.components.timeline.maxBlocksPerHeight);
     }
 
     private calculateMargin = (blockSize: number): number => {
-        return blockSize * this.marginMultiplier;
+        return blockSize * theme.components.timeline.multiplier.margin;
     }
 
     recalculatePositions = () => {
@@ -525,7 +522,7 @@ export default class TimelineContainer extends PIXI.Container {
         const margin = this.calculateMargin(blockSize);
 
         const maxBlockAmountOnScreen = rendererWidth / (blockSize + margin);
-        return Math.ceil(maxBlockAmountOnScreen / 2) + this.visibleHeightRangePadding;
+        return Math.ceil(maxBlockAmountOnScreen / 2) + theme.components.timeline.visibleHeightRangePadding;
     }
 
     setTargetHeight = (targetHeight: number, newData?: BlocksAndEdgesAndHeightGroups) => {

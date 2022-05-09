@@ -29,10 +29,6 @@ const blockTexture = (application: PIXI.Application, blockSize: number, blockCol
 };
 
 export default class BlockSprite extends PIXI.Container {
-    private readonly unfocusedScale = 0.9;
-    private readonly focusedScale = 1.0;
-    private readonly textSizeMultiplier = 0.25;
-
     private readonly application: PIXI.Application;
     private readonly block: Block;
     private readonly spriteContainer: PIXI.Container;
@@ -76,7 +72,7 @@ export default class BlockSprite extends PIXI.Container {
         this.currentHighlight = this.buildHighlight();
         this.highlightContainer.addChild(this.currentHighlight);
 
-        this.scale.set(this.unfocusedScale, this.unfocusedScale);
+        this.scale.set(theme.components.block.scale.default, theme.components.block.scale.default);
     }
 
     private buildSprite = (): PIXI.Sprite => {
@@ -87,10 +83,10 @@ export default class BlockSprite extends PIXI.Container {
         sprite.interactive = true;
         sprite.buttonMode = true;
         sprite.on("pointerover", () => {
-            Tween.get(this.scale).to({x: this.focusedScale, y: this.focusedScale}, 200, Ease.quadOut);
+            Tween.get(this.scale).to({x: theme.components.block.scale.hover, y: theme.components.block.scale.hover}, 200, Ease.quadOut);
         });
         sprite.on("pointerout", () => {
-            Tween.get(this.scale).to({x: this.unfocusedScale, y: this.unfocusedScale}, 200, Ease.quadOut);
+            Tween.get(this.scale).to({x: theme.components.block.scale.default, y: theme.components.block.scale.default}, 200, Ease.quadOut);
         });
         sprite.on("pointertap", () => this.blockClickedListener(this.block));
 
@@ -100,7 +96,7 @@ export default class BlockSprite extends PIXI.Container {
     private buildText = (blockSize: number): PIXI.Text => {
         const style = new PIXI.TextStyle({
             fontFamily: theme.components.block.text.fontFamily,
-            fontSize: blockSize * this.textSizeMultiplier,
+            fontSize: blockSize * theme.components.block.text.multiplier.size,
             fontWeight: theme.components.block.text.fontWeight,
             fill: theme.components.block[this.blockColor].color.contrastText,
         });
@@ -155,7 +151,7 @@ export default class BlockSprite extends PIXI.Container {
             const oldSprite = this.currentSprite;
 
             this.currentSprite = this.buildSprite();
-            this.currentSprite.texture = blockTexture(this.application, this.blockSize, this.block.color);
+            this.currentSprite.texture = blockTexture(this.application, this.blockSize, this.blockColor);
             this.currentSprite.alpha = 0.0;
             this.spriteContainer.addChild(this.currentSprite);
 

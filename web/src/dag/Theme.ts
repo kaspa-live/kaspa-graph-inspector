@@ -34,9 +34,16 @@ export interface Theme {
             gray: BlockLayout;
             focus: HighlightFrame;
             highlight: HighlightFrame;
+            scale: {
+                default: number;
+                hover: number;
+            }
             text: {
                 fontFamily: string;
                 fontWeight: TextStyleFontWeight;
+                multiplier: {
+                    size: number;
+                }
             }
         }
 
@@ -68,6 +75,14 @@ export interface Theme {
                     bottomMargin: number;
                 }
             }
+        },
+
+        timeline: {
+            maxBlocksPerHeight: number;
+            multiplier: {
+                margin: number;
+            }
+            visibleHeightRangePadding: number;
         }
     }
 };
@@ -84,8 +99,8 @@ export const theme: Theme = {
                     contrastText: 0xffffff, // Stas original: 0x666666  
                 },
                 border: {
-                    color: 0xaaaaaa,        // Stas original: 0xaaaaaa
-                    width: 0.0,             // Stas original: 2
+                    color: 0xffffff,        // Stas original: 0xaaaaaa
+                    width: 3.0,             // Stas original: 3
                 },
             },
             red: {
@@ -95,8 +110,8 @@ export const theme: Theme = {
                     contrastText: 0xffffff, // Stas original: 0x666666   
                 },
                 border: {
-                    color: 0xaaaaaa,        // Stas original: 0xaaaaaa
-                    width: 0.0,             // Stas original: 2
+                    color: 0xffffff,        // Stas original: 0xaaaaaa
+                    width: 3.0,             // Stas original: 3
                 },
             },
             gray: {
@@ -107,7 +122,7 @@ export const theme: Theme = {
                 },
                 border: {
                     color: 0xaaaaaa,        // Stas original: 0xaaaaaa
-                    width: 0.8,             // Stas original: 2
+                    width: 3.0,             // Stas original: 3
                 },
             },
             focus: {
@@ -118,10 +133,17 @@ export const theme: Theme = {
                 lineWidth: 5,               // Stas original: 5
                 offset: 11,                 // Stas original: 11
             },
+            scale: {
+                default: 0.9,               // Stas original: 0.9
+                hover: 1.0,                 // Stas original: 1.0
+            },
             text: {
                 fontFamily: 'monospace, "Lucida Console", "Courier"',
                                             // Stas original: '"Lucida Console", "Courier", monospace'
                 fontWeight: "bold",         // Stas original: "bold"
+                multiplier: {
+                    size: 0.25,             // Stas original: 0.25
+                },
             }
         },
 
@@ -190,6 +212,14 @@ export const theme: Theme = {
                     bottomMargin: 0.5,      // Stas original: 0.5
                 },
             },
+        },
+
+        timeline: {
+            maxBlocksPerHeight: 12,         // Stas original: 12
+            multiplier: {
+                margin: 2.0,                // Stas original: 2.0
+            },
+            visibleHeightRangePadding: 2,   // Stas original: 2
         },
     },
 }
