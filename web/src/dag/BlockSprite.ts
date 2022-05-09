@@ -127,7 +127,7 @@ export default class BlockSprite extends PIXI.Container {
     setSize = (blockSize: number) => {
         if (!this.currentSprite.texture || this.blockSize !== blockSize) {
             this.blockSize = blockSize;
-            this.currentSprite.texture = blockTexture(this.application, blockSize, this.block.color);
+            this.currentSprite.texture = blockTexture(this.application, blockSize, this.blockColor);
 
             this.currentText = this.buildText(blockSize);
             this.textContainer.removeChildren();
