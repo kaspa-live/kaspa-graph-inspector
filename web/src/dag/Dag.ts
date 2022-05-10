@@ -5,6 +5,7 @@ import {getBlockChildIds} from "../model/BlocksAndEdgesAndHeightGroups"
 import {Ticker} from "@createjs/core";
 import {BlockInformation} from "../model/BlockInformation";
 import DataSource, {resolveDataSource} from "../data/DataSource";
+import { theme } from "./Theme";
 
 export default class Dag {
     private readonly headHeightMarginMultiplier = 0.25;
@@ -50,7 +51,7 @@ export default class Dag {
 
     initialize = (canvas: HTMLCanvasElement) => {
         this.application = new PIXI.Application({
-            backgroundColor: 0xeeeeee,
+            backgroundColor: theme.components.dag.backgroundColor,
             view: canvas,
             resizeTo: canvas,
             antialias: true,

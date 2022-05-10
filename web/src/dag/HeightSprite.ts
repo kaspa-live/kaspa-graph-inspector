@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js-legacy";
 import {Ease, Tween} from "@createjs/tweenjs";
+import { theme } from "./Theme";
 
 const heightTextures: { [key: string]: PIXI.RenderTexture } = {};
 
@@ -7,7 +8,7 @@ const heightTexture = (application: PIXI.Application, width: number, height: num
     const key = `${width},${height}`
     if (!heightTextures[key]) {
         const graphics = new PIXI.Graphics();
-        graphics.beginFill(0xf7f9fa);
+        graphics.beginFill(0xffffff);
         graphics.drawRect(0, 0, width, height);
         graphics.endFill();
 
@@ -22,9 +23,6 @@ const heightTexture = (application: PIXI.Application, width: number, height: num
 };
 
 export default class HeightSprite extends PIXI.Container {
-    private readonly textSizeMultiplier = 0.15;
-    private readonly textBottomMarginMultiplier = 0.5;
-
     private readonly application: PIXI.Application;
     private readonly blockHeight: number;
     private readonly spriteContainer: PIXI.Container;
@@ -65,7 +63,7 @@ export default class HeightSprite extends PIXI.Container {
         const sprite = new PIXI.Sprite();
         sprite.anchor.set(0.5, 0.5);
         sprite.alpha = 0.0;
-        sprite.tint = 0xe8e8e8;
+        sprite.tint = theme.components.height.color.highlight;
 
         sprite.interactive = true;
         sprite.buttonMode = true;
@@ -82,16 +80,17 @@ export default class HeightSprite extends PIXI.Container {
 
     private buildText = (spriteHeight: number, blockSize: number): PIXI.Text => {
         const style = new PIXI.TextStyle({
-            fontFamily: '"Verdana", "Arial", "Helvetica", sans-serif',
-            fontSize: blockSize * this.textSizeMultiplier,
+            fontFamily: theme.components.height.text.fontFamily,
+            fontWeight: theme.components.height.text.fontWeight,
+            fontSize: blockSize * theme.components.height.text.multiplier.size,
             fill: 0xffffff,
         });
 
         const language = navigator.language || "en-US";
         const text = new PIXI.Text(this.getTextValue().toLocaleString(language), style);
         text.anchor.set(0.5, 0.5);
-        text.tint = 0x777777;
-        text.y = (spriteHeight / 2) - (blockSize * this.textBottomMarginMultiplier);
+        text.tint = theme.components.height.color.contrastText;
+        text.y = (spriteHeight / 2) - (blockSize * theme.components.height.text.multiplier.bottomMargin);
         return text;
     }
 

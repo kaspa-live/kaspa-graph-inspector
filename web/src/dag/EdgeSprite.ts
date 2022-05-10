@@ -1,16 +1,17 @@
 import '@pixi/graphics-extras';
 import * as PIXI from "pixi.js-legacy";
 import {Tween} from "@createjs/tweenjs";
+import { EdgeLayout, theme } from "./Theme";
 
 class EdgeGraphicsDefinition {
     readonly color;
     readonly lineWidth;
     readonly arrowRadius;
 
-    constructor(color: number, lineWidth: number, arrowRadius: number) {
-        this.color = color;
-        this.lineWidth = lineWidth;
-        this.arrowRadius = arrowRadius;
+    constructor(props: EdgeLayout) {
+        this.color = props.color;
+        this.lineWidth = props.lineWidth;
+        this.arrowRadius = props.arrowRadius;
     }
 
     key = (): string => {
@@ -19,13 +20,13 @@ class EdgeGraphicsDefinition {
 }
 
 export default class EdgeSprite extends PIXI.Container {
-    private static readonly normalDefinition = new EdgeGraphicsDefinition(0xaaaaaa, 2, 4);
-    private static readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0xb4cfed, 4, 6);
-    private static readonly highlightedParentDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
-    private static readonly highlightedChildDefinition = new EdgeGraphicsDefinition(0x6be39f, 4, 6);
-    private static readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(0x4de3bb, 6, 8);
-    private static readonly highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
-    private static readonly highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(0x7ce0e6, 6, 8);
+    private static readonly normalDefinition = new EdgeGraphicsDefinition(theme.components.edge.normal);
+    private static readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.virtualChain);
+    private static readonly highlightedParentDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.parent);
+    private static readonly highlightedChildDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.child);
+    private static readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.selected);
+    private static readonly highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.virtualChain.parent);
+    private static readonly highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.virtualChain.child);
 
     private static readonly definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = EdgeSprite.initializeDefinitionMap();
 
@@ -35,6 +36,7 @@ export default class EdgeSprite extends PIXI.Container {
 
     private vectorX: number = 0;
     private vectorY: number = 0;
+    private blockSize: number = 0;
     private blockBoundsVectorX: number = 0;
     private blockBoundsVectorY: number = 0;
     private isVectorInitialized: boolean = false;
@@ -78,14 +80,16 @@ export default class EdgeSprite extends PIXI.Container {
         return graphics;
     }
 
-    setVector = (vectorX: number, vectorY: number, blockBoundsVectorX: number, blockBoundsVectorY: number) => {
+    setVector = (vectorX: number, vectorY: number, blockSize: number, blockBoundsVectorX: number, blockBoundsVectorY: number) => {
         if (this.vectorX !== vectorX
             || this.vectorY !== vectorY
+            || this.blockSize !== blockSize
             || this.blockBoundsVectorX !== blockBoundsVectorX
             || this.blockBoundsVectorY !== blockBoundsVectorY) {
 
             this.vectorX = vectorX;
             this.vectorY = vectorY;
+            this.blockSize = blockSize;
             this.blockBoundsVectorX = blockBoundsVectorX;
             this.blockBoundsVectorY = blockBoundsVectorY;
 
@@ -103,45 +107,31 @@ export default class EdgeSprite extends PIXI.Container {
     }
 
     private renderGraphics = (graphics: PIXI.Graphics, definition: EdgeGraphicsDefinition) => {
-        const lineWidth = definition.lineWidth;
+        const lineWidth = theme.scale(definition.lineWidth, this.blockSize);
         const color = definition.color;
-        const arrowRadius = definition.arrowRadius;
+        const arrowRadius = theme.scale(definition.arrowRadius, this.blockSize);
 
-        // Compensate for line width in block bounds vectors
-        let blockBoundsVectorX = this.blockBoundsVectorX;
-        if (blockBoundsVectorX < 0) {
-            blockBoundsVectorX += lineWidth;
-        }
-        if (blockBoundsVectorX > 0) {
-            blockBoundsVectorX -= lineWidth;
-        }
-        let blockBoundsVectorY = this.blockBoundsVectorY;
-        if (blockBoundsVectorY < 0) {
-            // noinspection JSSuspiciousNameCombination
-            blockBoundsVectorY += lineWidth;
-        }
-        if (blockBoundsVectorY > 0) {
-            // noinspection JSSuspiciousNameCombination
-            blockBoundsVectorY -= lineWidth;
-        }
+        // Compute the edge
+        const fromX = this.blockBoundsVectorX;
+        const fromY = this.blockBoundsVectorY;
+        const toX = this.vectorX - this.blockBoundsVectorX;
+        const toY = this.vectorY - this.blockBoundsVectorY;
 
-        // Draw the edge
-        const fromX = blockBoundsVectorX;
-        const fromY = blockBoundsVectorY;
-        const toX = this.vectorX - blockBoundsVectorX;
-        const toY = this.vectorY - blockBoundsVectorY;
-        graphics.clear();
-        graphics.lineStyle(lineWidth, color);
-        graphics.moveTo(fromX, fromY);
-        graphics.lineTo(toX, toY);
-
-        // Draw the arrow head
+        //Compute the arrow head
         const angleRadians = Math.atan2(this.vectorY, this.vectorX) + (Math.PI / 2);
         const toVectorMagnitude = Math.sqrt(toX ** 2 + toY ** 2);
         const arrowOffsetX = -toX * (arrowRadius + lineWidth) / toVectorMagnitude;
         const arrowOffsetY = -toY * (arrowRadius + lineWidth) / toVectorMagnitude;
         const arrowX = toX + arrowOffsetX;
         const arrowY = toY + arrowOffsetY;
+
+        // Draw the edge
+        graphics.clear();
+        graphics.lineStyle(lineWidth, color);
+        graphics.moveTo(fromX, fromY);
+        graphics.lineTo(toX + arrowOffsetX, toY + arrowOffsetY);
+
+        // Draw the arrow head
         graphics.beginFill(color);
         graphics.drawStar!(arrowX, arrowY, 3, arrowRadius, 0, angleRadians);
         graphics.endFill();

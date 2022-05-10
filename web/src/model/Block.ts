@@ -1,3 +1,5 @@
+import { BlockColor } from "./BlockColor";
+
 export type Block = {
     id: number,
     blockHash: string,
@@ -7,7 +9,7 @@ export type Block = {
     daaScore: number,
     heightGroupIndex: number,
     selectedParentId: number | null,
-    color: string,
+    color: BlockColor,
     isInVirtualSelectedParentChain: boolean,
     mergeSetRedIds: number[],
     mergeSetBlueIds: number[],

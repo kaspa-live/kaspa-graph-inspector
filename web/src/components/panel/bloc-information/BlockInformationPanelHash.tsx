@@ -16,7 +16,7 @@ interface HashTypographyProps extends TypographyProps {
 const HashTypography = styled(
     (
         { selected, color, ...props }: HashTypographyProps
-    ) => (<Typography {...props} variant="h6"/>),
+    ) => (<Typography {...props} variant="body1"/>),
     {
         name: "HashTypography",
         shouldForwardProp: (prop) => prop !== 'selected',
@@ -25,13 +25,13 @@ const HashTypography = styled(
     fontFamily: "monospace",
     textTransform: "uppercase",
     ...(
-        selected && {
+        (selected || color) && {
             fontWeight: "bold",
         }
     ),
     ...(
         color && {
-            color: theme.palette[color].main,
+            color: theme.palette.block[color].main,
         }
     )
 }));

@@ -12,13 +12,10 @@ import {
 } from "../model/BlocksAndEdgesAndHeightGroups";
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
-import {BlockColor} from "../model/BlockColor";
+import {BlockColorConst, BlockColor} from "../model/BlockColor";
+import { theme } from "./Theme";
 
 export default class TimelineContainer extends PIXI.Container {
-    private readonly maxBlocksPerHeightGroup = 12;
-    private readonly marginMultiplier = 2.0;
-    private readonly visibleHeightRangePadding: number = 2;
-
     private readonly application: PIXI.Application;
     private readonly heightContainer: PIXI.Container;
     private readonly edgeContainer: PIXI.Container;
@@ -223,7 +220,7 @@ export default class TimelineContainer extends PIXI.Container {
         blockSprite.setColor(block.color);
 
         if (targetBlockKey === null) {
-            blockSprite.setHighlighted(false);
+            blockSprite.setHighlighted(false, false, BlockColorConst.GRAY);
             return;
         }
 
@@ -234,18 +231,19 @@ export default class TimelineContainer extends PIXI.Container {
 
         const mergeSetBlockKeys = mergeSetRedBlockKeys.concat(mergeSetBlueBlockKeys);
         if (mergeSetBlockKeys.indexOf(blockKey) < 0 && blockKey !== targetBlockKey) {
-            blockSprite.setHighlighted(false);
+            blockSprite.setHighlighted(false, false, BlockColorConst.GRAY);
             return;
         }
 
-        blockSprite.setHighlighted(true);
+        var blockColor = BlockColorConst.GRAY;
         if (mergeSetRedBlockKeys.indexOf(blockKey) >= 0) {
-            blockSprite.setHighlightColor(BlockColor.RED);
+            blockColor = BlockColorConst.RED;
         } else if (mergeSetBlueBlockKeys.indexOf(blockKey) >= 0) {
-            blockSprite.setHighlightColor(BlockColor.BLUE);
+            blockColor = BlockColorConst.BLUE;
         } else {
-            blockSprite.setHighlightColor(BlockColor.GRAY);
+            blockColor = block.color as BlockColor;
         }
+        blockSprite.setHighlighted(true, blockKey === targetBlockKey, blockColor);
     }
 
     private assignEdgeToEdgeSprite = (edgeSprite: EdgeSprite, edge: Edge, targetBlockKey: string | null) => {
@@ -427,7 +425,7 @@ export default class TimelineContainer extends PIXI.Container {
             blockBoundsVectorY
         } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
 
-        edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
+        edgeSprite.setVector(vectorX, vectorY, blockSize, blockBoundsVectorX, blockBoundsVectorY);
         edgeSprite.setToY(toY);
 
         edgeSprite.x = fromX;
@@ -471,11 +469,11 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private calculateBlockSize = (rendererHeight: number): number => {
-        return Math.floor(rendererHeight / this.maxBlocksPerHeightGroup);
+        return Math.floor(rendererHeight / theme.components.timeline.maxBlocksPerHeight);
     }
 
     private calculateMargin = (blockSize: number): number => {
-        return blockSize * this.marginMultiplier;
+        return blockSize * theme.components.timeline.multiplier.margin;
     }
 
     recalculatePositions = () => {
@@ -524,7 +522,7 @@ export default class TimelineContainer extends PIXI.Container {
         const margin = this.calculateMargin(blockSize);
 
         const maxBlockAmountOnScreen = rendererWidth / (blockSize + margin);
-        return Math.ceil(maxBlockAmountOnScreen / 2) + this.visibleHeightRangePadding;
+        return Math.ceil(maxBlockAmountOnScreen / 2) + theme.components.timeline.visibleHeightRangePadding;
     }
 
     setTargetHeight = (targetHeight: number, newData?: BlocksAndEdgesAndHeightGroups) => {

@@ -7,13 +7,6 @@ import Canvas from "./components/Canvas";
 import Sidebar from './components/sidebar/Sidebar';
 import {BlockInformation} from "./model/BlockInformation";
 
-
-// declare module '@mui/styles/defaultTheme' {
-//   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-//   interface DefaultTheme extends Theme {}
-// }
-
-
 const App = () => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
@@ -84,16 +77,22 @@ const theme = createTheme({
             paper: "#fff"
         },
 
-        blueBlock: {
-            main: "#b4cfed"
+        block: {
+            blue: {
+                main: "#5581AA",
+                dark: "#1f5278",        // https://fffuel.co/cccolor/ - #5581AA - Shade palette 4
+                light: "#95adc8"        // https://fffuel.co/cccolor/ - #5581AA - Tint palette 4
+            },
+            red: {
+                main: "#B34D50",
+                dark: "#82212a",        // https://fffuel.co/cccolor/ - #B34D50 - Shade palette 4
+                light: "#d48d8b"        // https://fffuel.co/cccolor/ - #B34D50 - Tint palette 4
+            },
+            gray: {
+                main: "#aaaaaa",
+            },
         },
-        redBlock: {
-            main: "#ff5972"
-        },
-        newBlock: {
-            main: "#aaaaaa"
-        }
-    }
+    },
 });
 
 const dag = new Dag();
