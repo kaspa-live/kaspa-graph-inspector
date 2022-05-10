@@ -8,8 +8,6 @@ import DataSource, {resolveDataSource} from "../data/DataSource";
 import { theme } from "./Theme";
 
 export default class Dag {
-    private readonly headHeightMarginMultiplier = 0.25;
-
     private application: PIXI.Application | undefined;
     private timelineContainer: TimelineContainer | undefined;
     private dataSource: DataSource | undefined;
@@ -250,15 +248,8 @@ export default class Dag {
 
         const maxBlockAmountOnHalfTheScreen = this.timelineContainer!.getMaxBlockAmountOnHalfTheScreen();
 
-        let headMargin = 0;
-        const rendererWidth = this.application!.renderer.width;
-        const rendererHeight = this.application!.renderer.height;
-        if (rendererHeight < rendererWidth) {
-            headMargin = Math.floor(maxBlockAmountOnHalfTheScreen * this.headHeightMarginMultiplier);
-        }
-
-        const heightDifference = maxBlockAmountOnHalfTheScreen + headMargin;
-        const blocksAndEdgesAndHeightGroups = await this.dataSource!.getHead(heightDifference);
+        const heightDifference = this.timelineContainer!.getVisibleSlotAmountAfterHalfTheScreen(theme.components.dag.headMinRightMargin);
+        const blocksAndEdgesAndHeightGroups = await this.dataSource!.getHead(maxBlockAmountOnHalfTheScreen + heightDifference);
         this.isFetchFailingListener(!blocksAndEdgesAndHeightGroups);
 
         // Exit early if the request failed
@@ -280,10 +271,7 @@ export default class Dag {
             }
         }
 
-        let targetHeight = maxHeight - headMargin;
-        if (targetHeight < 0) {
-            targetHeight = 0;
-        }
+        let targetHeight = Math.max(0, maxHeight - heightDifference);
 
         this.timelineContainer!.setTargetHeight(targetHeight, blocksAndEdgesAndHeightGroups);
         this.timelineContainer!.setBlocksAndEdgesAndHeightGroups(blocksAndEdgesAndHeightGroups);

@@ -50,6 +50,8 @@ export interface Theme {
 
         dag: {
             backgroundColor: number;
+            // Minimum right margin in pixels of DAG head in timeline
+            headMinRightMargin: number;
             scaling: {
                 // the block size for which all components dimensions are meant
                 referenceBlockSize: number;
@@ -159,6 +161,7 @@ export const theme: Theme = {
 
         dag: {
             backgroundColor: 0xeeeeee,      // Stas original: 0xffffff
+            headMinRightMargin: 120,
             scaling: {
                 referenceBlockSize: 88,
             },
