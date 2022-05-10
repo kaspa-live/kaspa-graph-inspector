@@ -7,10 +7,10 @@ import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
 import {katnipAddress} from "../../../addresses";
 import {BlockInformation} from "../../../model/BlockInformation";
 
-const InfoDivider = () => <Divider sx={{backgroundColor: 'primary.contrastText'}}/>
+const InfoDivider = () => <Divider sx={{backgroundColor: 'text.secondary', mt: '4px', mb: '4px'}}/>
 
-const RedBlock = styled('b')(({ theme }) => ({ color: theme.palette.block.red.main }));
-const BlueBlock = styled('b')(({ theme }) => ({ color: theme.palette.block.blue.main }));
+const RedBlock = styled('b')(({ theme }) => ({ color: theme.palette.block.red.light }));
+const BlueBlock = styled('b')(({ theme }) => ({ color: theme.palette.block.blue.light }));
 
 const LeftTypography = styled(Typography)({
     alignSelf: "flex-start",
@@ -134,8 +134,6 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
             <Box className="block-information-panel" sx={{
                 height: '100vh',
                 width: '100%',
-                backgroundColor: 'primary.main',
-                color: 'primary.contrastText',
                 display: 'flex',
                 flexDirection: 'column',
             }}>
@@ -144,14 +142,13 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                     flexDirection: 'row',
                     padding: '20px 20px 0',
                 }}>
-                    <Typography variant="h4">
+                    <Typography variant="h5">
                         Block Information
                     </Typography>
                     <IconButton
                         onClick={onClose} 
                         size="large"
                         sx={{
-                            color: 'primary.contrastText',
                             padding: '20px',
                             margin: '-20px -20px auto auto',
                         }}
@@ -186,7 +183,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                                 <BlockInformationPanelListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
                                     {parentElements.length === 0
                                         ?
-                                        <LeftTypography variant="h6">None</LeftTypography>
+                                        <LeftTypography variant="body1">None</LeftTypography>
                                         : parentElements
                                     }
                                 </BlockInformationPanelListItem>
@@ -196,7 +193,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                                 <BlockInformationPanelListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
                                     {mergeSetHashElements.length === 0
                                         ?
-                                        <LeftTypography variant="h6">None</LeftTypography>
+                                        <LeftTypography variant="body1">None</LeftTypography>
                                         : mergeSetHashElements
                                     }
                                 </BlockInformationPanelListItem>
@@ -206,7 +203,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                                 <BlockInformationPanelListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
                                     {childElements.length === 0
                                         ?
-                                        <LeftTypography variant="h6">None</LeftTypography>
+                                        <LeftTypography variant="body1">None</LeftTypography>
                                         : childElements
                                     }
                                 </BlockInformationPanelListItem>
@@ -215,7 +212,7 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
 
                                 <BlockInformationPanelListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
                                                                tooltip={isBlockInVirtualSelectedParentChainTooltip}>
-                                    <LeftTypography variant="h6">
+                                    <LeftTypography variant="body1">
                                         {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
                                     </LeftTypography>
                                 </BlockInformationPanelListItem>
@@ -223,15 +220,15 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                                 <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
-                                    <LeftTypography variant="h6" sx={{ color: theme.palette.block[blockColorClass].main }}>
-                                        {blockColorText}
+                                    <LeftTypography variant="body1" sx={{ color: theme.palette.block[blockColorClass].main }}>
+                                        <b>{blockColorText}</b>
                                     </LeftTypography>
                                 </BlockInformationPanelListItem>
 
                                 <InfoDivider/>
 
                                 <BlockInformationPanelListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
-                                    <LeftTypography variant="h6">
+                                    <LeftTypography variant="body1">
                                         {blockDAAScore}
                                     </LeftTypography>
                                 </BlockInformationPanelListItem>
@@ -244,9 +241,11 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                     fontWeight: 'bold',
                     textAlign: 'end',
                     width: '100%',
-                    padding: '0 20px 20px',
+                    padding: '15px 20px 15px',
                 }}>
-                    See more details on <Link href={katnipAddressForBlock} target="_blank" rel="noreferrer" sx={{textDecoration: 'underline', color: 'primary.contrastText'}}>Katnip Block Explorer</Link>
+                    <Typography variant="body2">
+                        More details on <Link href={katnipAddressForBlock} target="_blank" rel="noreferrer" sx={{textDecoration: 'underline', color: 'text.primary', fontWeight: 'bold'}}>Katnip&nbsp;Block&nbsp;Explorer</Link>
+                    </Typography>
                 </Box>
             </Box>
         </Paper>

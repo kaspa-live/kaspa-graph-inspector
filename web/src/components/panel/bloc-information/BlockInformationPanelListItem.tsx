@@ -25,7 +25,7 @@ const BlockInformationPanelListItem = ({itemKey, children, label, tooltip}:
 
     return <Item key={itemKey} className="block-information-panel-list-item" disableGutters>
         <Header>
-            <Label variant="h6">
+            <Label variant="subtitle1">
                 {label}
             </Label>
             <BlockInformationPanelTooltip title={tooltip}>
