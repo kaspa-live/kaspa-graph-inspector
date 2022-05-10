@@ -13,12 +13,16 @@ const AnimatedCircle = ( {children}: { children: ReactElement } ) => {
       })
     
     return (
+
+        // TODO: We definitely need a touch-aware behaviour here
+        // In the meantime, we reduce the visible effect
+        
         <AnimatedPaper
-            elevation={ x.to( x => Math.round(x * 3 + 2) ) }
-            onMouseEnter={() => toggle(true)}
+            elevation={ x.to( x => Math.round(x * 1 + 2) ) }
+            onMouseOver={() => toggle(true)}
             onMouseLeave={() => toggle(false)}
             style={{
-                scale: x.to({range: [0, 1], output: [1, 1.1] }),
+                scale: x.to({range: [0, 1], output: [1, 1.03] }),
                 borderRadius: "50%",
                 cursor: "pointer",
 
