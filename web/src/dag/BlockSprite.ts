@@ -13,9 +13,9 @@ const blockTexture = (application: PIXI.Application, blockSize: number, blockCol
     const key = `${blockSize}-${blockColor}`
     if (!blockTextures[key]) {
         const graphics = new PIXI.Graphics();
-        graphics.lineStyle(theme.components.block[blockColor].border.width, theme.components.block[blockColor].border.color, 1, 0.5);
+        graphics.lineStyle(theme.scale(theme.components.block[blockColor].border.width, blockSize), theme.components.block[blockColor].border.color, 1, 0.5);
         graphics.beginFill(0xffffff);
-        graphics.drawRoundedRect(0, 0, blockSize, blockSize, theme.components.block.roundingRadius);
+        graphics.drawRoundedRect(0, 0, blockSize, blockSize, theme.scale(theme.components.block.roundingRadius, blockSize));
         graphics.endFill();
 
         let textureOptions: PIXI.IGenerateTextureOptions  = {
@@ -114,11 +114,11 @@ export default class BlockSprite extends PIXI.Container {
 
     private buildHighlight = (): PIXI.Graphics => {
         const blockHighlight = this.getHighlightFrame();
-        const highlightSize = this.blockSize + blockHighlight.offset;
-        const highlightRoundingRadius = theme.components.block.roundingRadius + (blockHighlight.offset / 2);
+        const highlightSize = this.blockSize + theme.scale(blockHighlight.offset, this.blockSize);
+        const highlightRoundingRadius = theme.scale(theme.components.block.roundingRadius + (blockHighlight.offset / 2), this.blockSize);
 
         const graphics = new PIXI.Graphics();
-        graphics.lineStyle(blockHighlight.lineWidth, theme.components.block[this.highlightColor].color.highlight);
+        graphics.lineStyle(theme.scale(blockHighlight.lineWidth, this.blockSize), theme.components.block[this.highlightColor].color.highlight);
         graphics.drawRoundedRect(0, 0, highlightSize, highlightSize, highlightRoundingRadius);
         graphics.position.set(-highlightSize / 2, -highlightSize / 2);
         return graphics;
@@ -221,7 +221,7 @@ export default class BlockSprite extends PIXI.Container {
     static getRealBlockSize = (blockSize: number): number => {
         // As we have no knowledge of an actual block, we base the calculation
         // on theme blue block, considered the most relevant
-        return (blockSize + (theme.components.block.blue.border.width / 2.0)) * theme.components.block.scale.default;
+        return (blockSize + theme.scale(theme.components.block.blue.border.width / 2.0, blockSize)) * theme.components.block.scale.default;
     }
 
     // clampVectorToBounds clamps the given vector's magnitude
@@ -239,7 +239,8 @@ export default class BlockSprite extends PIXI.Container {
             };
         }
 
-        const halfBlockSizeMinusCorner = halfBlockSize - theme.components.block.roundingRadius;
+        const roundingRadius = theme.scale(theme.components.block.roundingRadius, blockSize)
+        const halfBlockSizeMinusCorner = halfBlockSize - roundingRadius;
 
         // Abs the vector's x and y before getting its tangent
         // so that it's a bit easier to reason about
@@ -273,10 +274,10 @@ export default class BlockSprite extends PIXI.Container {
         // Where:
         //   m and n are `halfBlockSizeMinusCorner`
         //   tan(α) is `tangentOfAngle`
-        //   r is `theme.components.block.roundingRadius`
+        //   r is `roundingRadius`
         const a = (tangentOfAngle ** 2) + 1;
         const b = -(2 * halfBlockSizeMinusCorner * (tangentOfAngle + 1));
-        const c = (2 * (halfBlockSizeMinusCorner ** 2)) - (theme.components.block.roundingRadius ** 2);
+        const c = (2 * (halfBlockSizeMinusCorner ** 2)) - (roundingRadius ** 2);
         const x = (-b + Math.sqrt((b ** 2) - (4 * a * c))) / (2 * a);
         const y = x * tangentOfAngle;
 

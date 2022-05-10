@@ -50,6 +50,10 @@ export interface Theme {
 
         dag: {
             backgroundColor: number;
+            scaling: {
+                // the block size for which all components dimensions are meant
+                referenceBlockSize: number;
+            }
         }
 
         edge: {
@@ -86,6 +90,8 @@ export interface Theme {
             visibleHeightRangePadding: number;
         }
     }
+
+    scale: (measure: number, blockSize: number) => number;
 };
 
 export const theme: Theme = {
@@ -101,7 +107,7 @@ export const theme: Theme = {
                 },
                 border: {
                     color: 0xffffff,        // Stas original: 0xaaaaaa
-                    width: 3.0,             // Stas original: 3
+                    width: 2.0,             // Stas original: 3
                 },
             },
             red: {
@@ -112,7 +118,7 @@ export const theme: Theme = {
                 },
                 border: {
                     color: 0xffffff,        // Stas original: 0xaaaaaa
-                    width: 3.0,             // Stas original: 3
+                    width: 2.0,             // Stas original: 3
                 },
             },
             gray: {
@@ -123,7 +129,7 @@ export const theme: Theme = {
                 },
                 border: {
                     color: 0xaaaaaa,        // Stas original: 0xaaaaaa
-                    width: 3.0,             // Stas original: 3
+                    width: 2.0,             // Stas original: 3
                 },
             },
             focus: {
@@ -152,13 +158,16 @@ export const theme: Theme = {
 
         dag: {
             backgroundColor: 0xeeeeee,      // Stas original: 0xffffff
+            scaling: {
+                referenceBlockSize: 88,
+            },
         },
 
         edge: {
             normal: {
                 color: 0xaaaaaa,            // Stas original: 0xaaaaaa
                 lineWidth: 2,               // Stas original: 2
-                arrowRadius: 4.5,           // Stas original: 4
+                arrowRadius: 5,             // Stas original: 4
             },
             virtualChain: {
                 color: 0x82a2cf,            // Stas original: 0xb4cfed
@@ -211,7 +220,7 @@ export const theme: Theme = {
                                             // Stas original: '"Verdana", "Arial", "Helvetica", sans-serif'
                 fontWeight: "normal",       // Stas original: "normal"
                 multiplier: {
-                    size: 0.15,             // Stas original: 0.15
+                    size: 0.185,            // Stas original: 0.15
                     bottomMargin: 0.5,      // Stas original: 0.5
                 },
             },
@@ -225,4 +234,8 @@ export const theme: Theme = {
             visibleHeightRangePadding: 2,   // Stas original: 2
         },
     },
+
+    scale: (measure: number, blockSize: number): number => {
+        return measure * blockSize / theme.components.dag.scaling.referenceBlockSize;
+    }
 }

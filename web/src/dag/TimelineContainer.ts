@@ -425,7 +425,7 @@ export default class TimelineContainer extends PIXI.Container {
             blockBoundsVectorY
         } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
 
-        edgeSprite.setVector(vectorX, vectorY, blockBoundsVectorX, blockBoundsVectorY);
+        edgeSprite.setVector(vectorX, vectorY, blockSize, blockBoundsVectorX, blockBoundsVectorY);
         edgeSprite.setToY(toY);
 
         edgeSprite.x = fromX;

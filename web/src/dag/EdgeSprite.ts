@@ -36,6 +36,7 @@ export default class EdgeSprite extends PIXI.Container {
 
     private vectorX: number = 0;
     private vectorY: number = 0;
+    private blockSize: number = 0;
     private blockBoundsVectorX: number = 0;
     private blockBoundsVectorY: number = 0;
     private isVectorInitialized: boolean = false;
@@ -79,14 +80,16 @@ export default class EdgeSprite extends PIXI.Container {
         return graphics;
     }
 
-    setVector = (vectorX: number, vectorY: number, blockBoundsVectorX: number, blockBoundsVectorY: number) => {
+    setVector = (vectorX: number, vectorY: number, blockSize: number, blockBoundsVectorX: number, blockBoundsVectorY: number) => {
         if (this.vectorX !== vectorX
             || this.vectorY !== vectorY
+            || this.blockSize !== blockSize
             || this.blockBoundsVectorX !== blockBoundsVectorX
             || this.blockBoundsVectorY !== blockBoundsVectorY) {
 
             this.vectorX = vectorX;
             this.vectorY = vectorY;
+            this.blockSize = blockSize;
             this.blockBoundsVectorX = blockBoundsVectorX;
             this.blockBoundsVectorY = blockBoundsVectorY;
 
@@ -104,9 +107,9 @@ export default class EdgeSprite extends PIXI.Container {
     }
 
     private renderGraphics = (graphics: PIXI.Graphics, definition: EdgeGraphicsDefinition) => {
-        const lineWidth = definition.lineWidth;
+        const lineWidth = theme.scale(definition.lineWidth, this.blockSize);
         const color = definition.color;
-        const arrowRadius = definition.arrowRadius;
+        const arrowRadius = theme.scale(definition.arrowRadius, this.blockSize);
 
         // Compute the edge
         const fromX = this.blockBoundsVectorX;
