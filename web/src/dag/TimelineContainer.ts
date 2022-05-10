@@ -525,6 +525,17 @@ export default class TimelineContainer extends PIXI.Container {
         return Math.ceil(maxBlockAmountOnScreen / 2) + theme.components.timeline.visibleHeightRangePadding;
     }
 
+    getVisibleSlotAmountAfterHalfTheScreen = (rightMargin: number): number => {
+        const rendererWidth = this.application.renderer.width;
+        const rendererHeight = this.application.renderer.height;
+        const blockSize = this.calculateBlockSize(rendererHeight);
+        const margin = this.calculateMargin(blockSize);
+        const heightWidth = blockSize + margin;
+
+        const widthBetweenCenterAndRightMargin = Math.max(0, ((rendererWidth - heightWidth) / 2) - rightMargin + (margin / 2));
+        return Math.floor(widthBetweenCenterAndRightMargin / heightWidth);
+    }
+
     setTargetHeight = (targetHeight: number, newData?: BlocksAndEdgesAndHeightGroups) => {
         this.targetHeight = targetHeight;
         const data = !newData ? this.currentBlocksAndEdgesAndHeightGroups : newData;
