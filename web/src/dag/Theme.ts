@@ -69,6 +69,8 @@ export interface Theme {
                     parent: EdgeLayout;
                     child: EdgeLayout;    
                 }
+                markRadius: number;
+                minBorderIncrease: number;
             }
         }
 
@@ -126,8 +128,9 @@ export const theme: Theme = {
             },
             gray: {
                 color: {
-                    main: 0xf5faff,         // Stas original: 0xf5faff
-                    highlight: 0x78869e,    // Stas original: 0x78869e
+                    main: 0xf5f5f5,         // Stas original: 0xf5faff
+                    highlight: 0x949494,    // Stas original: 0x78869e
+                                            // https://fffuel.co/cccolor/ - 0xf5f5f5 - Shade palette 4
                     contrastText: 0x666666, // Stas original: 0x666666
                 },
                 border: {
@@ -146,8 +149,8 @@ export const theme: Theme = {
                 offset: 13,                 // Stas original: 11
             },
             scale: {
-                default: 0.9,               // Stas original: 0.9
-                hover: 1.0,                 // Stas original: 1.0
+                default: 1.0,               // Stas original: 0.9
+                hover: 1.1,                 // Stas original: 1.0
             },
             text: {
                 fontFamily: 'monospace, "Lucida Console", "Courier"',
@@ -176,41 +179,44 @@ export const theme: Theme = {
             virtualChain: {
                 color: 0x85a2c1,            // Stas original: 0xb4cfed
                                             // https://fffuel.co/cccolor/ - 0x5581AA - Tint palette 3
-                lineWidth: 6,               // Stas original: 4
-                arrowRadius: 8,             // Stas original: 6
+                lineWidth: 5,               // Stas original: 4
+                arrowRadius: 7,             // Stas original: 6
             },
             highlighted: {
                 parent: {
-                    color: 0x54ed9e,        // Stas original: 0x6be39f
-                                            // https://fffuel.co/pppalette/ - 0x5581AA - Jewel Analogous Palette 1
-                    lineWidth: 4,           // Stas original: 4
-                    arrowRadius: 7,         // Stas original: 6
+                    color: 0xaaaaaa,        // Stas original: 0x6be39f
+                                            // normal
+                    lineWidth: 6,           // Stas original: 4
+                    arrowRadius: 8,         // Stas original: 6
                 },
                 child: {
-                    color: 0x54ed9e,        // Stas original: 0x6be39f
-                                            // https://fffuel.co/pppalette/ - 0x5581AA - Jewel Analogous Palette 1
-                    lineWidth: 4,           // Stas original: 4
-                    arrowRadius: 7,         // Stas original: 6
+                    color: 0xaaaaaa,        // Stas original: 0x6be39f
+                                            // normal
+                    lineWidth: 6,           // Stas original: 4
+                    arrowRadius: 8,         // Stas original: 6
                 },
                 selected: {
-                    color: 0x4de3bb,        // Stas original: 0x4de3bb
+                    color: 0x898989,        // Stas original: 0x4de3bb
+                                            // https://fffuel.co/pppalette/ - 0xaaaaaa - Shade palette 2
                     lineWidth: 6,           // Stas original: 6
                     arrowRadius: 8,         // Stas original: 8
                 },
                 virtualChain: {
                     parent: {
-                        color: 0x54edea,    // Stas original: 0x7ce0e6,
-                                            // https://fffuel.co/pppalette/ - 0x5581AA - Jewel Analogous Palette 2
-                        lineWidth: 6,       // Stas original: 6
+                        color: 0x85a2c1,    // Stas original: 0x7ce0e6,
+                                            // virtualChain
+                        lineWidth: 8,       // Stas original: 6
                         arrowRadius: 8,     // Stas original: 8
                     },
                     child: {
-                        color: 0x54edea,    // Stas original: 0x7ce0e6,
-                                            // https://fffuel.co/pppalette/ - 0x5581AA - Jewel Analogous Palette 2
-                        lineWidth: 6,       // Stas original: 6
+                        color: 0x85a2c1,    // Stas original: 0x7ce0e6,
+                                            // virtualChain
+                        lineWidth: 8,      // Stas original: 6
                         arrowRadius: 8,     // Stas original: 8
                     },
                 },
+                markRadius: 6,
+                minBorderIncrease: 1.0,
             },
         },
 
