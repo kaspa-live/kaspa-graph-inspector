@@ -8,11 +8,12 @@ import {
     areBlocksAndEdgesAndHeightGroupsEqual,
     BlocksAndEdgesAndHeightGroups,
     getHeightGroupDAAScore,
-    getDAAScoreGroupHeight
+    getDAAScoreGroupHeight,
+    getBlockChildIds
 } from "../model/BlocksAndEdgesAndHeightGroups";
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
-import {BlockColorConst, BlockColor} from "../model/BlockColor";
+import {BlockColorConst} from "../model/BlockColor";
 import { theme } from "./Theme";
 
 export default class TimelineContainer extends PIXI.Container {
@@ -257,17 +258,21 @@ export default class TimelineContainer extends PIXI.Container {
     private assignEdgeToEdgeSprite = (edgeSprite: EdgeSprite, edge: Edge, targetBlockKey: string | null) => {
         const toBlock = this.blockKeysToBlocks[edge.toBlockId];
         const fromBlock = this.blockKeysToBlocks[edge.fromBlockId];
+        let isInVirtualSelectedParentChain = false;
+        let isHighlightedParent = false;
+        let isHighlightedChild = false;
+        let isSelectedParent = false;
         if (fromBlock) {
-            edgeSprite.setIsSelectedParent(fromBlock.selectedParentId === edge.toBlockId);
+            isSelectedParent = (fromBlock.selectedParentId === edge.toBlockId);
             if (toBlock) {
-                const isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
+                isInVirtualSelectedParentChain = fromBlock.isInVirtualSelectedParentChain
                     && toBlock.isInVirtualSelectedParentChain;
-                edgeSprite.setIsInVirtualSelectedParentChain(isInVirtualSelectedParentChain);
-
             }
         }
-        edgeSprite.setHighlightedParent(this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
-        edgeSprite.setHighlightedChild(this.buildBlockKey(edge.toBlockId) === targetBlockKey);
+        isHighlightedParent = (this.buildBlockKey(edge.fromBlockId) === targetBlockKey);
+        isHighlightedChild = (this.buildBlockKey(edge.toBlockId) === targetBlockKey);
+
+        edgeSprite.setFullState(isInVirtualSelectedParentChain, isHighlightedParent, isHighlightedChild, isSelectedParent);
     }
 
     findBlockWithHash = (blockHash: string): Block | null => {
@@ -381,7 +386,7 @@ export default class TimelineContainer extends PIXI.Container {
                 const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
 
                 if (!animate) {
-                    this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                    this.updateEdgeSprite(edgeSprite, blockSize, margin, fromX, toX, fromY, toY);
                     return;
                 }
 
@@ -398,7 +403,7 @@ export default class TimelineContainer extends PIXI.Container {
                     // toY either not available or not interesting, so don't bother
                     // animating a transition
                     if (!toBlockSprite || !toBlockSprite.wasBlockSizeSet() || toBlockSprite.y === toY) {
-                        this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                        this.updateEdgeSprite(edgeSprite, blockSize, margin, fromX, toX, fromY, toY);
                         return;
                     }
 
@@ -419,13 +424,13 @@ export default class TimelineContainer extends PIXI.Container {
                 const onChange = (event: any) => {
                     const fromY = event.target.target.fromY;
                     const toY = event.target.target.toY;
-                    this.updateEdgeSprite(edgeSprite, blockSize, fromX, toX, fromY, toY);
+                    this.updateEdgeSprite(edgeSprite, blockSize, margin, fromX, toX, fromY, toY);
                 };
                 Tween.get(tween, {onChange: onChange}).to({fromY: fromY, toY: toY}, 500, Ease.quadOut);
             });
     }
 
-    private updateEdgeSprite = (edgeSprite: EdgeSprite, blockSize: number, fromX: number, toX: number, fromY: number, toY: number) => {
+    private updateEdgeSprite = (edgeSprite: EdgeSprite, blockSize: number, margin: number, fromX: number, toX: number, fromY: number, toY: number) => {
         const vectorX = toX - fromX;
         const vectorY = toY - fromY;
         const {
@@ -433,7 +438,7 @@ export default class TimelineContainer extends PIXI.Container {
             blockBoundsVectorY
         } = BlockSprite.clampVectorToBounds(blockSize, vectorX, vectorY);
 
-        edgeSprite.setVector(vectorX, vectorY, blockSize, blockBoundsVectorX, blockBoundsVectorY);
+        edgeSprite.setVector(vectorX, vectorY, blockSize, margin, blockBoundsVectorX, blockBoundsVectorY);
         edgeSprite.setToY(toY);
 
         edgeSprite.x = fromX;
