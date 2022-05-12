@@ -226,6 +226,14 @@ export default class TimelineContainer extends PIXI.Container {
 
         const blockKey = this.buildBlockKey(block.id);
         const targetBlock = this.blockKeysToBlocks[targetBlockKey];
+
+        const [childIds, ] = getBlockChildIds(this.currentBlocksAndEdgesAndHeightGroups!, targetBlock);
+        const childBlockKeys = childIds.map(blockId => this.buildBlockKey(blockId));
+        if (childBlockKeys.indexOf(blockKey) >= 0) {
+            blockSprite.setHighlighted(true, false, block.color);
+            return;
+        }
+
         const mergeSetRedBlockKeys = targetBlock.mergeSetRedIds.map(blockId => this.buildBlockKey(blockId));
         const mergeSetBlueBlockKeys = targetBlock.mergeSetBlueIds.map(blockId => this.buildBlockKey(blockId));
 
@@ -241,7 +249,7 @@ export default class TimelineContainer extends PIXI.Container {
         } else if (mergeSetBlueBlockKeys.indexOf(blockKey) >= 0) {
             blockColor = BlockColorConst.BLUE;
         } else {
-            blockColor = block.color as BlockColor;
+            blockColor = block.color;
         }
         blockSprite.setHighlighted(true, blockKey === targetBlockKey, blockColor);
     }
