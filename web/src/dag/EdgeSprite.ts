@@ -173,10 +173,6 @@ export default class EdgeSprite extends PIXI.Container {
             const markX = isChild ? this.vectorX + markOffsetX : -markOffsetX;
             const markY = isChild ? this.vectorY + markOffsetY : -markOffsetY;
 
-            if ((-this.vectorX > markOffsetX*3) && definition.key() === EdgeSprite.highlightedParentDefinition.key()) {
-                console.log("renderGraphics", this.vectorX, markX);
-            }
-
             // Draw the mark
             graphics.beginFill(color);
             graphics.drawCircle(markX, markY, markRadius);
@@ -203,7 +199,6 @@ export default class EdgeSprite extends PIXI.Container {
             this.isHighlightedChild = isHighlightedChild;
             this.isSelectedParent = isSelectedParent;
 
-            console.log("setFullState", this.fromBlockId, this.toBlockId, isInVirtualSelectedParentChain, isHighlightedParent, isHighlightedChild, isSelectedParent);
             this.resolveShownGraphics();
         }
     }
