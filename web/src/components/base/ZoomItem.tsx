@@ -5,7 +5,7 @@ const ZoomItem = ( {visible, children}: { visible: boolean, children: ReactEleme
     const theme = useTheme();
     const transitionDuration = {
         enter: theme.transitions.duration.enteringScreen,
-        exit: theme.transitions.duration.leavingScreen,
+        exit: theme.transitions.duration.leavingScreen*2,
     };
 
     return (
@@ -14,7 +14,7 @@ const ZoomItem = ( {visible, children}: { visible: boolean, children: ReactEleme
                 in={visible}
                 timeout={transitionDuration}
                 style={{
-                    transitionDelay: `${visible ? 0 : transitionDuration.exit}ms`,
+                    transitionDelay: `${visible ? 0 : theme.transitions.duration.leavingScreen}ms`,
                 }}
                 unmountOnExit
             >
