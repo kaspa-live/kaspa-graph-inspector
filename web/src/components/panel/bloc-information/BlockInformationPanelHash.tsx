@@ -5,7 +5,7 @@ import BlockInformationPanelTooltip from "./BlockInformationPanelTooltip";
 
 const HashTitle = styled('div')({
     textTransform: "uppercase",
-    fontFamily: "monospace",
+    fontFamily: "Roboto Mono",
 })
 
 interface HashTypographyProps extends TypographyProps {
@@ -22,7 +22,7 @@ const HashTypography = styled(
         shouldForwardProp: (prop) => prop !== 'selected',
     }
 )<HashTypographyProps>(({ selected, color, theme }) => ({
-    fontFamily: "monospace",
+    fontFamily: "Roboto Mono",
     textTransform: "uppercase",
     ...(
         (selected || color) && {

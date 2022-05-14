@@ -153,8 +153,8 @@ export const theme: Theme = {
                 hover: 1.1,                 // Stas original: 1.0
             },
             text: {
-                fontFamily: 'monospace, "Lucida Console", "Courier"',
-                                            // Stas original: '"Lucida Console", "Courier", monospace'
+                fontFamily: 'Roboto Mono, "Lucida Console", "Courier"',
+                                            // Stas original: '"Lucida Console", "Courier", Roboto Mono'
                 fontWeight: "bold",         // Stas original: "bold"
                 multiplier: {
                     size: 0.26,             // Stas original: 0.25
