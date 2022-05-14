@@ -4,6 +4,10 @@
   max-width: 20vw;
 }
 
+.information-tooltip p {
+  font-weight: 400;
+}
+
 .information-tooltip a {
   text-decoration: underline;
 }

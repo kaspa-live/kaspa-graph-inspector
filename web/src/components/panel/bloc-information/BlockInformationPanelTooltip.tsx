@@ -25,6 +25,7 @@ const StyledTooltip = styled(
 const BlockInformationPanelTooltip = ({children, title}:
                                       { children: ReactElement, title: boolean | ReactChild | ReactFragment | ReactPortal }) => {
 
+    // To help debug tooltip CSS, add property open={true} to StyledTooltip
     return <StyledTooltip title={title} arrow placement="right">
         {children}
     </StyledTooltip>
