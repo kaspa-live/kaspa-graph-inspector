@@ -161,17 +161,20 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                     overflowY: 'auto',
                     paddingLeft: '20px',
                     paddingRight: '20px',
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#bbb #fff',
                     '&::-webkit-scrollbar': {
                         width: '10px',
                     },
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: '#bbb #fff',
                     '&::-webkit-scrollbar-track': {
+                        '-webkit-border-radius': '6px',
+                        borderRadius: '6px',
                         background: '#fff',
                     },
                     '&::-webkit-scrollbar-thumb': {
-                        backgroundColor: '#bbb',
+                        '-webkit-border-radius': '6px',
                         borderRadius: '6px',
+                        backgroundColor: '#bbb',
                         border: '2px solid #fff',
                     },
                 }}>
