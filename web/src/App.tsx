@@ -35,6 +35,14 @@ const App = () => {
         setWasBlockSetState(wasBlockSetState || blockInformation !== null);
     });
 
+    dag.setBlockClickedListener(block => {
+        const hasBlockChanged = (block.blockHash !== blockInformationState?.block.blockHash);
+        if (block && !hasBlockChanged && !isBlockInformationPanelOpenState) {
+            setBlockInformationPanelCloseRequested(false);
+            setBlockInformationPanelOpenState(true);
+        }
+    });
+
     const transitionDuration = {
         enter: theme.transitions.duration.enteringScreen * 2,
         exit: theme.transitions.duration.leavingScreen * 3,

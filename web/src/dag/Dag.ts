@@ -24,6 +24,7 @@ export default class Dag {
     private isTrackingChangedListener: (isTracking: boolean) => void;
     private isFetchFailingListener: (isFailing: boolean) => void;
     private blockInformationChangedListener: (blockInformation: BlockInformation | null) => void;
+    private blockClickedListener: (block: Block) => void;
 
     private readonly blockHashesByIds: { [id: string]: string } = {};
 
@@ -40,6 +41,9 @@ export default class Dag {
         this.blockInformationChangedListener = () => {
             // Do nothing
         }
+        this.blockClickedListener = () => {
+            // Do nothing
+        };
 
         // This sets TweenJS to use requestAnimationFrame.
         // Without it, it uses setTimeout, which makes
@@ -377,6 +381,7 @@ export default class Dag {
     }
 
     private handleBlockClicked = (block: Block) => {
+        this.blockClickedListener(block);
         this.timelineContainer!.setTargetHeight(block.height);
         this.setStateTrackTargetBlock(block);
     }
@@ -443,6 +448,10 @@ export default class Dag {
 
     setBlockInformationChangedListener = (BlockInformationChangedListener: (blockInformation: BlockInformation | null) => void) => {
         this.blockInformationChangedListener = BlockInformationChangedListener;
+    }
+
+    setBlockClickedListener = (blockClickedListener: (block: Block) => void) => {
+        this.blockClickedListener = blockClickedListener;
     }
 
     private notifyIsTrackingChanged = () => {
