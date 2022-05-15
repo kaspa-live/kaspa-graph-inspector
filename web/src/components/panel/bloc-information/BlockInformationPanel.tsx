@@ -161,11 +161,19 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
                     overflowY: 'auto',
                     paddingLeft: '20px',
                     paddingRight: '20px',
-                    scrollbarWidth: 'none', /* Hide the scrollbar in Firefox */
-                    msOverflowStyle: 'none', /* Hide the scrollbar in IE */
                     '&::-webkit-scrollbar': {
-                        width: '0',
-                    }
+                        width: '10px',
+                    },
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: '#bbb #fff',
+                    '&::-webkit-scrollbar-track': {
+                        background: '#fff',
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                        backgroundColor: '#bbb',
+                        borderRadius: '6px',
+                        border: '2px solid #fff',
+                    },
                 }}>
                     <Box sx={{
                         display: 'flex',
