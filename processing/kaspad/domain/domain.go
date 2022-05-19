@@ -42,11 +42,12 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 		EnableSanityCheckPruningUTXOSet: false,
 	}
 
-	virtualChangeChan := make(chan *externalapi.VirtualChangeSet, 1000)
+	// for now, we do not use `virtualChangeChan` in the consensus object, nor in the domain
+	//virtualChangeChan := make(chan *externalapi.VirtualChangeSet, 1000)
 
 	// warning, the 2nd returned parameter (shouldMigrate) from consensusPackage.New is ignored for now
 	// I don't know how to handle it
-	consensus, _, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix, virtualChangeChan)
+	consensus, _, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +58,7 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 
 		databaseContext:   databaseContext,
 		consensusConfig:   consensusConfig,
-		virtualChangeChan: virtualChangeChan,
+		virtualChangeChan: nil, // virtualChangeChan,
 	}, nil
 }
 
