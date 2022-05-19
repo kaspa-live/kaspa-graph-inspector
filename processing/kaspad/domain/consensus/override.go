@@ -6,8 +6,8 @@ func (c *Consensus) BuildBlock(coinbaseData *externalapi.DomainCoinbaseData, tra
 	return c.kaspadConsensus.BuildBlock(coinbaseData, transactions)
 }
 
-func (c *Consensus) BuildBlockWithTemplateMetadata(coinbaseData *externalapi.DomainCoinbaseData, transactions []*externalapi.DomainTransaction) (block *externalapi.DomainBlock, coinbaseHasRedReward bool, err error) {
-	return c.kaspadConsensus.BuildBlockWithTemplateMetadata(coinbaseData, transactions)
+func (c *Consensus) BuildBlockTemplate(coinbaseData *externalapi.DomainCoinbaseData, transactions []*externalapi.DomainTransaction) (*externalapi.DomainBlockTemplate, error) {
+	return c.kaspadConsensus.BuildBlockTemplate(coinbaseData, transactions)
 }
 
 func (c *Consensus) ValidateTransactionAndPopulateWithConsensusData(transaction *externalapi.DomainTransaction) error {
@@ -196,4 +196,8 @@ func (c *Consensus) IsChainBlock(blockHash *externalapi.DomainHash) (bool, error
 
 func (c *Consensus) VirtualMergeDepthRoot() (*externalapi.DomainHash, error) {
 	return c.kaspadConsensus.VirtualMergeDepthRoot()
+}
+
+func (c *Consensus) IsNearlySynced() (bool, error) {
+	return c.kaspadConsensus.IsNearlySynced()
 }

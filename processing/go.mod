@@ -6,9 +6,9 @@ require (
 	github.com/go-pg/pg/v10 v10.10.6
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/kaspanet/kaspad v0.12.0
+	github.com/kaspanet/kaspad v0.12.1
 	github.com/pkg/errors v0.9.1
-	golang.org/x/exp v0.0.0-20220407100705-7b9b53b0aca4
+	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
 )
 
 require (
@@ -41,8 +41,8 @@ require (
 	golang.org/x/text v0.3.5 // indirect
 	google.golang.org/genproto v0.0.0-20210604141403-392c879c8b08 // indirect
 	google.golang.org/grpc v1.38.0 // indirect
-	google.golang.org/protobuf v1.26.0 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 	mellium.im/sasl v0.2.1 // indirect
 )
 
-replace github.com/kaspanet/kaspad => ../../../kaspanet/kaspad
+replace github.com/kaspanet/kaspad => ../../../someone235/kaspad

@@ -10,9 +10,9 @@ import (
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
 )
 
-func New(consensusConfig *kaspadConsensus.Config, databaseContext database.Database, dbPrefix *prefix.Prefix) (*Consensus, bool, error) {
+func New(consensusConfig *kaspadConsensus.Config, databaseContext database.Database, dbPrefix *prefix.Prefix, virtualChangeChan chan *externalapi.VirtualChangeSet) (*Consensus, bool, error) {
 	kaspadConsensusFactory := kaspadConsensus.NewFactory()
-	kaspadConsensusInstance, shouldMigrate, err := kaspadConsensusFactory.NewConsensus(consensusConfig, databaseContext, dbPrefix)
+	kaspadConsensusInstance, shouldMigrate, err := kaspadConsensusFactory.NewConsensus(consensusConfig, databaseContext, dbPrefix, virtualChangeChan)
 	if err != nil {
 		return nil, false, err
 	}

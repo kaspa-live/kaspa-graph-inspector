@@ -1,6 +1,10 @@
 package domain
 
 import (
+	"sync"
+	"sync/atomic"
+	"unsafe"
+
 	consensusPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/consensus"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad/domain/mining_manager"
 	"github.com/kaspanet/kaspad/domain/consensus"
@@ -11,9 +15,6 @@ import (
 	"github.com/kaspanet/kaspad/domain/prefixmanager/prefix"
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
 	"github.com/pkg/errors"
-	"sync"
-	"sync/atomic"
-	"unsafe"
 )
 
 func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domain, error) {
@@ -41,9 +42,11 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 		EnableSanityCheckPruningUTXOSet: false,
 	}
 
+	virtualChangeChan := make(chan *externalapi.VirtualChangeSet, 1000)
+
 	// warning, the 2nd returned parameter (shouldMigrate) from consensusPackage.New is ignored for now
 	// I don't know how to handle it
-	consensus, _, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix)
+	consensus, _, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix, virtualChangeChan)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +55,9 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 		consensus:     consensus,
 		miningManager: miningManager,
 
-		databaseContext: databaseContext,
-		consensusConfig: consensusConfig,
+		databaseContext:   databaseContext,
+		consensusConfig:   consensusConfig,
+		virtualChangeChan: virtualChangeChan,
 	}, nil
 }
 
@@ -68,7 +72,11 @@ type Domain struct {
 
 	onBlockAddedListener     consensusPackage.OnBlockAddedListener
 	onConsensusResetListener OnConsensusResetListener
+	virtualChangeChan        chan *externalapi.VirtualChangeSet
 }
+
+// Implementing the interface
+// See kaspad\domain\domain.go
 
 func (d *Domain) StagingConsensus() externalapi.Consensus {
 	d.stagingConsensusLock.RLock()
@@ -113,7 +121,7 @@ func (d *Domain) initStagingConsensus(stagingConsensusConfig *consensus.Config) 
 
 	// Warning, the 2nd returned parameter (shouldMigrate) from consensusPackage.New is ignored for now
 	// I don't know how to handle it
-	consensusInstance, _, err := consensusPackage.New(stagingConsensusConfig, d.databaseContext, inactivePrefix)
+	consensusInstance, _, err := consensusPackage.New(stagingConsensusConfig, d.databaseContext, inactivePrefix, d.virtualChangeChan)
 	if err != nil {
 		return err
 	}
@@ -221,4 +229,8 @@ type OnConsensusResetListener func()
 
 func (d *Domain) SetOnConsensusResetListener(listener OnConsensusResetListener) {
 	d.onConsensusResetListener = listener
+}
+
+func (d *Domain) VirtualChangeChannel() chan *externalapi.VirtualChangeSet {
+	return d.virtualChangeChan
 }
