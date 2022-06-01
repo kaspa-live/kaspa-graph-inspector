@@ -24,8 +24,11 @@ func (mm *miningManager) TransactionCount() int {
 	return 0
 }
 
-func (mm *miningManager) GetBlockTemplate(coinbaseData *externalapi.DomainCoinbaseData) (*externalapi.DomainBlock, error) {
+func (mm *miningManager) GetBlockTemplate(coinbaseData *externalapi.DomainCoinbaseData) (*externalapi.DomainBlock, bool, error) {
 	panic("unimplemented")
+}
+
+func (mm *miningManager) ClearBlockTemplate() {
 }
 
 func (mm *miningManager) GetBlockTemplateBuilder() miningmanagermodel.BlockTemplateBuilder {
