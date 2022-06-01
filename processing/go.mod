@@ -45,4 +45,4 @@ require (
 	mellium.im/sasl v0.2.1 // indirect
 )
 
-replace github.com/kaspanet/kaspad => ../../../someone235/kaspad
+replace github.com/kaspanet/kaspad => ../../../kaspanet/kaspad

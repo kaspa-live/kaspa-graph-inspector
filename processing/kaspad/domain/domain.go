@@ -43,7 +43,7 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 	}
 
 	// for now, we do not use `virtualChangeChan` in the consensus object, nor in the domain
-	//virtualChangeChan := make(chan *externalapi.VirtualChangeSet, 1000)
+	//consensusEventsChan := make(chan externalapi.consensusEventsChan, 100e3)
 
 	// warning, the 2nd returned parameter (shouldMigrate) from consensusPackage.New is ignored for now
 	// I don't know how to handle it
@@ -58,7 +58,7 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 
 		databaseContext:   databaseContext,
 		consensusConfig:   consensusConfig,
-		virtualChangeChan: nil, // virtualChangeChan,
+		consensusEventsChan: nil, // consensusEventsChan,
 	}, nil
 }
 
@@ -73,7 +73,7 @@ type Domain struct {
 
 	onBlockAddedListener     consensusPackage.OnBlockAddedListener
 	onConsensusResetListener OnConsensusResetListener
-	virtualChangeChan        chan *externalapi.VirtualChangeSet
+	consensusEventsChan 	chan externalapi.ConsensusEvent
 }
 
 // Implementing the interface
@@ -122,7 +122,7 @@ func (d *Domain) initStagingConsensus(stagingConsensusConfig *consensus.Config) 
 
 	// Warning, the 2nd returned parameter (shouldMigrate) from consensusPackage.New is ignored for now
 	// I don't know how to handle it
-	consensusInstance, _, err := consensusPackage.New(stagingConsensusConfig, d.databaseContext, inactivePrefix, d.virtualChangeChan)
+	consensusInstance, _, err := consensusPackage.New(stagingConsensusConfig, d.databaseContext, inactivePrefix, d.consensusEventsChan)
 	if err != nil {
 		return err
 	}
@@ -232,6 +232,6 @@ func (d *Domain) SetOnConsensusResetListener(listener OnConsensusResetListener) 
 	d.onConsensusResetListener = listener
 }
 
-func (d *Domain) VirtualChangeChannel() chan *externalapi.VirtualChangeSet {
-	return d.virtualChangeChan
+func (d *Domain) ConsensusEventsChannel() chan externalapi.ConsensusEvent {
+	return d.consensusEventsChan
 }
