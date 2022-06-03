@@ -1,11 +1,27 @@
 import express from 'express';
 import Database from "./database.js";
 import cors from 'cors';
+import https from 'https';
+import fs from 'fs';
 
 const port = process.env.API_PORT;
 if (!port) {
     console.log("The API_PORT environment variable is required");
     process.exit(1);
+}
+
+const protocol = process.env.API_PROTOCOL ? process.env.API_PROTOCOL : "http";
+const cert = process.env.API_CERT;
+const key = process.env.API_KEY;
+if (protocol === "https") {
+    if (!cert) {
+        console.log("The API_CERT environment variable is requiered");
+        process.exit(1);
+    }
+    if (!key) {
+        console.log("The API_KEY environment variable is requiered");
+        process.exit(1);
+    }
 }
 
 const database = new Database();
@@ -143,6 +159,20 @@ server.get('/blockHashesByIds', async (request, response) =>{
     }
 });
 
-server.listen(port, () => {
-    console.log(`API server listening on port ${port}...`);
-});
+if (protocol === "https") {
+    https
+        .createServer(
+        {
+            key: fs.readFileSync(key!),
+            cert: fs.readFileSync(cert!),
+        },
+        server
+        )
+        .listen(port, () => {
+        console.log(`API server listening on port ${port} using protocol ${protocol}...`);
+        });
+} else {
+    server.listen(port, () => {
+        console.log(`API server listening on port ${port} using protocol ${protocol}...`);
+    });
+}
