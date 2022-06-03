@@ -9,10 +9,10 @@ const KaspaLogo = () => {
                 <Box sx={{
                     borderRadius: '50%',
                     borderStyle: 'solid',
-                    borderColor: '#5a5a5a',
+                    borderColor: '#ffffff',
                     borderWidth: '6px',
                     height: '92px',
-                    backgroundColor: '#5a5a5a'
+                    backgroundColor: '#ffffff'
                 }}>
                     <img src={Logo} alt="Kaspa Logo" style={{height:"100%", width:"100%"}} draggable="false" />
                 </Box>
