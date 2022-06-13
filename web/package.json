@@ -2,6 +2,7 @@
   "name": "web",
   "version": "0.1.17",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@createjs/core": "2.0.0-beta.4",
     "@createjs/tweenjs": "2.0.0-beta.4",

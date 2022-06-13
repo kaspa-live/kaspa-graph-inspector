@@ -7,7 +7,7 @@ import Canvas from "./components/Canvas";
 import Sidebar from './components/sidebar/Sidebar';
 import {BlockInformation} from "./model/BlockInformation";
 
-const App = () => {
+const App = ({interactive}: {interactive: boolean}) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
     const [wasBlockInformationPanelCloseRequested, setBlockInformationPanelCloseRequested] = useState(false);
@@ -33,6 +33,8 @@ const App = () => {
         setWasBlockSetState(wasBlockSetState || blockInformation !== null);
     });
 
+    console.log(`Starting KGI: interactive=${interactive}`)
+
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
@@ -46,7 +48,7 @@ const App = () => {
                     <Canvas dag={dag}/>
                     <Sidebar dag={dag}/>
 
-                    {!wasBlockSetState ? undefined :
+                    {!wasBlockSetState || !interactive ? undefined :
                         <div
                             className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
                             <BlockInformationPanel blockInformation={blockInformationState}
