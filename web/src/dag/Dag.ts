@@ -24,6 +24,7 @@ export default class Dag {
     private isTrackingChangedListener: (isTracking: boolean) => void;
     private isFetchFailingListener: (isFailing: boolean) => void;
     private blockInformationChangedListener: (blockInformation: BlockInformation | null) => void;
+    private blockClickedListener: (blockInformation: Block) => void;
 
     private readonly blockHashesByIds: { [id: string]: string } = {};
 
@@ -38,6 +39,9 @@ export default class Dag {
             // Do nothing
         }
         this.blockInformationChangedListener = () => {
+            // Do nothing
+        }
+        this.blockClickedListener = () => {
             // Do nothing
         }
 
@@ -378,6 +382,7 @@ export default class Dag {
 
     private handleBlockClicked = (block: Block) => {
         this.timelineContainer!.setTargetHeight(block.height);
+        this.blockClickedListener(block);
         this.setStateTrackTargetBlock(block);
     }
 
@@ -443,6 +448,10 @@ export default class Dag {
 
     setBlockInformationChangedListener = (BlockInformationChangedListener: (blockInformation: BlockInformation | null) => void) => {
         this.blockInformationChangedListener = BlockInformationChangedListener;
+    }
+
+    setBlockClickedListener = (BlockClickedListener: (block: Block) => void) => {
+        this.blockClickedListener = BlockClickedListener;
     }
 
     private notifyIsTrackingChanged = () => {

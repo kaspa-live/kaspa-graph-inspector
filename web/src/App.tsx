@@ -33,6 +33,11 @@ const App = ({interactive}: {interactive: boolean}) => {
         setWasBlockSetState(wasBlockSetState || blockInformation !== null);
     });
 
+    dag.setBlockClickedListener(block => {
+        setBlockInformationPanelOpenState(!!block);
+        setBlockInformationPanelCloseRequested(!block);
+    });
+
     console.log(`Starting KGI: interactive=${interactive}`)
 
     return (
