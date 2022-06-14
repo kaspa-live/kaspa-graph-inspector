@@ -1,4 +1,3 @@
-import './App.css';
 import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material';
 import Dag from "./dag/Dag";
 import {useState, useRef} from "react";

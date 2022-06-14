@@ -4,6 +4,7 @@ import { styled } from '@mui/material/styles';
 import { BlockColor } from '@mui/material/styles/createPalette';
 import Hash from "./block-information/Hash";
 import ListItem from "./block-information/ListItem";
+import ContentTooltip from "./block-information/tooltip/Content";
 import { katnipAddress } from "../../addresses";
 import { BlockInformation as BlockInformationModel } from "../../model/BlockInformation";
 import React from "react";
@@ -50,23 +51,23 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
     let language = navigator.language || "en-US";
     let blockDAAScore = blockInformation.block.daaScore.toLocaleString(language);
 
-    const blockHashTooltip = <div className="information-tooltip">
+    const blockHashTooltip = <ContentTooltip>
         <p>The <b>hash</b> of a block is its unique identifier in the block DAG.</p>
         <p>A block's hash is derived directly from the block itself using a cryptographic hash function. That ensures
             that no two blocks in the DAG have the same hash, and that each hash represents only the original block from
             which it was derived.</p>
-    </div>
+    </ContentTooltip>;
 
-    const blockParentsTooltip = <div className="information-tooltip">
+    const blockParentsTooltip = <ContentTooltip>
         <p>Every block in the block DAG (aside from the genesis) has one or more <b>parents.</b> A <b>parent</b> is
             simply the hash of another block that had been added to the DAG at a prior time.</p>
         <p>Here, we represent each parent with an arrow. Note that all arrows point from right to left — from child to
             parent. Moving towards the left in the graph reveals increasingly older generations of blocks until we reach
             the leftmost, and oldest, block. That's the origin of the DAG, or the genesis.</p>
         <p>A block's <b>selected parent</b> is the parent that has the most accumulated proof-of-work.</p>
-    </div>;
+    </ContentTooltip>;
 
-    const blockMergeSetTooltip = <div className="information-tooltip">
+    const blockMergeSetTooltip = <ContentTooltip>
         <p>The <b>merge set</b> of a block is the set of blocks that are an ancestor (either a direct or an indirect
             parent) of the block but are not an ancestor of the block's selected parent. Note that this includes the
             block's selected parent itself.</p>
@@ -75,9 +76,9 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
         <p>For security reasons, only a certain amount of blocks in a block's merge set may
             be <BlueBlock>blue</BlueBlock>. The blocks that do not make the cut are regarded as
             attacker blocks and are marked <RedBlock>red</RedBlock>.</p>
-    </div>;
+    </ContentTooltip>;
 
-    const isBlockInVirtualSelectedParentChainTooltip = <div className="information-tooltip">
+    const isBlockInVirtualSelectedParentChainTooltip = <ContentTooltip>
         <p>Every block in the DAG (aside from the genesis) has a selected parent. That selected parent likewise has a
             selected parent. Following this <b>chain</b> of selected parents will eventually bring us to the genesis. We
             call this chain the <b>Selected Parent Chain</b> of a block, or its <b>SPC.</b></p>
@@ -85,9 +86,9 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
             not yet have any children.</p>
         <p>Like all blocks, the virtual has a selected parent block. The Selected Parent Chain of the virtual is plainly
             called the <b>Virtual Selected Parent Chain,</b> or the <b>VSPC.</b></p>
-    </div>;
+    </ContentTooltip>;
 
-    const blockColorTooltip = <div className="information-tooltip">
+    const blockColorTooltip = <ContentTooltip>
         <p>Every block in the DAG is classified as one of two <b>colors:</b>
             <RedBlock> red (attacker)</RedBlock> and <BlueBlock>blue (honest)</BlueBlock>.
         </p>
@@ -95,22 +96,22 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
             the blocks in the DAG. Therefore, to determine the color of a block, we find the VSPC block that contains
             our block in its merge set. The color of our block in that merge set is the color of the block in the
             DAG.</p>
-    </div>;
+    </ContentTooltip>;
 
-    const blockDAAScoreTooltip = <div className="information-tooltip">
+    const blockDAAScoreTooltip = <ContentTooltip>
         <p>Every block in the DAG has a DAA Score.</p>
         <p>The DAA Score is related to the number of honest blocks ever added to the DAG. Since blocks are created at a
             rate of one per second, the score is a metric of the elapsed time since network launch.</p>
-    </div>;
+    </ContentTooltip>;
 
-    const blockChildrenTooltip = <div className="information-tooltip">
+    const blockChildrenTooltip = <ContentTooltip>
         <p>Every block in the block DAG (aside from the blocks forming the tips) has one or more <b>children.</b> A <b>child</b> is
            simply the hash of another block that has been added to the DAG at a later time and that has the block
             hash in its parents.</p>
         <p>Here, we represent each child with an arrow. Note that all arrows point from right to left — from child to
             parent. Moving towards the right in the graph reveals increasingly younger generations of blocks until we
             reach the rightmosts, and youngest, blocks. That's the tips of the DAG.</p>
-    </div>;
+    </ContentTooltip>;
 
     const parentElements = [];
     if (blockInformation.isInformationComplete) {
