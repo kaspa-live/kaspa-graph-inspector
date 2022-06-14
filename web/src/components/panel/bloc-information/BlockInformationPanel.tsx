@@ -6,6 +6,7 @@ import BlockInformationPanelHash from "./BlockInformationPanelHash";
 import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
 import {katnipAddress} from "../../../addresses";
 import {BlockInformation} from "../../../model/BlockInformation";
+import React from "react";
 
 const InfoDivider = () => <Divider sx={{backgroundColor: 'text.secondary', mt: '4px', mb: '4px'}}/>
 
@@ -16,8 +17,18 @@ const LeftTypography = styled(Typography)({
     alignSelf: "flex-start",
 })
 
-const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
-                               { blockInformation: BlockInformation | null, onClose: () => void, onClickHash: (hash: string) => void }) => {
+interface BlockInformationPanelProps { 
+    blockInformation: BlockInformation | null;
+    onClose: () => void;
+    onClickHash: (hash: string) => void;
+}
+
+const BlockInformationPanel = React.forwardRef<typeof Box, BlockInformationPanelProps>(
+    (
+        { blockInformation, onClose, onClickHash }: BlockInformationPanelProps,
+        ref: React.ForwardedRef<typeof Box>,
+    ): JSX.Element => {
+    
     const theme = useTheme();
 
     if (!blockInformation) {
@@ -130,126 +141,133 @@ const BlockInformationPanel = ({blockInformation, onClose, onClickHash}:
     }
 
     return (
-        <Paper elevation={4}>
-            <Box className="block-information-panel" sx={{
-                height: '100vh',
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-            }}>
-                <Box sx={{
+        <Box ref={ref} sx={{
+            position: 'absolute',
+            width: '20vw',
+            height: '100vh',
+            minWidth: '320px',
+        }}>
+            <Paper elevation={4}>
+                <Box className="block-information-panel" sx={{
+                    height: '100vh',
+                    width: '100%',
                     display: 'flex',
-                    flexDirection: 'row',
-                    padding: '20px 20px 0',
-                }}>
-                    <Typography variant="h5">
-                        Block Information
-                    </Typography>
-                    <IconButton
-                        onClick={onClose} 
-                        size="large"
-                        sx={{
-                            padding: '20px',
-                            margin: '-20px -20px auto auto',
-                        }}
-                    >
-                        <CloseIcon/>
-                    </IconButton>
-                </Box>
-                <Box sx={{
-                    flex: '1 1 auto',
-                    overflowY: 'auto',
-                    paddingLeft: '20px',
-                    paddingRight: '20px',
-                    scrollbarWidth: 'none', /* Hide the scrollbar in Firefox */
-                    msOverflowStyle: 'none', /* Hide the scrollbar in IE */
-                    '&::-webkit-scrollbar': {
-                        width: '0',
-                    }
+                    flexDirection: 'column',
                 }}>
                     <Box sx={{
                         display: 'flex',
-                        flexDirection: 'column',
+                        flexDirection: 'row',
+                        padding: '20px 20px 0',
                     }}>
-                        {!blockInformation.isInformationComplete
-                            ? undefined
-                            : <List>
-                                <BlockInformationPanelListItem itemKey="block-hash" label="Block Hash" tooltip={blockHashTooltip}>
-                                    <BlockInformationPanelHash hash={blockInformation.block.blockHash} onClickHash={onClickHash}/>
-                                </BlockInformationPanelListItem>
-
-                                <InfoDivider/>
-
-                                <BlockInformationPanelListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
-                                    {parentElements.length === 0
-                                        ?
-                                        <LeftTypography variant="body1">None</LeftTypography>
-                                        : parentElements
-                                    }
-                                </BlockInformationPanelListItem>
-
-                                <InfoDivider/>
-
-                                <BlockInformationPanelListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
-                                    {mergeSetHashElements.length === 0
-                                        ?
-                                        <LeftTypography variant="body1">None</LeftTypography>
-                                        : mergeSetHashElements
-                                    }
-                                </BlockInformationPanelListItem>
-
-                                <InfoDivider/>
-
-                                <BlockInformationPanelListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
-                                    {childElements.length === 0
-                                        ?
-                                        <LeftTypography variant="body1">None</LeftTypography>
-                                        : childElements
-                                    }
-                                </BlockInformationPanelListItem>
-
-                                <InfoDivider/>
-
-                                <BlockInformationPanelListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
-                                                               tooltip={isBlockInVirtualSelectedParentChainTooltip}>
-                                    <LeftTypography variant="body1">
-                                        {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
-                                    </LeftTypography>
-                                </BlockInformationPanelListItem>
-
-                                <InfoDivider/>
-
-                                <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
-                                    <LeftTypography variant="body1" sx={{ color: theme.palette.block[blockColorClass].main }}>
-                                        <b>{blockColorText}</b>
-                                    </LeftTypography>
-                                </BlockInformationPanelListItem>
-
-                                <InfoDivider/>
-
-                                <BlockInformationPanelListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
-                                    <LeftTypography variant="body1">
-                                        {blockDAAScore}
-                                    </LeftTypography>
-                                </BlockInformationPanelListItem>
-                            </List>
+                        <Typography variant="h5">
+                            Block Information
+                        </Typography>
+                        <IconButton
+                            onClick={onClose} 
+                            size="large"
+                            sx={{
+                                padding: '20px',
+                                margin: '-20px -20px auto auto',
+                            }}
+                        >
+                            <CloseIcon/>
+                        </IconButton>
+                    </Box>
+                    <Box sx={{
+                        flex: '1 1 auto',
+                        overflowY: 'auto',
+                        paddingLeft: '20px',
+                        paddingRight: '20px',
+                        scrollbarWidth: 'none', /* Hide the scrollbar in Firefox */
+                        msOverflowStyle: 'none', /* Hide the scrollbar in IE */
+                        '&::-webkit-scrollbar': {
+                            width: '0',
                         }
+                    }}>
+                        <Box sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                        }}>
+                            {!blockInformation.isInformationComplete
+                                ? undefined
+                                : <List>
+                                    <BlockInformationPanelListItem itemKey="block-hash" label="Block Hash" tooltip={blockHashTooltip}>
+                                        <BlockInformationPanelHash hash={blockInformation.block.blockHash} onClickHash={onClickHash}/>
+                                    </BlockInformationPanelListItem>
+
+                                    <InfoDivider/>
+
+                                    <BlockInformationPanelListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
+                                        {parentElements.length === 0
+                                            ?
+                                            <LeftTypography variant="body1">None</LeftTypography>
+                                            : parentElements
+                                        }
+                                    </BlockInformationPanelListItem>
+
+                                    <InfoDivider/>
+
+                                    <BlockInformationPanelListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
+                                        {mergeSetHashElements.length === 0
+                                            ?
+                                            <LeftTypography variant="body1">None</LeftTypography>
+                                            : mergeSetHashElements
+                                        }
+                                    </BlockInformationPanelListItem>
+
+                                    <InfoDivider/>
+
+                                    <BlockInformationPanelListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
+                                        {childElements.length === 0
+                                            ?
+                                            <LeftTypography variant="body1">None</LeftTypography>
+                                            : childElements
+                                        }
+                                    </BlockInformationPanelListItem>
+
+                                    <InfoDivider/>
+
+                                    <BlockInformationPanelListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
+                                                                tooltip={isBlockInVirtualSelectedParentChainTooltip}>
+                                        <LeftTypography variant="body1">
+                                            {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
+                                        </LeftTypography>
+                                    </BlockInformationPanelListItem>
+
+                                    <InfoDivider/>
+
+                                    <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
+                                        <LeftTypography variant="body1" sx={{ color: theme.palette.block[blockColorClass].main }}>
+                                            <b>{blockColorText}</b>
+                                        </LeftTypography>
+                                    </BlockInformationPanelListItem>
+
+                                    <InfoDivider/>
+
+                                    <BlockInformationPanelListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
+                                        <LeftTypography variant="body1">
+                                            {blockDAAScore}
+                                        </LeftTypography>
+                                    </BlockInformationPanelListItem>
+                                </List>
+                            }
+                        </Box>
+                    </Box>
+                    <Box sx={{
+                        alignSelf: 'flex-end',
+                        fontWeight: 'bold',
+                        textAlign: 'end',
+                        width: '100%',
+                        padding: '15px 20px 15px',
+                    }}>
+                        <Typography variant="body2">
+                            More details on <Link href={katnipAddressForBlock} target="_blank" rel="noreferrer" sx={{textDecoration: 'underline', color: 'text.primary', fontWeight: 'bold'}}>Katnip&nbsp;Block&nbsp;Explorer</Link>
+                        </Typography>
                     </Box>
                 </Box>
-                <Box sx={{
-                    alignSelf: 'flex-end',
-                    fontWeight: 'bold',
-                    textAlign: 'end',
-                    width: '100%',
-                    padding: '15px 20px 15px',
-                }}>
-                    <Typography variant="body2">
-                        More details on <Link href={katnipAddressForBlock} target="_blank" rel="noreferrer" sx={{textDecoration: 'underline', color: 'text.primary', fontWeight: 'bold'}}>Katnip&nbsp;Block&nbsp;Explorer</Link>
-                    </Typography>
-                </Box>
-            </Box>
-        </Paper>
+            </Paper>
+        </Box>
     );
-}
+});
 
 export default BlockInformationPanel;

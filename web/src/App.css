@@ -16,28 +16,3 @@
 .information-tooltip .further-information {
   font-weight: bold;
 }
-
-.block-information-container {
-    position: absolute;
-    width: 20vw;
-    height: 100vh;
-    transform: translateX(-100%);
-    min-width: 320px;
-}
-
-.block-information-open {
-    animation: slide-in 0.3s forwards;
-}
-
-.block-information-closed {
-    animation: slide-out 0.3s forwards;
-}
-
-@keyframes slide-in {
-    100% { transform: translateX(0%); }
-}
-
-@keyframes slide-out {
-    0% { transform: translateX(0%); }
-    100% { transform: translateX(-100%); }
-}

@@ -1,17 +1,20 @@
 import './App.css';
-import { createTheme, ThemeProvider, StyledEngineProvider, Box } from '@mui/material';
+import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material';
 import Dag from "./dag/Dag";
-import {useState} from "react";
+import {useState, useRef} from "react";
 import BlockInformationPanel from "./components/panel/bloc-information/BlockInformationPanel";
 import Canvas from "./components/Canvas";
 import Sidebar from './components/sidebar/Sidebar';
 import {BlockInformation} from "./model/BlockInformation";
+import SlideItem from './components/base/SlideItem';
+import AppContainer from './components/base/AppContainer';
 
 const App = ({interactive}: {interactive: boolean}) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
     const [wasBlockInformationPanelCloseRequested, setBlockInformationPanelCloseRequested] = useState(false);
     const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
+    const appContainerRef = useRef(null);
 
     dag.setBlockInformationChangedListener(blockInformation => {
         const hasBlockChanged = blockInformation?.block.blockHash !== blockInformationState?.block.blockHash;
@@ -43,30 +46,38 @@ const App = ({interactive}: {interactive: boolean}) => {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
-                <Box sx={{
+                <AppContainer sx={{
                         minHeight: '100vh',
                         minWidth: '100vw',
                         display: 'flex',
                         flexDirection: 'column',
                     }}
+                    ref={appContainerRef}
                 >
                     <Canvas dag={dag}/>
                     <Sidebar dag={dag}/>
 
                     {!wasBlockSetState || !interactive ? undefined :
-                        <div
-                            className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
-                            <BlockInformationPanel blockInformation={blockInformationState}
-                                                   onClose={() => {
-                                                       setBlockInformationPanelCloseRequested(true);
-                                                       setBlockInformationPanelOpenState(false);
-                                                   }}
-                                                   onClickHash={(hash: string) => {
-                                                        dag.setStateTrackTargetHash(hash);
-                                                   }}/>
-                        </div>
+                        <SlideItem
+                            appear={false}
+                            direction="right"
+                            in={isBlockInformationPanelOpenState}
+                            container={appContainerRef.current}
+                            unmountOnExit
+                        >
+                            <BlockInformationPanel
+                                blockInformation={blockInformationState}
+                                onClose={() => {
+                                    setBlockInformationPanelCloseRequested(true);
+                                    setBlockInformationPanelOpenState(false);
+                                }}
+                                onClickHash={(hash: string) => {
+                                    dag.setStateTrackTargetHash(hash);
+                                }}
+                            />
+                        </SlideItem>
                     }
-                </Box>
+                </AppContainer>
             </ThemeProvider>
         </StyledEngineProvider>
     );
