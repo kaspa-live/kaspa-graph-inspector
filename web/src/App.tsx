@@ -2,7 +2,7 @@ import './App.css';
 import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material';
 import Dag from "./dag/Dag";
 import {useState, useRef} from "react";
-import BlockInformationPanel from "./components/panel/bloc-information/BlockInformationPanel";
+import BlockInformationPanel from "./components/panel/BlockInformation";
 import Canvas from "./components/Canvas";
 import Sidebar from './components/sidebar/Sidebar';
 import {BlockInformation} from "./model/BlockInformation";

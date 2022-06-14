@@ -1,11 +1,11 @@
 import {ReactChild, ReactElement, ReactFragment, ReactPortal} from "react";
-import { Tooltip, TooltipProps } from "@mui/material";
+import { Tooltip as TooltipMUI, TooltipProps as TooltipPropsMUI } from "@mui/material";
 import { styled } from '@mui/material/styles';
 
 const StyledTooltip = styled(
-        ({ className, ...props }: TooltipProps) => (<Tooltip {...props} classes={{ popper: className }}/>),
+        ({ className, ...props }: TooltipPropsMUI) => (<TooltipMUI {...props} classes={{ popper: className }}/>),
         {name: "StyledTooltip"}
-    )<TooltipProps>(({ theme }) => ({
+    )<TooltipPropsMUI>(({ theme }) => ({
 
     '& .MuiTooltip-tooltip': {
         maxWidth: "none",
@@ -22,12 +22,12 @@ const StyledTooltip = styled(
     }
 }));
 
-const BlockInformationPanelTooltip = ({children, title}:
-                                      { children: ReactElement, title: boolean | ReactChild | ReactFragment | ReactPortal }) => {
-
-    return <StyledTooltip title={title} arrow placement="right">
-        {children}
-    </StyledTooltip>
+const Tooltip = ({children, title}: { children: ReactElement, title: boolean | ReactChild | ReactFragment | ReactPortal }) => {
+    return (
+        <StyledTooltip title={title} arrow placement="right">
+            {children}
+        </StyledTooltip>
+    );
 };
 
-export default BlockInformationPanelTooltip;
+export default Tooltip;

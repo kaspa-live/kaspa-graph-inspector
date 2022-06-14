@@ -2,10 +2,10 @@ import {Box, Divider, IconButton, Link, List, Paper, Typography, useTheme} from 
 import CloseIcon from '@mui/icons-material/Close';
 import { styled } from '@mui/material/styles';
 import { BlockColor } from '@mui/material/styles/createPalette';
-import BlockInformationPanelHash from "./BlockInformationPanelHash";
-import BlockInformationPanelListItem from "./BlockInformationPanelListItem";
-import {katnipAddress} from "../../../addresses";
-import {BlockInformation} from "../../../model/BlockInformation";
+import Hash from "./block-information/Hash";
+import ListItem from "./block-information/ListItem";
+import { katnipAddress } from "../../addresses";
+import { BlockInformation as BlockInformationModel } from "../../model/BlockInformation";
 import React from "react";
 
 const InfoDivider = () => <Divider sx={{backgroundColor: 'text.secondary', mt: '4px', mb: '4px'}}/>
@@ -17,15 +17,15 @@ const LeftTypography = styled(Typography)({
     alignSelf: "flex-start",
 })
 
-interface BlockInformationPanelProps { 
-    blockInformation: BlockInformation | null;
+interface BlockInformationProps { 
+    blockInformation: BlockInformationModel | null;
     onClose: () => void;
     onClickHash: (hash: string) => void;
 }
 
-const BlockInformationPanel = React.forwardRef<typeof Box, BlockInformationPanelProps>(
+const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
     (
-        { blockInformation, onClose, onClickHash }: BlockInformationPanelProps,
+        { blockInformation, onClose, onClickHash }: BlockInformationProps,
         ref: React.ForwardedRef<typeof Box>,
     ): JSX.Element => {
     
@@ -116,7 +116,7 @@ const BlockInformationPanel = React.forwardRef<typeof Box, BlockInformationPanel
     if (blockInformation.isInformationComplete) {
         for (let parentHash of blockInformation.parentHashes) {
             const selectedParent = (blockInformation.selectedParentHash === parentHash);
-            parentElements.push(<BlockInformationPanelHash key={parentHash} selected={selectedParent} hash={parentHash} onClickHash={onClickHash}/>)
+            parentElements.push(<Hash key={parentHash} selected={selectedParent} hash={parentHash} onClickHash={onClickHash}/>)
         }
     }
 
@@ -124,11 +124,11 @@ const BlockInformationPanel = React.forwardRef<typeof Box, BlockInformationPanel
     if (blockInformation.isInformationComplete) {
         for (let mergeSetBlueHash of blockInformation.mergeSetBlueHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash key={mergeSetBlueHash} color="blue" hash={mergeSetBlueHash} onClickHash={onClickHash}/>);
+                <Hash key={mergeSetBlueHash} color="blue" hash={mergeSetBlueHash} onClickHash={onClickHash}/>);
         }
         for (let mergeSetRedHash of blockInformation.mergeSetRedHashes) {
             mergeSetHashElements.push(
-                <BlockInformationPanelHash key={mergeSetRedHash} color="red" hash={mergeSetRedHash} onClickHash={onClickHash}/>);
+                <Hash key={mergeSetRedHash} color="red" hash={mergeSetRedHash} onClickHash={onClickHash}/>);
         }
     }
 
@@ -136,7 +136,7 @@ const BlockInformationPanel = React.forwardRef<typeof Box, BlockInformationPanel
     if (blockInformation.isInformationComplete) {
         for (let childHash of blockInformation.childHashes) {
             const selectedChild = (blockInformation.selectedChildHash === childHash);
-            childElements.push(<BlockInformationPanelHash key={childHash} selected={selectedChild} hash={childHash}  onClickHash={onClickHash}/>)
+            childElements.push(<Hash key={childHash} selected={selectedChild} hash={childHash}  onClickHash={onClickHash}/>)
         }
     }
 
@@ -191,64 +191,64 @@ const BlockInformationPanel = React.forwardRef<typeof Box, BlockInformationPanel
                             {!blockInformation.isInformationComplete
                                 ? undefined
                                 : <List>
-                                    <BlockInformationPanelListItem itemKey="block-hash" label="Block Hash" tooltip={blockHashTooltip}>
-                                        <BlockInformationPanelHash hash={blockInformation.block.blockHash} onClickHash={onClickHash}/>
-                                    </BlockInformationPanelListItem>
+                                    <ListItem itemKey="block-hash" label="Block Hash" tooltip={blockHashTooltip}>
+                                        <Hash hash={blockInformation.block.blockHash} onClickHash={onClickHash}/>
+                                    </ListItem>
 
                                     <InfoDivider/>
 
-                                    <BlockInformationPanelListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
+                                    <ListItem itemKey="block-parents" label="Block Parents" tooltip={blockParentsTooltip}>
                                         {parentElements.length === 0
                                             ?
                                             <LeftTypography variant="body1">None</LeftTypography>
                                             : parentElements
                                         }
-                                    </BlockInformationPanelListItem>
+                                    </ListItem>
 
                                     <InfoDivider/>
 
-                                    <BlockInformationPanelListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
+                                    <ListItem itemKey="block-merge-set" label="Block Merge Set" tooltip={blockMergeSetTooltip}>
                                         {mergeSetHashElements.length === 0
                                             ?
                                             <LeftTypography variant="body1">None</LeftTypography>
                                             : mergeSetHashElements
                                         }
-                                    </BlockInformationPanelListItem>
+                                    </ListItem>
 
                                     <InfoDivider/>
 
-                                    <BlockInformationPanelListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
+                                    <ListItem itemKey="block-children" label="Block Children" tooltip={blockChildrenTooltip}>
                                         {childElements.length === 0
                                             ?
                                             <LeftTypography variant="body1">None</LeftTypography>
                                             : childElements
                                         }
-                                    </BlockInformationPanelListItem>
+                                    </ListItem>
 
                                     <InfoDivider/>
 
-                                    <BlockInformationPanelListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
+                                    <ListItem itemKey="is-bloc-vspc" label="Is Block In VSPC"
                                                                 tooltip={isBlockInVirtualSelectedParentChainTooltip}>
                                         <LeftTypography variant="body1">
                                             {blockInformation.block.isInVirtualSelectedParentChain ? "Yes" : "No"}
                                         </LeftTypography>
-                                    </BlockInformationPanelListItem>
+                                    </ListItem>
 
                                     <InfoDivider/>
 
-                                    <BlockInformationPanelListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
+                                    <ListItem itemKey="block-color" label="Block Color" tooltip={blockColorTooltip}>
                                         <LeftTypography variant="body1" sx={{ color: theme.palette.block[blockColorClass].main }}>
                                             <b>{blockColorText}</b>
                                         </LeftTypography>
-                                    </BlockInformationPanelListItem>
+                                    </ListItem>
 
                                     <InfoDivider/>
 
-                                    <BlockInformationPanelListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
+                                    <ListItem itemKey="block-daa-score" label="Block DAA Score" tooltip={blockDAAScoreTooltip}>
                                         <LeftTypography variant="body1">
                                             {blockDAAScore}
                                         </LeftTypography>
-                                    </BlockInformationPanelListItem>
+                                    </ListItem>
                                 </List>
                             }
                         </Box>
@@ -270,4 +270,4 @@ const BlockInformationPanel = React.forwardRef<typeof Box, BlockInformationPanel
     );
 });
 
-export default BlockInformationPanel;
+export default BlockInformation;
