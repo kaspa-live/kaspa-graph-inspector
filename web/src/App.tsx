@@ -7,6 +7,7 @@ import Sidebar from './components/sidebar/Sidebar';
 import {BlockInformation} from "./model/BlockInformation";
 import SlideItem from './components/base/SlideItem';
 import AppContainer from './components/base/AppContainer';
+import GlobalStyles from '@mui/material/GlobalStyles';
 
 const App = ({interactive}: {interactive: boolean}) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
@@ -45,11 +46,21 @@ const App = ({interactive}: {interactive: boolean}) => {
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
+                {appGlobalStyles}
                 <AppContainer sx={{
-                        minHeight: '100vh',
-                        minWidth: '100vw',
+                        padding: 0,
+                        margin: 0,
+
+                        position: 'absolute',
+                        minWidth: '120px',
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+
                         display: 'flex',
                         flexDirection: 'column',
+                        overflow: 'hidden',
                     }}
                     ref={appContainerRef}
                 >
@@ -81,6 +92,12 @@ const App = ({interactive}: {interactive: boolean}) => {
         </StyledEngineProvider>
     );
 };
+
+const appGlobalStyles = <GlobalStyles styles={{
+    '*': {
+        boxSizing: 'border-box',
+    },
+}} />
 
 const theme = createTheme({
     palette: {

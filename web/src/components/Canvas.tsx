@@ -1,6 +1,16 @@
 import React, {useEffect, useRef} from 'react'
 import Dag from "../dag/Dag";
-import './Canvas.css'
+import { styled } from '@mui/material/styles';
+
+const StyledCanevas = styled('canvas')({
+    padding: 0,
+    margin: 0,
+
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+})
+
 
 const Canvas = ({dag}: { dag: Dag }) => {
     const canvasRef = useRef() as React.MutableRefObject<HTMLCanvasElement>;
@@ -14,7 +24,7 @@ const Canvas = ({dag}: { dag: Dag }) => {
         };
     }, [dag]);
 
-    return <canvas ref={canvasRef} className="canvas"/>;
+    return <StyledCanevas ref={canvasRef} />;
 }
 
 export default Canvas

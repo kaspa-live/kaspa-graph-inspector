@@ -143,14 +143,21 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
 
     return (
         <Box ref={ref} sx={{
+            padding: 0,
+            margin: 0,
+
             position: 'absolute',
-            width: '20vw',
-            height: '100vh',
-            minWidth: '320px',
+            width: '50vw',
+            minWidth: '280px',
+            maxWidth: '320px',
+            top: 0,
+            bottom: 0,
         }}>
-            <Paper elevation={4}>
-                <Box className="block-information-panel" sx={{
-                    height: '100vh',
+            <Paper elevation={4} sx={{
+                height: '100%',
+            }}>
+                <Box sx={{
+                    height: '100%',
                     width: '100%',
                     display: 'flex',
                     flexDirection: 'column',

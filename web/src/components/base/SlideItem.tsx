@@ -13,7 +13,7 @@ const SlideItem = ( props: SlideProps ) => {
             in={props.in}
             timeout={transitionDuration}
             style={{
-                transitionDelay: `${props.in ? 0 : transitionDuration.exit*2/3}ms`,
+                transitionDelay: '0ms',
             }}
             container={props.container}
             direction={props.direction}
