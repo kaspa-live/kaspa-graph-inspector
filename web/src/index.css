@@ -6,11 +6,32 @@ body {
   Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/*
+* Use this class to get kgi cover the whole page view.
+*
+* The important point is to define in the class the attribute 
+* `position` to anything but `static` and `initial`. This allows
+* kgi to anchor its elements relative to the wrapper.
+*/
+.full-view-wrapper {
+  height: 100vh;
+  width: 100vw;
+  position: relative;
 }
 
-* {
-  box-sizing: border-box;
+/*
+* Use this class as an example of how to embed kgi as a widget
+* in a static html page.
+*
+* The important point is to define in the class the attribute 
+* `position` to anything but `static` and `initial`. This allows
+* kgi to anchor its elements relative to the wrapper.
+*/
+.embedded-wrapper {
+  padding: 0;
+  margin: 10px;
+  border: 1px solid #bbbbbb;
+  height: calc(100vh - 22px);
+  width: calc(100vw - 22px);
+  position: relative;
 }

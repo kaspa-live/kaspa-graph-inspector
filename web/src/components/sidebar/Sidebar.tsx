@@ -16,16 +16,20 @@ const Sidebar = ({dag}: {dag: Dag}) => {
 
     return (
         <Box sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: '24px',
+            padding: 0,
+            margin: 0,
+                
             position: 'absolute',
             top: '2vw',
             bottom: '2vw',
             right: '2.5vw',
             width: '92px',
+
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: '24px',
         }}>
             <Box sx={{
                     display: 'flex',

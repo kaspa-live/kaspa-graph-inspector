@@ -1,17 +1,20 @@
-import './App.css';
-import { createTheme, ThemeProvider, StyledEngineProvider, Box } from '@mui/material';
+import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material';
 import Dag from "./dag/Dag";
-import {useState} from "react";
-import BlockInformationPanel from "./components/panel/bloc-information/BlockInformationPanel";
+import {useState, useRef} from "react";
+import BlockInformationPanel from "./components/panel/BlockInformation";
 import Canvas from "./components/Canvas";
 import Sidebar from './components/sidebar/Sidebar';
 import {BlockInformation} from "./model/BlockInformation";
+import SlideItem from './components/base/SlideItem';
+import AppContainer from './components/base/AppContainer';
+import GlobalStyles from '@mui/material/GlobalStyles';
 
-const App = () => {
+const App = ({interactive}: {interactive: boolean}) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
     const [wasBlockInformationPanelCloseRequested, setBlockInformationPanelCloseRequested] = useState(false);
     const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
+    const appContainerRef = useRef(null);
 
     dag.setBlockInformationChangedListener(blockInformation => {
         const hasBlockChanged = blockInformation?.block.blockHash !== blockInformationState?.block.blockHash;
@@ -33,37 +36,68 @@ const App = () => {
         setWasBlockSetState(wasBlockSetState || blockInformation !== null);
     });
 
+    dag.setBlockClickedListener(block => {
+        setBlockInformationPanelOpenState(!!block);
+        setBlockInformationPanelCloseRequested(!block);
+    });
+
+    console.log(`Starting KGI: interactive=${interactive}`)
+
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
-                <Box sx={{
-                        minHeight: '100vh',
-                        minWidth: '100vw',
+                {appGlobalStyles}
+                <AppContainer sx={{
+                        padding: 0,
+                        margin: 0,
+
+                        position: 'absolute',
+                        minWidth: '120px',
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+
                         display: 'flex',
                         flexDirection: 'column',
+                        overflow: 'hidden',
                     }}
+                    ref={appContainerRef}
                 >
                     <Canvas dag={dag}/>
                     <Sidebar dag={dag}/>
 
-                    {!wasBlockSetState ? undefined :
-                        <div
-                            className={`block-information-container ${isBlockInformationPanelOpenState ? "block-information-open" : "block-information-closed"}`}>
-                            <BlockInformationPanel blockInformation={blockInformationState}
-                                                   onClose={() => {
-                                                       setBlockInformationPanelCloseRequested(true);
-                                                       setBlockInformationPanelOpenState(false);
-                                                   }}
-                                                   onClickHash={(hash: string) => {
-                                                        dag.setStateTrackTargetHash(hash);
-                                                   }}/>
-                        </div>
+                    {!wasBlockSetState || !interactive ? undefined :
+                        <SlideItem
+                            appear={false}
+                            direction="right"
+                            in={isBlockInformationPanelOpenState}
+                            container={appContainerRef.current}
+                            unmountOnExit
+                        >
+                            <BlockInformationPanel
+                                blockInformation={blockInformationState}
+                                onClose={() => {
+                                    setBlockInformationPanelCloseRequested(true);
+                                    setBlockInformationPanelOpenState(false);
+                                }}
+                                onClickHash={(hash: string) => {
+                                    dag.setStateTrackTargetHash(hash);
+                                }}
+                            />
+                        </SlideItem>
                     }
-                </Box>
+                </AppContainer>
             </ThemeProvider>
         </StyledEngineProvider>
     );
 };
+
+const appGlobalStyles = <GlobalStyles styles={{
+    '*': {
+        boxSizing: 'border-box',
+    },
+}} />
 
 const theme = createTheme({
     palette: {

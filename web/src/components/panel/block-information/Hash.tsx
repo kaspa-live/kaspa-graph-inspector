@@ -1,7 +1,7 @@
-import {Box, Typography, TypographyProps} from "@mui/material";
+import { Box, Typography, TypographyProps } from "@mui/material";
 import { styled } from '@mui/material/styles';
 import { BlockColor } from "@mui/material/styles/createPalette";
-import BlockInformationPanelTooltip from "./BlockInformationPanelTooltip";
+import Tooltip from "./Tooltip";
 
 const HashTitle = styled('div')({
     textTransform: "uppercase",
@@ -40,27 +40,29 @@ const BlockInformationPanelHash = ({selected, color, hash, onClickHash}: { selec
     const hashStart = hash.substring(0, 16);
     const hashEnd = hash.substring(hash.length - 8);
 
-    return <BlockInformationPanelTooltip title={<HashTitle>{hash}</HashTitle>}>
-        <Box 
-            onClick={ () => { onClickHash(hash) } }
-            sx={{
-                display: "flex",
-                flexDirection: "row",
-                textTransform: "uppercase",
-                width: "100%",
-                cursor: "pointer",
-        }}>
-            <Box sx={{ alignSelf: "flex-start" }}>
-                <HashTypography selected={selected} color={color}>{hashStart}</HashTypography>
+    return (
+        <Tooltip title={<HashTitle>{hash}</HashTitle>}>
+            <Box 
+                onClick={ () => { onClickHash(hash) } }
+                sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    textTransform: "uppercase",
+                    width: "100%",
+                    cursor: "pointer",
+            }}>
+                <Box sx={{ alignSelf: "flex-start" }}>
+                    <HashTypography selected={selected} color={color}>{hashStart}</HashTypography>
+                </Box>
+                <Box sx={{ flex: "1 1 auto", textAlign: "center" }}>
+                    <HashTypography selected={selected} color={color}>…</HashTypography>
+                </Box>
+                <Box sx={{ alignSelf: "flex-end" }}>
+                    <HashTypography selected={selected} color={color}>{hashEnd}</HashTypography>
+                </Box>
             </Box>
-            <Box sx={{ flex: "1 1 auto", textAlign: "center" }}>
-                <HashTypography selected={selected} color={color}>…</HashTypography>
-            </Box>
-            <Box sx={{ alignSelf: "flex-end" }}>
-                <HashTypography selected={selected} color={color}>{hashEnd}</HashTypography>
-            </Box>
-        </Box>
-    </BlockInformationPanelTooltip>;
+        </Tooltip>
+    );
 };
 
 export default BlockInformationPanelHash;
