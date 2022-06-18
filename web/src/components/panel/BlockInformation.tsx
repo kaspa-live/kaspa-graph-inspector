@@ -186,11 +186,22 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
                         overflowY: 'auto',
                         paddingLeft: '20px',
                         paddingRight: '20px',
-                        scrollbarWidth: 'none', /* Hide the scrollbar in Firefox */
-                        msOverflowStyle: 'none', /* Hide the scrollbar in IE */
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: '#bbb #fff',
                         '&::-webkit-scrollbar': {
-                            width: '0',
-                        }
+                            width: '10px',
+                        },
+                        '&::-webkit-scrollbar-track': {
+                            '-webkit-border-radius': '6px',
+                            borderRadius: '6px',
+                            background: '#fff',
+                        },
+                        '&::-webkit-scrollbar-thumb': {
+                            '-webkit-border-radius': '6px',
+                            borderRadius: '6px',
+                            backgroundColor: '#bbb',
+                            border: '2px solid #fff',
+                        },
                     }}>
                         <Box sx={{
                             display: 'flex',

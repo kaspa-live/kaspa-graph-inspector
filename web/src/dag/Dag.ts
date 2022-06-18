@@ -381,6 +381,7 @@ export default class Dag {
     }
 
     private handleBlockClicked = (block: Block) => {
+        this.blockClickedListener(block);
         this.timelineContainer!.setTargetHeight(block.height);
         this.blockClickedListener(block);
         this.setStateTrackTargetBlock(block);

@@ -5,7 +5,8 @@ import Tooltip from "./Tooltip";
 
 const HashTitle = styled('div')({
     textTransform: "uppercase",
-    fontFamily: "monospace",
+    fontFamily: "Red Hat Mono",
+    letterSpacing: "0.08em",
 })
 
 interface HashTypographyProps extends TypographyProps {
@@ -22,7 +23,10 @@ const HashTypography = styled(
         shouldForwardProp: (prop) => prop !== 'selected',
     }
 )<HashTypographyProps>(({ selected, color, theme }) => ({
-    fontFamily: "monospace",
+    fontFamily: "Red Hat Mono",
+    fontSize: "0.875rem",
+    lineHeight: "1.75",
+    letterSpacing: "0.08em",
     textTransform: "uppercase",
     ...(
         (selected || color) && {
