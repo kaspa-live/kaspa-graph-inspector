@@ -20,6 +20,14 @@ func (mm *miningManager) RevalidateHighPriorityTransactions() (validTransactions
 	return nil, nil
 }
 
+func (mm *miningManager) GetOrphanTransaction(transactionID *externalapi.DomainTransactionID) (*externalapi.DomainTransaction, bool) {
+	panic("unimplemented")
+}
+
+func (mm *miningManager) AllOrphanTransactions() []*externalapi.DomainTransaction {
+	panic("unimplemented")
+}
+
 func (mm *miningManager) TransactionCount() int {
 	return 0
 }

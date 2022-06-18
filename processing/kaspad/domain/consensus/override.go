@@ -26,10 +26,6 @@ func (c *Consensus) GetBlockInfo(blockHash *externalapi.DomainHash) (*externalap
 	return c.kaspadConsensus.GetBlockInfo(blockHash)
 }
 
-func (c *Consensus) GetBlockAcceptanceData(blockHash *externalapi.DomainHash) (externalapi.AcceptanceData, error) {
-	return c.kaspadConsensus.GetBlockAcceptanceData(blockHash)
-}
-
 func (c *Consensus) GetHashesBetween(lowHash, highHash *externalapi.DomainHash, maxBlueScoreDifference uint64) (
 	[]*externalapi.DomainHash, *externalapi.DomainHash, error) {
 
@@ -110,6 +106,14 @@ func (c *Consensus) GetBlockRelations(blockHash *externalapi.DomainHash) (
 	return c.kaspadConsensus.GetBlockRelations(blockHash)
 }
 
+func (s *Consensus) GetBlockAcceptanceData(blockHash *externalapi.DomainHash) (externalapi.AcceptanceData, error) {
+	return s.kaspadConsensus.GetBlockAcceptanceData(blockHash)
+}
+
+func (s *Consensus) GetBlocksAcceptanceData(blockHashes []*externalapi.DomainHash) ([]externalapi.AcceptanceData, error) {
+	return s.kaspadConsensus.GetBlocksAcceptanceData(blockHashes)
+}
+
 func (c *Consensus) GetBlockEvenIfHeaderOnly(blockHash *externalapi.DomainHash) (*externalapi.DomainBlock, error) {
 	return c.kaspadConsensus.GetBlockEvenIfHeaderOnly(blockHash)
 }
@@ -142,7 +146,7 @@ func (c *Consensus) PopulateMass(transaction *externalapi.DomainTransaction) {
 	c.kaspadConsensus.PopulateMass(transaction)
 }
 
-func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.BlockWithTrustedData, validateUTXO bool) (*externalapi.VirtualChangeSet, error) {
+func (c *Consensus) ValidateAndInsertBlockWithTrustedData(block *externalapi.BlockWithTrustedData, validateUTXO bool) error {
 	return c.kaspadConsensus.ValidateAndInsertBlockWithTrustedData(block, validateUTXO)
 }
 
