@@ -42,24 +42,25 @@ func New(dagParams *dagconfig.Params, databaseContext database.Database) (*Domai
 		EnableSanityCheckPruningUTXOSet: false,
 	}
 
-	// for now, we do not use `virtualChangeChan` in the consensus object, nor in the domain
-	//consensusEventsChan := make(chan externalapi.consensusEventsChan, 100e3)
+	consensusEventsChan := make(chan externalapi.ConsensusEvent, 100e3)
 
 	// warning, the 2nd returned parameter (shouldMigrate) from consensusPackage.New is ignored for now
 	// I don't know how to handle it
-	consensus, _, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix, nil)
+	consensusInstance, _, err := consensusPackage.New(consensusConfig, databaseContext, activePrefix, consensusEventsChan)
 	if err != nil {
 		return nil, err
 	}
+
 	miningManager := mining_manager.New()
-	return &Domain{
-		consensus:     consensus,
+	domainInstance := &Domain{
+		consensus:     consensusInstance,
 		miningManager: miningManager,
 
-		databaseContext:   databaseContext,
-		consensusConfig:   consensusConfig,
-		consensusEventsChan: nil, // consensusEventsChan,
-	}, nil
+		databaseContext:     databaseContext,
+		consensusConfig:     consensusConfig,
+		consensusEventsChan: consensusEventsChan,
+	}
+	return domainInstance, nil
 }
 
 type Domain struct {
@@ -73,7 +74,7 @@ type Domain struct {
 
 	onBlockAddedListener     consensusPackage.OnBlockAddedListener
 	onConsensusResetListener OnConsensusResetListener
-	consensusEventsChan 	chan externalapi.ConsensusEvent
+	consensusEventsChan      chan externalapi.ConsensusEvent
 }
 
 // Implementing the interface

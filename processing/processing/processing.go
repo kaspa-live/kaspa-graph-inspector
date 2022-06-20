@@ -13,6 +13,7 @@ import (
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/processing/batch"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
+	"github.com/kaspanet/kaspad/infrastructure/db/database"
 	"github.com/pkg/errors"
 )
 
@@ -34,6 +35,7 @@ func NewProcessing(config *configPackage.Config,
 		database: database,
 		kaspad:   kaspad,
 	}
+	processing.initConsensusEventsHandler()
 
 	err := processing.ResyncDatabase()
 	if err != nil {
@@ -41,6 +43,32 @@ func NewProcessing(config *configPackage.Config,
 	}
 
 	return processing, nil
+}
+
+func (p *Processing) initConsensusEventsHandler() {
+	go func() {
+		for {
+			consensusEvent, ok := <-p.kaspad.Domain().ConsensusEventsChannel()
+			if !ok {
+				return
+			}
+			switch event := consensusEvent.(type) {
+			case *externalapi.VirtualChangeSet:
+				err := p.ProcessVirtualChange(event)
+				if err != nil {
+					logging.LogErrorAndExit("Failed to process virtual change consensus event: %s", err)
+				}
+			case *externalapi.BlockAdded:
+				log.Debugf("Consensus event handler gets block %s", consensushashing.BlockHash(event.Block))
+				err := p.ProcessBlock(event.Block)
+				if err != nil {
+					logging.LogErrorAndExit("Failed to process block added consensus event: %s", err)
+				}
+			default:
+				logging.LogErrorAndExit("Failed to process consensus event: %s", errors.Errorf("Got event of unsupported type %T", consensusEvent))
+			}
+		}
+	}()
 }
 
 func (p *Processing) ResyncDatabase() error {
@@ -180,7 +208,7 @@ func (p *Processing) ResyncDatabase() error {
 			if err != nil {
 				return err
 			}
-			err = p.processBlockAndDependencies(databaseTransaction, blockHash, block, pruningPointBlock, nil)
+			err = p.processBlockAndDependencies(databaseTransaction, blockHash, block, pruningPointBlock)
 			if err != nil {
 				return err
 			}
@@ -191,7 +219,7 @@ func (p *Processing) ResyncDatabase() error {
 			}
 		}
 
-		return p.resyncVirtualSelectedParentChain(databaseTransaction)
+		return p.resyncVirtualSelectedParentChain(databaseTransaction, false)
 	})
 }
 
@@ -200,17 +228,17 @@ func (p *Processing) ResyncVirtualSelectedParentChain() error {
 	defer p.Unlock()
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		return p.resyncVirtualSelectedParentChain(databaseTransaction)
+		return p.resyncVirtualSelectedParentChain(databaseTransaction, false)
 	})
 }
 
-func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx) error {
+func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx, withDependencies bool) error {
 	log.Infof("Resyncing virtual selected parent chain")
 	defer log.Infof("Finished resyncing virtual selected parent chain")
 
 	highestBlockVirtualSelectedParentChain, err := p.database.HighestBlockInVirtualSelectedParentChain(databaseTransaction)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Could not get highest block in virtual selected parent chain")
 	}
 	highestBlockHash, err := externalapi.NewDomainHashFromString(highestBlockVirtualSelectedParentChain.BlockHash)
 	if err != nil {
@@ -220,6 +248,12 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 
 	virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(highestBlockHash)
 	if err != nil {
+		if database.IsNotFoundError(err) {
+			// This may occur when restoring a kgi database on a system which kaspad database
+			// is older than the kgi database.
+			log.Errorf("Could not get virtual selected parent chain from block %s: %s", highestBlockHash, err)
+			return nil
+		}
 		return err
 	}
 	if len(virtualSelectedParentChain.Added) > 0 {
@@ -231,7 +265,13 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 		blockInsertionResult := &externalapi.VirtualChangeSet{
 			VirtualSelectedParentChainChanges: virtualSelectedParentChain,
 		}
-		err = p.processBlockAndDependencies(databaseTransaction, virtualSelectedParentHash, virtualSelectedParentBlock, nil, blockInsertionResult)
+		if withDependencies {
+			err = p.processBlockAndDependencies(databaseTransaction, virtualSelectedParentHash, virtualSelectedParentBlock, nil)
+			if err != nil {
+				return err
+			}
+		}
+		err = p.processVirtualChange(databaseTransaction, blockInsertionResult, withDependencies)
 		if err != nil {
 			return err
 		}
@@ -240,20 +280,18 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 	return nil
 }
 
-func (p *Processing) ProcessBlock(block *externalapi.DomainBlock,
-	blockInsertionResult *externalapi.VirtualChangeSet) error {
-
+func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
 	p.Lock()
 	defer p.Unlock()
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		return p.processBlockAndDependencies(databaseTransaction, consensushashing.BlockHash(block), block, nil, blockInsertionResult)
+		return p.processBlockAndDependencies(databaseTransaction, consensushashing.BlockHash(block), block, nil)
 	})
 }
 
 // processBlockAndDependencies processes `block` and all its missing dependencies
 func (p *Processing) processBlockAndDependencies(databaseTransaction *pg.Tx, hash *externalapi.DomainHash,
-	block, pruningBlock *externalapi.DomainBlock, blockInsertionResult *externalapi.VirtualChangeSet) error {
+	block, pruningBlock *externalapi.DomainBlock) error {
 
 	batch := batch.New(p.database, p.kaspad, pruningBlock)
 	err := batch.CollectBlockAndDependencies(databaseTransaction, hash, block)
@@ -265,14 +303,10 @@ func (p *Processing) processBlockAndDependencies(databaseTransaction *pg.Tx, has
 		if !ok {
 			break
 		}
-		// The VirtualChangeSet `blockInsertionResult` only applies to
-		// `block`, not to its dependencies
-		var virtualChangeSet *externalapi.VirtualChangeSet
-		if batch.Empty() {
-			virtualChangeSet = blockInsertionResult
+		if !batch.Empty() {
+			log.Warnf("Handling missing dependency block %s", consensushashing.BlockHash(block))
 		}
-
-		err = p.processBlock(databaseTransaction, block, virtualChangeSet)
+		err = p.processBlock(databaseTransaction, block)
 		if err != nil {
 			return err
 		}
@@ -280,8 +314,7 @@ func (p *Processing) processBlockAndDependencies(databaseTransaction *pg.Tx, has
 	return nil
 }
 
-func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi.DomainBlock,
-	blockInsertionResult *externalapi.VirtualChangeSet) error {
+func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi.DomainBlock) error {
 
 	blockHash := consensushashing.BlockHash(block)
 	log.Debugf("Processing block %s", blockHash)
@@ -386,6 +419,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 				return errors.Wrapf(err, "Could not insert edge from block %s to parent id %d", blockHash, parentID)
 			}
 		}
+	} else {
+		log.Debugf("Block %s already exists in database; not processed", blockHash)
 	}
 
 	blockInfo, err := p.kaspad.Domain().Consensus().GetBlockInfo(blockHash)
@@ -445,6 +480,19 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		return errors.Wrapf(err, "Could not update merge sets colors for block %s", blockHash)
 	}
 
+	return nil
+}
+
+func (p *Processing) ProcessVirtualChange(blockInsertionResult *externalapi.VirtualChangeSet) error {
+	p.Lock()
+	defer p.Unlock()
+
+	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
+		return p.processVirtualChange(databaseTransaction, blockInsertionResult, true)
+	})
+}
+
+func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInsertionResult *externalapi.VirtualChangeSet, withDependencies bool) error {
 	if blockInsertionResult == nil || blockInsertionResult.VirtualSelectedParentChainChanges == nil {
 		return nil
 	}
@@ -458,7 +506,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 			if err == nil {
 				blockColors[removedBlockID] = model.ColorGray
 				blockIsInVirtualSelectedParentChain[removedBlockID] = false
-			} else {
+			} else if withDependencies {
 				log.Errorf("Could not get id of removed block %s", removedBlockHash)
 			}
 		}
@@ -470,21 +518,21 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 			addedBlockID, err := p.database.BlockIDByHash(databaseTransaction, addedBlockHash)
 			if err == nil {
 				blockIsInVirtualSelectedParentChain[addedBlockID] = true
-			} else {
+			} else if withDependencies {
 				log.Errorf("Could not get id of added block %s", addedBlockHash)
 			}
 		}
 	}
-	err = p.database.UpdateBlockIsInVirtualSelectedParentChain(databaseTransaction, blockIsInVirtualSelectedParentChain)
+	err := p.database.UpdateBlockIsInVirtualSelectedParentChain(databaseTransaction, blockIsInVirtualSelectedParentChain)
 	if err != nil {
 		// enhanced error description
-		return errors.Wrapf(err, "Could not update blocks in virtual selected parent chain for block %s", blockHash)
+		return errors.Wrapf(err, "Could not update blocks in virtual selected parent chain for block %s", nil)
 	}
 
 	for _, addedBlockHash := range addedBlockHashes {
 		addedBlockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(addedBlockHash)
 		if err != nil {
-			return errors.Wrapf(err, "Could not get GHOSTDAG data for added block %s", blockHash)
+			return errors.Wrapf(err, "Could not get GHOSTDAG data for added block %s", addedBlockHash)
 		}
 
 		blueHashes := addedBlockGHOSTDAGData.MergeSetBlues()
@@ -493,7 +541,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 				blueBlockID, err := p.database.BlockIDByHash(databaseTransaction, blueHash)
 				if err == nil {
 					blockColors[blueBlockID] = model.ColorBlue
-				} else {
+				} else if withDependencies {
 					log.Errorf("Could not get id of merge set blue block %s", blueHash)
 				}
 			}
@@ -505,7 +553,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 				redBlockID, err := p.database.BlockIDByHash(databaseTransaction, redHash)
 				if err == nil {
 					blockColors[redBlockID] = model.ColorRed
-				} else {
+				} else if withDependencies {
 					log.Errorf("Could not get id of merge set red block %s", redHash)
 				}
 			}

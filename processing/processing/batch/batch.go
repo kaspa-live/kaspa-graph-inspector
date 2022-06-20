@@ -3,11 +3,14 @@ package batch
 import (
 	"github.com/go-pg/pg/v10"
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
 	"github.com/kaspanet/kaspad/domain/consensus/database"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/pkg/errors"
 )
+
+var log = logging.Logger()
 
 type Batch struct {
 	database      *databasePackage.Database
@@ -125,9 +128,12 @@ func (b *Batch) CollectDirectDependencies(databaseTransaction *pg.Tx, hash *exte
 				// to include it in the batch
 				if !errors.Is(err, database.ErrNotFound) {
 					return err
+				} else {
+					log.Warnf("Parent %s for block %s not found by kaspad domain consensus; the missing dependency is ignored", parentHash, hash)
 				}
 			} else {
 				b.Add(parentHash, parentBlock)
+				log.Warnf("Parent %s for block %s found by kaspad domain consensus; the missing dependency is registered for processing", parentHash, hash)
 			}
 		}
 	}

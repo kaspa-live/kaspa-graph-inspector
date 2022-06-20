@@ -1,85 +1,63 @@
 package main
 
 import (
-	"os"
-	"time"
-
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
 	processingPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/processing"
-	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	"github.com/kaspanet/kaspad/infrastructure/logger"
 )
-
-var log = logging.Logger()
 
 func main() {
 	config, err := configPackage.LoadConfig()
 	if err != nil {
-		logErrorAndExit("Could not parse command line arguments.\n%s", err)
+		logging.LogErrorAndExit("Could not parse command line arguments.\n%s", err)
 	}
 
 	database, err := databasePackage.Connect(config.DatabaseConnectionString)
 	if err != nil {
-		logErrorAndExit("Could not connect to database %s: %s", config.DatabaseConnectionString, err)
+		logging.LogErrorAndExit("Could not connect to database %s: %s", config.DatabaseConnectionString, err)
 	}
 	defer database.Close()
 
 	kaspad, err := kaspadPackage.New(config)
 	if err != nil {
-		logErrorAndExit("Could not create kaspad: %s", err)
+		logging.LogErrorAndExit("Could not create kaspad: %s", err)
 	}
 	processing, err := processingPackage.NewProcessing(config, database, kaspad)
 	if err != nil {
-		logErrorAndExit("Could not initialize processing: %s", err)
+		logging.LogErrorAndExit("Could not initialize processing: %s", err)
 	}
-	kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock,
-		blockInsertionResult *externalapi.VirtualChangeSet) {
-		err := processing.ProcessBlock(block, blockInsertionResult)
-		if err != nil {
-			logErrorAndExit("Could not process block: %s", err)
-		}
-	})
+
+	// This is no longer useful since kaspad v0.12.2
+	// that introduce a consensus event channel.
+	// See processing.initConsensusEventsHandler.
+
+	// kaspad.SetOnBlockAddedListener(func(block *externalapi.DomainBlock) {
+	// 	blockHash := consensushashing.BlockHash(block)
+	// 	blockInfo, err := kaspad.Domain().Consensus().GetBlockInfo(blockHash)
+	// 	if err != nil {
+	// 		logging.LogErrorAndExit("Consensus ValidateAndInsertBlock listener could not get block info for block %s: %s", blockHash, err)
+	// 	}
+	// 	logging.Logger().Debugf("Consensus ValidateAndInsertBlock listener gets block %s with status %s", blockHash, blockInfo.BlockStatus.String())
+	// })
+
 	kaspad.SetOnVirtualResolvedListener(func() {
 		err := processing.ResyncVirtualSelectedParentChain()
 		if err != nil {
-			logErrorAndExit("Could not resync the virtual selected parent chain: %s", err)
+			logging.LogErrorAndExit("Could not resync the virtual selected parent chain: %s", err)
 		}
 	})
 	kaspad.SetOnConsensusResetListener(func() {
 		err := processing.ResyncDatabase()
 		if err != nil {
-			logErrorAndExit("Could not resync database: %s", err)
+			logging.LogErrorAndExit("Could not resync database: %s", err)
 		}
 	})
 	err = kaspad.Start()
 	if err != nil {
-		logErrorAndExit("Could not start kaspad: %s", err)
+		logging.LogErrorAndExit("Could not start kaspad: %s", err)
 	}
 
 	<-make(chan struct{})
-}
-
-func logErrorAndExit(errorLog string, logParameters ...interface{}) {
-	// If LoadConfig failed, the logger backend may not have been run yet
-	if !log.Backend().IsRunning() {
-		logger.InitLogStdout(logger.LevelInfo)
-		logging.UpdateLogLevels()
-	}
-
-	log.Errorf(errorLog, logParameters...)
-
-	exitHandlerDone := make(chan struct{})
-	go func() {
-		log.Backend().Close()
-		close(exitHandlerDone)
-	}()
-	select {
-	case <-time.After(1 * time.Second):
-	case <-exitHandlerDone:
-	}
-
-	os.Exit(1)
 }
