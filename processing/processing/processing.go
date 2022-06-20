@@ -13,6 +13,7 @@ import (
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/processing/batch"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
+	"github.com/kaspanet/kaspad/infrastructure/db/database"
 	"github.com/pkg/errors"
 )
 
@@ -34,7 +35,7 @@ func NewProcessing(config *configPackage.Config,
 		database: database,
 		kaspad:   kaspad,
 	}
-	processing.initConsensusEventsHandler(kaspad.Domain().ConsensusEventsChannel())
+	processing.initConsensusEventsHandler()
 
 	err := processing.ResyncDatabase()
 	if err != nil {
@@ -44,7 +45,7 @@ func NewProcessing(config *configPackage.Config,
 	return processing, nil
 }
 
-func (p *Processing) initConsensusEventsHandler(consensusEventsChan chan externalapi.ConsensusEvent) {
+func (p *Processing) initConsensusEventsHandler() {
 	go func() {
 		for {
 			consensusEvent, ok := <-p.kaspad.Domain().ConsensusEventsChannel()
@@ -55,20 +56,20 @@ func (p *Processing) initConsensusEventsHandler(consensusEventsChan chan externa
 			case *externalapi.VirtualChangeSet:
 				err := p.ProcessVirtualChange(event)
 				if err != nil {
-					panic(err)
+					logging.LogErrorAndExit("Failed to process virtual change consensus event: %s", err)
 				}
 			case *externalapi.BlockAdded:
+				log.Debugf("Consensus event handler gets block %s", consensushashing.BlockHash(event.Block))
 				err := p.ProcessBlock(event.Block)
 				if err != nil {
-					panic(err)
+					logging.LogErrorAndExit("Failed to process block added consensus event: %s", err)
 				}
 			default:
-				panic(errors.Errorf("Got event of unsupported type %T", consensusEvent))
+				logging.LogErrorAndExit("Failed to process consensus event: %s", errors.Errorf("Got event of unsupported type %T", consensusEvent))
 			}
 		}
 	}()
 }
-
 
 func (p *Processing) ResyncDatabase() error {
 	p.Lock()
@@ -218,7 +219,7 @@ func (p *Processing) ResyncDatabase() error {
 			}
 		}
 
-		return p.resyncVirtualSelectedParentChain(databaseTransaction)
+		return p.resyncVirtualSelectedParentChain(databaseTransaction, false)
 	})
 }
 
@@ -227,17 +228,17 @@ func (p *Processing) ResyncVirtualSelectedParentChain() error {
 	defer p.Unlock()
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		return p.resyncVirtualSelectedParentChain(databaseTransaction)
+		return p.resyncVirtualSelectedParentChain(databaseTransaction, false)
 	})
 }
 
-func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx) error {
+func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx, withDependencies bool) error {
 	log.Infof("Resyncing virtual selected parent chain")
 	defer log.Infof("Finished resyncing virtual selected parent chain")
 
 	highestBlockVirtualSelectedParentChain, err := p.database.HighestBlockInVirtualSelectedParentChain(databaseTransaction)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "Could not get highest block in virtual selected parent chain")
 	}
 	highestBlockHash, err := externalapi.NewDomainHashFromString(highestBlockVirtualSelectedParentChain.BlockHash)
 	if err != nil {
@@ -247,6 +248,12 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 
 	virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(highestBlockHash)
 	if err != nil {
+		if database.IsNotFoundError(err) {
+			// This may occur when restoring a kgi database on a system which kaspad database
+			// is older than the kgi database.
+			log.Errorf("Could not get virtual selected parent chain from block %s: %s", highestBlockHash, err)
+			return nil
+		}
 		return err
 	}
 	if len(virtualSelectedParentChain.Added) > 0 {
@@ -258,11 +265,13 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 		blockInsertionResult := &externalapi.VirtualChangeSet{
 			VirtualSelectedParentChainChanges: virtualSelectedParentChain,
 		}
-		err = p.processBlockAndDependencies(databaseTransaction, virtualSelectedParentHash, virtualSelectedParentBlock, nil)
-		if err != nil {
-			return err
+		if withDependencies {
+			err = p.processBlockAndDependencies(databaseTransaction, virtualSelectedParentHash, virtualSelectedParentBlock, nil)
+			if err != nil {
+				return err
+			}
 		}
-		err = p.processVirtualChange(databaseTransaction, blockInsertionResult)
+		err = p.processVirtualChange(databaseTransaction, blockInsertionResult, withDependencies)
 		if err != nil {
 			return err
 		}
@@ -293,6 +302,9 @@ func (p *Processing) processBlockAndDependencies(databaseTransaction *pg.Tx, has
 		_, block, ok := batch.Pop()
 		if !ok {
 			break
+		}
+		if !batch.Empty() {
+			log.Warnf("Handling missing dependency block %s", consensushashing.BlockHash(block))
 		}
 		err = p.processBlock(databaseTransaction, block)
 		if err != nil {
@@ -407,6 +419,8 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 				return errors.Wrapf(err, "Could not insert edge from block %s to parent id %d", blockHash, parentID)
 			}
 		}
+	} else {
+		log.Debugf("Block %s already exists in database; not processed", blockHash)
 	}
 
 	blockInfo, err := p.kaspad.Domain().Consensus().GetBlockInfo(blockHash)
@@ -474,11 +488,11 @@ func (p *Processing) ProcessVirtualChange(blockInsertionResult *externalapi.Virt
 	defer p.Unlock()
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		return p.processVirtualChange(databaseTransaction, blockInsertionResult)
+		return p.processVirtualChange(databaseTransaction, blockInsertionResult, true)
 	})
 }
 
-func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInsertionResult *externalapi.VirtualChangeSet) error {
+func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInsertionResult *externalapi.VirtualChangeSet, withDependencies bool) error {
 	if blockInsertionResult == nil || blockInsertionResult.VirtualSelectedParentChainChanges == nil {
 		return nil
 	}
@@ -492,7 +506,7 @@ func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInser
 			if err == nil {
 				blockColors[removedBlockID] = model.ColorGray
 				blockIsInVirtualSelectedParentChain[removedBlockID] = false
-			} else {
+			} else if withDependencies {
 				log.Errorf("Could not get id of removed block %s", removedBlockHash)
 			}
 		}
@@ -504,7 +518,7 @@ func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInser
 			addedBlockID, err := p.database.BlockIDByHash(databaseTransaction, addedBlockHash)
 			if err == nil {
 				blockIsInVirtualSelectedParentChain[addedBlockID] = true
-			} else {
+			} else if withDependencies {
 				log.Errorf("Could not get id of added block %s", addedBlockHash)
 			}
 		}
@@ -527,7 +541,7 @@ func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInser
 				blueBlockID, err := p.database.BlockIDByHash(databaseTransaction, blueHash)
 				if err == nil {
 					blockColors[blueBlockID] = model.ColorBlue
-				} else {
+				} else if withDependencies {
 					log.Errorf("Could not get id of merge set blue block %s", blueHash)
 				}
 			}
@@ -539,7 +553,7 @@ func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInser
 				redBlockID, err := p.database.BlockIDByHash(databaseTransaction, redHash)
 				if err == nil {
 					blockColors[redBlockID] = model.ColorRed
-				} else {
+				} else if withDependencies {
 					log.Errorf("Could not get id of merge set red block %s", redHash)
 				}
 			}

@@ -2,8 +2,10 @@ package logging
 
 import (
 	"fmt"
-	"github.com/kaspanet/kaspad/infrastructure/logger"
 	"os"
+	"time"
+
+	"github.com/kaspanet/kaspad/infrastructure/logger"
 )
 
 var (
@@ -35,4 +37,26 @@ func UpdateLogLevels() {
 
 func Logger() *logger.Logger {
 	return log
+}
+
+func LogErrorAndExit(errorLog string, logParameters ...interface{}) {
+	// If LoadConfig failed, the logger backend may not have been run yet
+	if !log.Backend().IsRunning() {
+		logger.InitLogStdout(logger.LevelInfo)
+		UpdateLogLevels()
+	}
+
+	log.Errorf(errorLog, logParameters...)
+
+	exitHandlerDone := make(chan struct{})
+	go func() {
+		log.Backend().Close()
+		close(exitHandlerDone)
+	}()
+	select {
+	case <-time.After(1 * time.Second):
+	case <-exitHandlerDone:
+	}
+
+	os.Exit(1)
 }
