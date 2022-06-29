@@ -6,19 +6,24 @@ require (
 	github.com/go-pg/pg/v10 v10.10.6
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/jessevdk/go-flags v1.4.0
-	github.com/kaspanet/kaspad v0.12.2
+	github.com/kaspanet/kaspad v0.12.3
 	github.com/pkg/errors v0.9.1
 	golang.org/x/exp v0.0.0-20220414153411-bcd21879b8fd
 )
 
 require (
+	github.com/Microsoft/go-winio v0.4.17 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
+)
+
+require (
 	github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd // indirect
-	github.com/containerd/containerd v1.4.13 // indirect
+	github.com/containerd/containerd v1.5.13 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/go-pg/pg/extra/pgdebug/v10 v10.10.6
 	github.com/go-pg/zerochecker v0.2.0 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
@@ -37,7 +42,7 @@ require (
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
 	golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4 // indirect
-	golang.org/x/sys v0.0.0-20211019181941-9d821ace8654 // indirect
+	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/text v0.3.5 // indirect
 	google.golang.org/genproto v0.0.0-20210604141403-392c879c8b08 // indirect
 	google.golang.org/grpc v1.38.0 // indirect
