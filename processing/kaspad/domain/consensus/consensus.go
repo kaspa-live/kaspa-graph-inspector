@@ -49,15 +49,15 @@ func (c *Consensus) ValidateAndInsertBlock(block *externalapi.DomainBlock, shoul
 	return nil
 }
 
-func (c *Consensus) ResolveVirtual() (bool, error) {
-	isCompletelyResolved, err := c.kaspadConsensus.ResolveVirtual()
+func (c *Consensus) ResolveVirtual(progressReportCallback func(uint64, uint64)) error {
+	err := c.kaspadConsensus.ResolveVirtual(progressReportCallback)
 	if err != nil {
-		return false, err
+		return err
 	}
 	if c.onVirtualResolvedListener != nil {
 		c.onVirtualResolvedListener()
 	}
-	return isCompletelyResolved, nil
+	return nil
 }
 
 type OnBlockAddedListener func(*externalapi.DomainBlock)
