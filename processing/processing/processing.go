@@ -254,7 +254,8 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 			log.Errorf("Could not get virtual selected parent chain from block %s: %s", highestBlockHash, err)
 			return nil
 		}
-		return err
+		// We ignore the error.
+		return nil
 	}
 	if len(virtualSelectedParentChain.Added) > 0 {
 		virtualSelectedParentHash := virtualSelectedParentChain.Added[len(virtualSelectedParentChain.Added)-1]
