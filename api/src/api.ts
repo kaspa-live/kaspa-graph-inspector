@@ -159,6 +159,19 @@ server.get('/blockHashesByIds', async (request, response) =>{
     }
 });
 
+server.get('/appConfig', async (request, response) => {
+    try {
+        await database.withClient(async client => {
+            const appConfig = await database.getAppConfig(client);
+            response.send(JSON.stringify(appConfig));
+        });
+        return;
+    } catch (error) {
+        response.status(400).send(`invalid input: ${error}`);
+        return;
+    }
+});
+
 if (protocol === "https") {
     https
         .createServer(
