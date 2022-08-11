@@ -6,6 +6,7 @@ import (
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
 	processingPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/processing"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/version"
 )
 
 func main() {
@@ -13,6 +14,8 @@ func main() {
 	if err != nil {
 		logging.LogErrorAndExit("Could not parse command line arguments.\n%s", err)
 	}
+
+	logging.Logger().Infof("Version %s", version.Version())
 
 	database, err := databasePackage.Connect(config.DatabaseConnectionString)
 	if err != nil {

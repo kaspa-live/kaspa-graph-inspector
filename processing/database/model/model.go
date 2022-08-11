@@ -34,3 +34,12 @@ type HeightGroup struct {
 	Height uint64 `pg:"height,use_zero"`
 	Size   uint32 `pg:"size,use_zero"`
 }
+
+type AppConfig struct {
+	//lint:ignore U1000 This field is used by gp-pg reflexively
+	tableName struct{} `pg:"app_config,alias:app_config"`
+
+	ID                bool   `pg:"id,pk"`
+	KaspadVersion     string `pg:"kaspad_version"`
+	ProcessingVersion string `pg:"processing_version"`
+}

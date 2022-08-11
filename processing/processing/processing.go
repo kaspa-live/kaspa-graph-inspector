@@ -11,18 +11,21 @@ import (
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/tools"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/processing/batch"
+	versionPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/version"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
 	"github.com/kaspanet/kaspad/infrastructure/db/database"
+	"github.com/kaspanet/kaspad/version"
 	"github.com/pkg/errors"
 )
 
 var log = logging.Logger()
 
 type Processing struct {
-	config   *configPackage.Config
-	database *databasePackage.Database
-	kaspad   *kaspadPackage.Kaspad
+	config    *configPackage.Config
+	database  *databasePackage.Database
+	kaspad    *kaspadPackage.Kaspad
+	appConfig *model.AppConfig
 
 	sync.Mutex
 }
@@ -30,14 +33,26 @@ type Processing struct {
 func NewProcessing(config *configPackage.Config,
 	database *databasePackage.Database, kaspad *kaspadPackage.Kaspad) (*Processing, error) {
 
+	appConfig := &model.AppConfig{
+		ID:                true,
+		KaspadVersion:     version.Version(),
+		ProcessingVersion: versionPackage.Version(),
+	}
+
 	processing := &Processing{
-		config:   config,
-		database: database,
-		kaspad:   kaspad,
+		config:    config,
+		database:  database,
+		kaspad:    kaspad,
+		appConfig: appConfig,
 	}
 	processing.initConsensusEventsHandler()
 
-	err := processing.ResyncDatabase()
+	err := processing.RegisterAppConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	err = processing.ResyncDatabase()
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +84,15 @@ func (p *Processing) initConsensusEventsHandler() {
 			}
 		}
 	}()
+}
+
+func (p *Processing) RegisterAppConfig() error {
+	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
+		log.Infof("Registering app config")
+		defer log.Infof("Finished registering app config")
+
+		return p.database.StoreAppConfig(databaseTransaction, p.appConfig)
+	})
 }
 
 func (p *Processing) ResyncDatabase() error {

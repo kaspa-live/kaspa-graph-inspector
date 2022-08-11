@@ -8,9 +8,11 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	versionPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/version"
 	kaspaConfigPackage "github.com/kaspanet/kaspad/infrastructure/config"
 	kaspaLogger "github.com/kaspanet/kaspad/infrastructure/logger"
 	"github.com/kaspanet/kaspad/util"
+	"github.com/kaspanet/kaspad/version"
 	"github.com/pkg/errors"
 )
 
@@ -29,6 +31,7 @@ var (
 )
 
 type Flags struct {
+	ShowVersion              bool     `short:"V" long:"version" description:"Display version information and exit"`
 	AppDir                   string   `short:"b" long:"appdir" description:"Directory to store data"`
 	LogDir                   string   `long:"logdir" description:"Directory to log output."`
 	DatabaseConnectionString string   `long:"connection-string" description:"Connection string for PostgrSQL database to connect to. Should be of the form: postgres://<username>:<password>@<host>:<port>/<database name>"`
@@ -84,6 +87,13 @@ func LoadConfig() (*Config, error) {
 	}
 	cfg := &Config{
 		Flags: cfgFlags,
+	}
+
+	// Show the version and exit if the version flag was specified.
+	if cfg.ShowVersion {
+		fmt.Println(appName, "version", versionPackage.Version())
+		fmt.Println("kaspad version", version.Version())
+		os.Exit(0)
 	}
 
 	if cfg.DatabaseConnectionString == "" {
