@@ -1,21 +1,29 @@
 package main
 
 import (
+	"fmt"
+
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
 	processingPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/processing"
-	"github.com/kaspa-live/kaspa-graph-inspector/processing/version"
+	versionPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/version"
+	"github.com/kaspanet/kaspad/version"
 )
 
 func main() {
+	fmt.Println("=================================================")
+	fmt.Println("Kaspa Graph Inspector (KGI)   -   Processing Tier")
+	fmt.Println("=================================================")
+
 	config, err := configPackage.LoadConfig()
 	if err != nil {
 		logging.LogErrorAndExit("Could not parse command line arguments.\n%s", err)
 	}
 
-	logging.Logger().Infof("Version %s", version.Version())
+	logging.Logger().Infof("Application version %s", versionPackage.Version())
+	logging.Logger().Infof("Embedded kaspad version %s", version.Version())
 
 	database, err := databasePackage.Connect(config.DatabaseConnectionString)
 	if err != nil {
