@@ -117,6 +117,11 @@ const theme = createTheme({
             paper: "#fff"
         },
 
+        brand: {
+            logo: {
+                main: "#71c9bb",
+            },
+        },
         block: {
             blue: {
                 main: "#5581AA",
