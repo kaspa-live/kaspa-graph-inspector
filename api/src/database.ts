@@ -148,12 +148,14 @@ export default class Database {
         return {
             kaspadVersion: "",
             processingVersion: "",
+            network: "",
             apiVersion: "",
         }
       }
       return {
         kaspadVersion: result.rows[0].kaspad_version,
         processingVersion: result.rows[0].processing_version,
+        network:  result.rows[0].network,
         apiVersion: packageVersion,
       };
     }
