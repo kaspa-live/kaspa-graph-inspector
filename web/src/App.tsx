@@ -1,16 +1,18 @@
 import { createTheme, ThemeProvider, StyledEngineProvider } from '@mui/material';
 import Dag from "./dag/Dag";
-import {useState, useRef} from "react";
+import { useState, useRef } from "react";
 import BlockInformationPanel from "./components/panel/BlockInformation";
 import Canvas from "./components/Canvas";
 import Sidebar from './components/sidebar/Sidebar';
-import {BlockInformation} from "./model/BlockInformation";
+import { AppConfig } from './model/AppConfig';
+import { BlockInformation } from "./model/BlockInformation";
 import SlideItem from './components/base/SlideItem';
 import AppContainer from './components/base/AppContainer';
 import GlobalStyles from '@mui/material/GlobalStyles';
 
 const App = ({interactive}: {interactive: boolean}) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
+    const [appConfigState, setAppConfig] = useState<AppConfig | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
     const [wasBlockInformationPanelCloseRequested, setBlockInformationPanelCloseRequested] = useState(false);
     const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
@@ -34,6 +36,10 @@ const App = ({interactive}: {interactive: boolean}) => {
 
         // This prevents the panel slide-out animation from occurring on page load
         setWasBlockSetState(wasBlockSetState || blockInformation !== null);
+    });
+
+    dag.setAppConfigChangedListener(appConfig => {
+        setAppConfig(appConfig);
     });
 
     dag.setBlockClickedListener(block => {
@@ -65,7 +71,7 @@ const App = ({interactive}: {interactive: boolean}) => {
                     ref={appContainerRef}
                 >
                     <Canvas dag={dag}/>
-                    <Sidebar dag={dag}/>
+                    <Sidebar dag={dag} appConfig={appConfigState}/>
 
                     {!wasBlockSetState || !interactive ? undefined :
                         <SlideItem

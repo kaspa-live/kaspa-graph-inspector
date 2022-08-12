@@ -37,3 +37,9 @@ export type BlockHashById = {
     id: number,
     hash: string,
 };
+
+export type AppConfig = {
+    kaspadVersion: string,
+    processingVersion: string,
+    apiVersion: string,
+}

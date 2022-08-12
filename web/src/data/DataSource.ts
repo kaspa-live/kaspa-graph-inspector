@@ -1,5 +1,6 @@
 import {BlocksAndEdgesAndHeightGroups} from "../model/BlocksAndEdgesAndHeightGroups";
 import {BlockHashById} from "../model/BlockHashById";
+import {AppConfig} from "../model/AppConfig";
 import ApiDataSource from "./ApiDataSource";
 import ChainDataSource from "./ChainDataSource";
 import ReplayDataSource, {buildReplayDataSource} from "./ReplayDataSource";
@@ -16,6 +17,8 @@ export default interface DataSource {
     getHead: (heightDifference: number) => Promise<BlocksAndEdgesAndHeightGroups | void>;
 
     getBlockHashesByIds: (blockIds: string) => Promise<BlockHashById[] | void>;
+
+    getAppConfig: () => Promise<AppConfig | void>;
 };
 
 const resolveDataSource = (): Promise<DataSource> => {

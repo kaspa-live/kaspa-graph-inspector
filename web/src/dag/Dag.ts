@@ -6,12 +6,14 @@ import {Ticker} from "@createjs/core";
 import {BlockInformation} from "../model/BlockInformation";
 import DataSource, {resolveDataSource} from "../data/DataSource";
 import { theme } from "./Theme";
+import { AppConfig, areAppConfigsEqual, getDefaultAppConfig } from "../model/AppConfig";
 
 export default class Dag {
     private application: PIXI.Application | undefined;
     private timelineContainer: TimelineContainer | undefined;
     private dataSource: DataSource | undefined;
     private tickIntervalInMilliseconds: number | undefined;
+    private appConfig: AppConfig | undefined;
 
     private currentWidth: number = 0;
     private currentHeight: number = 0;
@@ -25,10 +27,12 @@ export default class Dag {
     private isFetchFailingListener: (isFailing: boolean) => void;
     private blockInformationChangedListener: (blockInformation: BlockInformation | null) => void;
     private blockClickedListener: (blockInformation: Block) => void;
+    private appConfigChangedListener: (appConfig: AppConfig) => void;
 
     private readonly blockHashesByIds: { [id: string]: string } = {};
 
     constructor() {
+        this.appConfig = getDefaultAppConfig();
         this.currentTickFunction = async () => {
             // Do nothing
         }
@@ -42,6 +46,9 @@ export default class Dag {
             // Do nothing
         }
         this.blockClickedListener = () => {
+            // Do nothing
+        }
+        this.appConfigChangedListener = () => {
             // Do nothing
         }
 
@@ -67,12 +74,36 @@ export default class Dag {
 
         this.application.start();
 
-        resolveDataSource().then(dataSource => {
-            this.dataSource = dataSource;
-            this.tickIntervalInMilliseconds = dataSource.getTickIntervalInMilliseconds();
+        resolveDataSource()
+            .then(dataSource => {
+                this.dataSource = dataSource;
+                this.tickIntervalInMilliseconds = dataSource.getTickIntervalInMilliseconds();
 
-            this.run();
+                this.dataSource!.getAppConfig()
+                    .then(appConfig => {
+                        if (appConfig) {
+                            this.setAppConfig(appConfig);
+                        } else {
+                            this.resetAppConfig();
+                        }
+                    })
+                    .catch(_ => {
+                        this.resetAppConfig();
+                    });
+
+                this.run();
         });
+    }
+
+    private resetAppConfig = () => {
+        this.setAppConfig(getDefaultAppConfig())
+    }
+
+    private setAppConfig = (appConfig: AppConfig) => {
+        if (!this.appConfig || !areAppConfigsEqual(appConfig, this.appConfig)) {
+            this.appConfig = appConfig;
+            this.appConfigChangedListener(this.appConfig);
+        }
     }
 
     private resizeIfRequired = () => {
@@ -453,6 +484,10 @@ export default class Dag {
 
     setBlockClickedListener = (BlockClickedListener: (block: Block) => void) => {
         this.blockClickedListener = BlockClickedListener;
+    }
+
+    setAppConfigChangedListener = (AppConfigChangedListener: (appConfig: AppConfig | null) => void) => {
+        this.appConfigChangedListener = AppConfigChangedListener;
     }
 
     private notifyIsTrackingChanged = () => {

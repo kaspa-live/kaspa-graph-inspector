@@ -1,5 +1,6 @@
 import pg from "pg";
-import {Block, BlockHashById, BlocksAndEdgesAndHeightGroups, Edge, HeightGroup} from "./model";
+import {AppConfig, Block, BlockHashById, BlocksAndEdgesAndHeightGroups, Edge, HeightGroup} from "./model";
+import { packageVersion } from "./version.js";
 
 export default class Database {
     private pool: pg.Pool;
@@ -139,5 +140,21 @@ export default class Database {
           throw new Error(`DAA scores ${daaScore} do not exist`);
       }
       return parseInt(result.rows[0].height);
-  }
+    }
+
+    getAppConfig = async (client: pg.PoolClient): Promise<AppConfig> => {
+      const result = await client.query('SELECT * FROM app_config');
+      if (result.rows.length === 0) {
+        return {
+            kaspadVersion: "",
+            processingVersion: "",
+            apiVersion: "",
+        }
+      }
+      return {
+        kaspadVersion: result.rows[0].kaspad_version,
+        processingVersion: result.rows[0].processing_version,
+        apiVersion: packageVersion,
+      };
+    }
 }

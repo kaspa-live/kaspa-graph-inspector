@@ -359,6 +359,29 @@ func (db *Database) InsertOrUpdateHeightGroup(databaseTransaction *pg.Tx, height
 	return nil
 }
 
+// GetAppConfig returns the stored app config.
+// Returns an error if no app config does exist in the database.
+func (db *Database) GetAppConfig(databaseTransaction *pg.Tx) (*model.AppConfig, error) {
+	result := new(model.AppConfig)
+	_, err := databaseTransaction.QueryOne(result, "SELECT * FROM appConfig")
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// StoreAppConfig stores an AppConfig in the database.
+// ID is forced to true, this is the only accepted value by the database.
+// Consequently, the database stores at most one AppConfig row.
+func (db *Database) StoreAppConfig(databaseTransaction *pg.Tx, appConfig *model.AppConfig) error {
+	appConfig.ID = true
+	_, err := databaseTransaction.Model(appConfig).OnConflict("(id) DO UPDATE SET kaspad_version = EXCLUDED.kaspad_version, processing_version = EXCLUDED.processing_version").Insert()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (db *Database) Clear(databaseTransaction *pg.Tx) error {
 	db.clearCache()
 	_, err := databaseTransaction.Exec("TRUNCATE TABLE blocks")
