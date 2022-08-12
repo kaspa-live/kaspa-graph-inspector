@@ -42,4 +42,5 @@ type AppConfig struct {
 	ID                bool   `pg:"id,pk"`
 	KaspadVersion     string `pg:"kaspad_version"`
 	ProcessingVersion string `pg:"processing_version"`
+	Network           string `pg:"network"`
 }

@@ -37,6 +37,7 @@ func NewProcessing(config *configPackage.Config,
 		ID:                true,
 		KaspadVersion:     version.Version(),
 		ProcessingVersion: versionPackage.Version(),
+		Network:           config.ActiveNetParams.Name,
 	}
 
 	processing := &Processing{

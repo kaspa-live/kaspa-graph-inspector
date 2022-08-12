@@ -41,5 +41,6 @@ export type BlockHashById = {
 export type AppConfig = {
     kaspadVersion: string,
     processingVersion: string,
+    network: string,
     apiVersion: string,
 }

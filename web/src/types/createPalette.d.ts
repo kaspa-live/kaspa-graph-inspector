@@ -3,6 +3,10 @@ import { BlockColor as BaseBlockColor } from "./Base";
 
 declare module '@mui/material/styles/createPalette' {
     interface PaletteOptions {
+        brand: {
+            logo?: PaletteColorOptions;
+        }
+
         block: {
             blue?: PaletteColorOptions;
             red?: PaletteColorOptions;
@@ -11,6 +15,10 @@ declare module '@mui/material/styles/createPalette' {
     }
 
     interface Palette {
+        brand: {
+            logo: PaletteColor;
+        }
+        
         block: {
             blue: PaletteColor;
             red: PaletteColor;
