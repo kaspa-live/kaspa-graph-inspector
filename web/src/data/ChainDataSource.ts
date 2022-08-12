@@ -5,6 +5,7 @@ import {Block} from "../model/Block";
 import {BlockColorConst} from "../model/BlockColor";
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
+import {AppConfig, getDefaultAppConfig} from "../model/AppConfig";
 
 export default class ChainDataSource implements DataSource {
     private readonly blockInterval: number;
@@ -109,6 +110,10 @@ export default class ChainDataSource implements DataSource {
             });
         }
         return blockHashesByIds;
+    };
+
+    getAppConfig = async (): Promise<AppConfig | void> => {
+        return getDefaultAppConfig();
     };
 
     private blocks: Block[] = [

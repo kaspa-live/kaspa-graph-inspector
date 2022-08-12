@@ -4,7 +4,8 @@ import {BlockHashById} from "../model/BlockHashById";
 import {Block} from "../model/Block";
 import {Edge} from "../model/Edge";
 import {HeightGroup} from "../model/HeightGroup";
-import { BlockColor } from "../model/BlockColor";
+import {BlockColor} from "../model/BlockColor";
+import {AppConfig, getDefaultAppConfig} from "../model/AppConfig";
 
 export type ReplayData = {
     blocks: ReplayDataBlock[],
@@ -230,6 +231,10 @@ export default class ReplayDataSource implements DataSource {
             });
         }
         return blockHashesByIds;
+    };
+
+    getAppConfig = async (): Promise<AppConfig | void> => {
+        return getDefaultAppConfig();
     };
 };
 

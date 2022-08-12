@@ -1,13 +1,14 @@
 import { Box } from "@mui/material";
 import { useState } from "react";
 import Dag from "../../dag/Dag";
+import { AppConfig } from "../../model/AppConfig";
 import ZoomItem from "../base/ZoomItem";
 import ConnectionIssuesIndicator from "./ConnectionIssuesIndicator";
 import KaspaLogo from "./KaspaButton";
 import SearchButton from "./SearchButton";
 import TrackButton from "./TrackButton";
 
-const Sidebar = ({dag}: {dag: Dag}) => {
+const Sidebar = ({dag, appConfig}: {dag: Dag, appConfig: AppConfig | null}) => {
     const [isTrackingState, setTrackingState] = useState(true);
     const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
     
@@ -37,7 +38,7 @@ const Sidebar = ({dag}: {dag: Dag}) => {
                     alignItems: 'center',
                     gap: '12px',
                 }}>
-                <KaspaLogo />
+                <KaspaLogo appConfig={appConfig} />
             </Box>
 
             <ZoomItem visible={isHavingConnectionIssuesState}>
