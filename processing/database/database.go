@@ -375,7 +375,7 @@ func (db *Database) GetAppConfig(databaseTransaction *pg.Tx) (*model.AppConfig, 
 // Consequently, the database stores at most one AppConfig row.
 func (db *Database) StoreAppConfig(databaseTransaction *pg.Tx, appConfig *model.AppConfig) error {
 	appConfig.ID = true
-	_, err := databaseTransaction.Model(appConfig).OnConflict("(id) DO UPDATE SET kaspad_version = EXCLUDED.kaspad_version, processing_version = EXCLUDED.processing_version").Insert()
+	_, err := databaseTransaction.Model(appConfig).OnConflict("(id) DO UPDATE SET kaspad_version = EXCLUDED.kaspad_version, processing_version = EXCLUDED.processing_version, network = EXCLUDED.network").Insert()
 	if err != nil {
 		return err
 	}

@@ -24,6 +24,7 @@ func main() {
 
 	logging.Logger().Infof("Application version %s", versionPackage.Version())
 	logging.Logger().Infof("Embedded kaspad version %s", version.Version())
+	logging.Logger().Infof("Network %s", config.ActiveNetParams.Name)
 
 	database, err := databasePackage.Connect(config.DatabaseConnectionString)
 	if err != nil {
