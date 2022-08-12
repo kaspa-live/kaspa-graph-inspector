@@ -27,7 +27,7 @@ export function areAppConfigsEqual(left: AppConfig, right: AppConfig): boolean {
 }
 
 export function isTestnet(appConfig: AppConfig): boolean {
-    return appConfig.network === "kaspa-testnet";
+    return appConfig.network.startsWith("kaspa-testnet");
 }
 
 export function isMainnet(appConfig: AppConfig): boolean {
