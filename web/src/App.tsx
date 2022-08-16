@@ -47,8 +47,6 @@ const App = ({interactive}: {interactive: boolean}) => {
         setBlockInformationPanelCloseRequested(!block);
     });
 
-    console.log(`Starting KGI: interactive=${interactive}`)
-
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>

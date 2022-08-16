@@ -59,11 +59,16 @@ export default class Dag {
     }
 
     initialize = (canvas: HTMLCanvasElement) => {
+        const dpr = window.devicePixelRatio || 1;
+        const parentElement = canvas.parentElement!;
+
         this.application = new PIXI.Application({
             backgroundColor: theme.components.dag.backgroundColor,
             view: canvas,
-            resizeTo: canvas,
+            resizeTo: parentElement,
             antialias: true,
+            resolution: dpr,
+            autoDensity: true,
         });
 
         this.timelineContainer = new TimelineContainer(this.application);
@@ -93,7 +98,38 @@ export default class Dag {
 
                 this.run();
         });
+
+        this.resize();
     }
+
+    resize = () => {
+        const dpr = window.devicePixelRatio || 1;
+        const renderer = this.application?.renderer!;
+        const resizeTo = this.application?.resizeTo as HTMLDivElement;
+
+        // When simulating another device,
+        // ie using Chrome development [Toggle Device Toolbar] tool.
+        if (renderer.resolution !== dpr) {
+            renderer.resolution = dpr;
+            renderer.resize(resizeTo.clientWidth, resizeTo.clientHeight)
+            renderer.plugins.interaction.resolution = renderer.resolution;
+        }
+
+        // Debugging Renderer Resolution
+        //
+        // const pixicanvas = this.application?.view!;
+        // const debugMsg = "Device pixel ratio: " + renderer.resolution + "\n" + 
+        //                  "Window size       : " + window.innerWidth + "," + window.innerHeight + "\n" +
+        //                  "Client size       : " + pixicanvas.clientWidth + "," + pixicanvas.clientHeight + "\n" +
+        //                  "Canvas size       : " + pixicanvas.width + "," + pixicanvas.height + "\n" +
+        //                  "Renderer view     : " + renderer.view.width + "," + renderer.view.height + "\n" + 
+        //                  "Renderer screen   : " + renderer.screen.width + "," + renderer.screen.height;
+        // console.log(debugMsg);
+        
+        // Recalculate the scene contents
+        this.timelineContainer!.recalculatePositions();
+    }
+    
 
     private resetAppConfig = () => {
         this.setAppConfig(getDefaultAppConfig())
@@ -107,14 +143,16 @@ export default class Dag {
     }
 
     private resizeIfRequired = () => {
-        if (this.currentWidth !== this.application!.renderer.width
-            || this.currentHeight !== this.application!.renderer.height) {
-            this.currentWidth = this.application!.renderer.width;
-            this.currentHeight = this.application!.renderer.height;
-
-            this.timelineContainer!.recalculatePositions();
+        if (this.currentWidth !== this.getDisplayWidth()
+            || this.currentHeight !== this.getDisplayHeight()) {
+            this.currentWidth = this.getDisplayWidth();
+            this.currentHeight = this.getDisplayHeight();
+            this.resize();
         }
     }
+
+    getDisplayHeight = () => this.application!.renderer.screen.height;
+    getDisplayWidth = () => this.application!.renderer.screen.width;
 
     private run = () => {
         window.clearTimeout(this.currentTickId);
