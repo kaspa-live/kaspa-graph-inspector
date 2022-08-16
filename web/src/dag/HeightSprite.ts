@@ -5,7 +5,8 @@ import { theme } from "./Theme";
 const heightTextures: { [key: string]: PIXI.RenderTexture } = {};
 
 const heightTexture = (application: PIXI.Application, width: number, height: number): PIXI.RenderTexture => {
-    const key = `${width},${height}`
+    const resolution = application.renderer.resolution;
+    const key = `${width},${height}-${resolution}`
     if (!heightTextures[key]) {
         const graphics = new PIXI.Graphics();
         graphics.beginFill(0xffffff);
@@ -14,7 +15,7 @@ const heightTexture = (application: PIXI.Application, width: number, height: num
 
         let textureOptions: PIXI.IGenerateTextureOptions  = {
             scaleMode: PIXI.SCALE_MODES.LINEAR,
-            resolution: 1,
+            resolution: resolution,
         }
         heightTextures[key] = application.renderer.generateTexture(graphics, textureOptions);
     }

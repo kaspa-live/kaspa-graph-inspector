@@ -325,7 +325,7 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private recalculateHeightSpritePositions = () => {
-        const rendererHeight = this.application.renderer.height;
+        const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
@@ -340,7 +340,7 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private recalculateBlockSpritePositions = (animate: boolean) => {
-        const rendererHeight = this.application.renderer.height;
+        const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
@@ -366,7 +366,7 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private recalculateEdgeSpritePositions = (animate: boolean) => {
-        const rendererHeight = this.application.renderer.height;
+        const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
@@ -495,8 +495,8 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private moveTimelineContainer = () => {
-        const rendererWidth = this.application.renderer.width;
-        const rendererHeight = this.application.renderer.height;
+        const rendererWidth = this.getDisplayWidth();
+        const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
@@ -529,8 +529,8 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     getMaxBlockAmountOnHalfTheScreen = (): number => {
-        const rendererWidth = this.application.renderer.width;
-        const rendererHeight = this.application.renderer.height;
+        const rendererWidth = this.getDisplayWidth();
+        const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
 
@@ -539,8 +539,8 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     getVisibleSlotAmountAfterHalfTheScreen = (rightMargin: number): number => {
-        const rendererWidth = this.application.renderer.width;
-        const rendererHeight = this.application.renderer.height;
+        const rendererWidth = this.getDisplayWidth();
+        const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
         const margin = this.calculateMargin(blockSize);
         const heightWidth = blockSize + margin;
@@ -559,6 +559,9 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     getTargetHeight = () => this.targetHeight;
+
+    getDisplayHeight = () => this.application.renderer.screen.height;
+    getDisplayWidth = () => this.application.renderer.screen.width;
 
     setTargetDAAScore = (targetDAAScore: number) => {
         this.targetDAAScore = targetDAAScore;

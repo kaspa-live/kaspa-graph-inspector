@@ -10,7 +10,8 @@ import { HighlightFrame, theme } from "./Theme";
 const blockTextures: { [key: string]: PIXI.RenderTexture } = {};
 
 const blockTexture = (application: PIXI.Application, blockSize: number, blockColor: BlockColor): PIXI.RenderTexture => {
-    const key = `${blockSize}-${blockColor}`
+    const resolution = application.renderer.resolution;
+    const key = `${blockSize}-${blockColor}-${resolution}`
     if (!blockTextures[key]) {
         const graphics = new PIXI.Graphics();
         graphics.lineStyle(theme.scale(theme.components.block[blockColor].border.width, blockSize), theme.components.block[blockColor].border.color, 1, 0.5);
@@ -20,7 +21,7 @@ const blockTexture = (application: PIXI.Application, blockSize: number, blockCol
 
         let textureOptions: PIXI.IGenerateTextureOptions  = {
             scaleMode: PIXI.SCALE_MODES.LINEAR,
-            resolution: 1,
+            resolution: resolution,
         }
         blockTextures[key] = application.renderer.generateTexture(graphics, textureOptions);
     }
