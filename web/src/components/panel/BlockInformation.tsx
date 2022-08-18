@@ -192,12 +192,12 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
                             width: '10px',
                         },
                         '&::-webkit-scrollbar-track': {
-                            '-webkit-border-radius': '6px',
+                            WebkitBorderRadius: '6px',
                             borderRadius: '6px',
                             background: '#fff',
                         },
                         '&::-webkit-scrollbar-thumb': {
-                            '-webkit-border-radius': '6px',
+                            WebkitBorderRadius: '6px',
                             borderRadius: '6px',
                             backgroundColor: '#bbb',
                             border: '2px solid #fff',
