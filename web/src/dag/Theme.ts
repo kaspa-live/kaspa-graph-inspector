@@ -82,7 +82,11 @@ export interface Theme {
                 multiplier: {
                     size: number;
                     bottomMargin: number;
-                }
+                },
+                minSize: number;
+                maxSize: number;
+                minBottomMargin: number;
+                maxBottomMargin: number;
             }
         },
 
@@ -232,9 +236,13 @@ export const theme: Theme = {
                                             // Stas original: '"Verdana", "Arial", "Helvetica", sans-serif'
                 fontWeight: "normal",       // Stas original: "normal"
                 multiplier: {
-                    size: 0.185,            // Stas original: 0.15
+                    size: 0.225,            // Stas original: 0.15
                     bottomMargin: 0.5,      // Stas original: 0.5
                 },
+                minSize: 6,
+                maxSize: 15,
+                minBottomMargin: 10,
+                maxBottomMargin: 40,
             },
         },
 

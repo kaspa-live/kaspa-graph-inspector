@@ -80,10 +80,20 @@ export default class HeightSprite extends PIXI.Container {
     }
 
     private buildText = (spriteHeight: number, blockSize: number): PIXI.Text => {
+        const fontSize = Math.round(
+            Math.max(theme.components.height.text.minSize,
+            Math.min(blockSize * theme.components.height.text.multiplier.size,
+                     theme.components.height.text.maxSize)));
+
+        const bottomMargin = Math.round(
+            Math.max(theme.components.height.text.minBottomMargin,
+            Math.min(blockSize * theme.components.height.text.multiplier.bottomMargin,
+                     theme.components.height.text.maxBottomMargin)));
+            
         const style = new PIXI.TextStyle({
             fontFamily: theme.components.height.text.fontFamily,
             fontWeight: theme.components.height.text.fontWeight,
-            fontSize: blockSize * theme.components.height.text.multiplier.size,
+            fontSize: fontSize,
             fill: 0xffffff,
         });
 
@@ -91,7 +101,12 @@ export default class HeightSprite extends PIXI.Container {
         const text = new PIXI.Text(this.getTextValue().toLocaleString(language), style);
         text.anchor.set(0.5, 0.5);
         text.tint = theme.components.height.color.contrastText;
-        text.y = (spriteHeight / 2) - (blockSize * theme.components.height.text.multiplier.bottomMargin);
+        text.y = (spriteHeight / 2) - bottomMargin;
+        if (text.width > this.spriteWidth * 0.8) {
+            // TODO
+            // Optimize readability
+            // Remove some labels (ie. one label every 2 or 3 height sprite)
+        }
         return text;
     }
 
