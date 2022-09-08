@@ -15,6 +15,7 @@ export default class Dag {
     private tickIntervalInMilliseconds: number | undefined;
     private appConfig: AppConfig | undefined;
 
+    private currentScale: number = 1.0;
     private currentWidth: number = 0;
     private currentHeight: number = 0;
     private currentTickId: number | undefined = undefined;
@@ -127,7 +128,7 @@ export default class Dag {
         // console.log(debugMsg);
         
         // Recalculate the scene contents
-        this.timelineContainer!.recalculatePositions();
+        this.timelineContainer!.recalculatePositions(this.currentScale);
     }
     
 
@@ -153,6 +154,18 @@ export default class Dag {
 
     getDisplayHeight = () => this.application!.renderer.screen.height;
     getDisplayWidth = () => this.application!.renderer.screen.width;
+
+    getScale = () => this.currentScale;
+    setScale = (scale: number) => {
+        const boundedScale = Math.round(Math.max(0.2, Math.min(scale, 1.2)) * 10) / 10;
+        if (boundedScale !== this.currentScale) {
+            this.currentScale = boundedScale;
+            this.resize();
+        }
+    }
+
+    zoomIn = () => { this.setScale(this.currentScale - 0.1) };
+    zoomOut = () => { this.setScale(this.currentScale + 0.1) };
 
     private run = () => {
         window.clearTimeout(this.currentTickId);

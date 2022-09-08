@@ -489,7 +489,7 @@ export default class TimelineContainer extends PIXI.Container {
         return blockSize * theme.components.timeline.multiplier.margin;
     }
 
-    recalculatePositions = () => {
+    recalculatePositions = (scale: number) => {
         this.moveTimelineContainer();
         this.recalculateSpritePositions(false);
     }

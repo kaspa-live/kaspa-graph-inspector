@@ -1,6 +1,6 @@
 import { Box, ButtonBase, Tooltip, useTheme } from "@mui/material";
 import { AppConfig, isMainnet, isTestnet } from "../../model/AppConfig";
-import AnimatedCircle from "../base/AnimatedCircle";
+import AnimatedItem from "../base/AnimatedItem";
 
 const KaspaLogo = ({ appConfig }: {appConfig: AppConfig | null}) => {
     const theme = useTheme();
@@ -20,7 +20,7 @@ const KaspaLogo = ({ appConfig }: {appConfig: AppConfig | null}) => {
     }
 
     return (
-        <AnimatedCircle>
+        <AnimatedItem borderRadius={"50px"} magnify={1.03}>
             <Tooltip
                 title={
                     <Box sx={{
@@ -56,7 +56,7 @@ const KaspaLogo = ({ appConfig }: {appConfig: AppConfig | null}) => {
                     </Box>
                 </ButtonBase>
             </Tooltip>
-        </AnimatedCircle>
+        </AnimatedItem>
     );
 }
 
