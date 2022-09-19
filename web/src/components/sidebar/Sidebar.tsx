@@ -6,7 +6,6 @@ import ZoomItem from "../base/ZoomItem";
 import ConnectionIssuesIndicator from "./ConnectionIssuesIndicator";
 import KaspaLogo from "./KaspaButton";
 import ScaleButtons from "./ScaleButtons";
-import SearchButton from "./SearchButton";
 import TrackButton from "./TrackButton";
 
 const Sidebar = ({dag, appConfig}: {dag: Dag, appConfig: AppConfig | null}) => {
@@ -53,9 +52,6 @@ const Sidebar = ({dag, appConfig}: {dag: Dag, appConfig: AppConfig | null}) => {
                     alignItems: 'center',
                     gap: '12px',
                 }}>
-                <ZoomItem visible={false}>
-                    <SearchButton onClick={() => {}}/>
-                </ZoomItem>
                 <ZoomItem visible={true}>
                     <ScaleButtons
                         scale={dagScaleState}

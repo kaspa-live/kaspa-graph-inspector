@@ -93,7 +93,8 @@ export interface Theme {
         timeline: {
             maxBlocksPerHeight: number;
             multiplier: {
-                margin: number;
+                marginX: number;
+                minMarginY: number;
             }
             visibleHeightRangePadding: number;
         }
@@ -249,7 +250,8 @@ export const theme: Theme = {
         timeline: {
             maxBlocksPerHeight: 12,         // Stas original: 12
             multiplier: {
-                margin: 2.0,                // Stas original: 2.0
+                marginX: 2.0,                // Stas original: 2.0
+                minMarginY: 1.0,
             },
             visibleHeightRangePadding: 2,   // Stas original: 2
         },

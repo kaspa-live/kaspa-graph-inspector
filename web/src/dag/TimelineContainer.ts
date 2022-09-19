@@ -36,6 +36,7 @@ export default class TimelineContainer extends PIXI.Container {
 
     private blockClickedListener: (block: Block) => void;
     private daaScoreClickedListener: (daaScore: number) => void;
+    private scaleGetter: () => number;
 
     constructor(application: PIXI.Application) {
         super();
@@ -48,6 +49,9 @@ export default class TimelineContainer extends PIXI.Container {
         this.daaScoreClickedListener = () => {
             // Do nothing
         };
+        this.scaleGetter = (): number => {
+            return 1.0;
+        }
 
         this.heightContainer = new PIXI.Container();
         this.addChild(this.heightContainer);
@@ -327,14 +331,14 @@ export default class TimelineContainer extends PIXI.Container {
     private recalculateHeightSpritePositions = () => {
         const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
-        const margin = this.calculateMargin(blockSize);
+        const marginX = this.calculateMarginX(blockSize);
 
         Object.values(this.heightKeysToHeightSprites)
             .forEach(sprite => {
-                sprite.setSize(blockSize + margin, rendererHeight, blockSize);
+                sprite.setSize(blockSize + marginX, rendererHeight, blockSize);
 
                 const height = sprite.getHeight();
-                sprite.x = this.calculateBlockSpriteX(height, blockSize, margin);
+                sprite.x = this.calculateBlockSpriteX(height, blockSize, marginX);
                 sprite.y = 0;
             });
     }
@@ -342,7 +346,7 @@ export default class TimelineContainer extends PIXI.Container {
     private recalculateBlockSpritePositions = (animate: boolean) => {
         const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
-        const margin = this.calculateMargin(blockSize);
+        const marginX = this.calculateMarginX(blockSize);
 
         Object.entries(this.blockKeysToBlocks)
             .forEach(([blockKey, block]) => {
@@ -352,9 +356,9 @@ export default class TimelineContainer extends PIXI.Container {
 
                 const heightKey = this.buildHeightKey(block.height);
                 const heightGroup = this.heightKeysToHeightGroups[heightKey];
-                blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, margin);
+                blockSprite.x = this.calculateBlockSpriteX(block.height, blockSize, marginX);
 
-                const targetY = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight);
+                const targetY = this.calculateBlockSpriteY(block.heightGroupIndex, heightGroup.size, rendererHeight, blockSize);
                 if (blockSprite.y !== targetY) {
                     if (!wasBlockSpriteSizeSet || !animate) {
                         blockSprite.y = targetY;
@@ -368,7 +372,7 @@ export default class TimelineContainer extends PIXI.Container {
     private recalculateEdgeSpritePositions = (animate: boolean) => {
         const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
-        const margin = this.calculateMargin(blockSize);
+        const marginX = this.calculateMarginX(blockSize);
 
         Object.entries(this.edgeKeysToEdges)
             .forEach(([edgeKey, edge]) => {
@@ -376,17 +380,17 @@ export default class TimelineContainer extends PIXI.Container {
 
                 const fromHeightKey = this.buildHeightKey(edge.fromHeight);
                 const fromHeightGroup = this.heightKeysToHeightGroups[fromHeightKey];
-                const fromY = this.calculateBlockSpriteY(edge.fromHeightGroupIndex, fromHeightGroup.size, rendererHeight);
+                const fromY = this.calculateBlockSpriteY(edge.fromHeightGroupIndex, fromHeightGroup.size, rendererHeight, blockSize);
 
                 const toHeightKey = this.buildHeightKey(edge.toHeight);
                 const toHeightGroup = this.heightKeysToHeightGroups[toHeightKey];
-                const toY = this.calculateBlockSpriteY(edge.toHeightGroupIndex, toHeightGroup.size, rendererHeight);
+                const toY = this.calculateBlockSpriteY(edge.toHeightGroupIndex, toHeightGroup.size, rendererHeight, blockSize);
 
-                const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, margin);
-                const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, margin);
+                const fromX = this.calculateBlockSpriteX(edge.fromHeight, blockSize, marginX);
+                const toX = this.calculateBlockSpriteX(edge.toHeight, blockSize, marginX);
 
                 if (!animate) {
-                    this.updateEdgeSprite(edgeSprite, blockSize, margin, fromX, toX, fromY, toY);
+                    this.updateEdgeSprite(edgeSprite, blockSize, marginX, fromX, toX, fromY, toY);
                     return;
                 }
 
@@ -403,7 +407,7 @@ export default class TimelineContainer extends PIXI.Container {
                     // toY either not available or not interesting, so don't bother
                     // animating a transition
                     if (!toBlockSprite || !toBlockSprite.wasBlockSizeSet() || toBlockSprite.y === toY) {
-                        this.updateEdgeSprite(edgeSprite, blockSize, margin, fromX, toX, fromY, toY);
+                        this.updateEdgeSprite(edgeSprite, blockSize, marginX, fromX, toX, fromY, toY);
                         return;
                     }
 
@@ -424,7 +428,7 @@ export default class TimelineContainer extends PIXI.Container {
                 const onChange = (event: any) => {
                     const fromY = event.target.target.fromY;
                     const toY = event.target.target.toY;
-                    this.updateEdgeSprite(edgeSprite, blockSize, margin, fromX, toX, fromY, toY);
+                    this.updateEdgeSprite(edgeSprite, blockSize, marginX, fromX, toX, fromY, toY);
                 };
                 Tween.get(tween, {onChange: onChange}).to({fromY: fromY, toY: toY}, 500, Ease.quadOut);
             });
@@ -445,7 +449,7 @@ export default class TimelineContainer extends PIXI.Container {
         edgeSprite.y = fromY;
     }
 
-    private calculateBlockSpriteY = (heightGroupIndex: number, heightGroupSize: number, rendererHeight: number): number => {
+    private calculateBlockSpriteY = (heightGroupIndex: number, heightGroupSize: number, rendererHeight: number, blockSize: number): number => {
         if (heightGroupSize === 1) {
             return 0;
         }
@@ -455,13 +459,7 @@ export default class TimelineContainer extends PIXI.Container {
 
         // Offset the indices so that there's a natural margin between
         // both the blocks and the top/bottom of the renderer
-        let offsetGroupIndex;
-        if (heightGroupSize % 2 === 0) {
-            offsetGroupIndex = heightGroupIndex % 2 === 0 ? (heightGroupIndex * 2) + 1 : heightGroupIndex * 2;
-        } else {
-            offsetGroupIndex = heightGroupIndex % 2 === 0 ? heightGroupIndex * 2 : (heightGroupIndex * 2) + 1;
-        }
-        const offsetGroupSize = (heightGroupSize * 2) + 1;
+        let offsetGroupIndex = (heightGroupIndex * 2) + ((heightGroupSize - heightGroupIndex - 1) % 2);
 
         // Flip the sign for even height groups. This make it so
         // that relations between blocks are preserved when blocks
@@ -471,10 +469,9 @@ export default class TimelineContainer extends PIXI.Container {
 
         // These equations simply position indices in the following
         // manner: 0, -1, 1, -2, 2, -3, 3...
-        const centeredIndex = Math.floor((offsetGroupSize - 1) / 2)
-            + (Math.ceil(offsetGroupIndex / 2) * ((-1) ** (offsetGroupIndex + 1)));
-        const normalizedPosition = centeredIndex / (offsetGroupSize - 1);
-        return (normalizedPosition - 0.5) * rendererHeight * signMultiplier;
+        const centeredIndex = (Math.ceil(offsetGroupIndex / 2) * ((-1) ** (offsetGroupIndex + 1))) * signMultiplier;
+        const marginY = this.calculateMarginY(blockSize, heightGroupSize, rendererHeight);
+        return centeredIndex * (blockSize + marginY) / 2;
     }
 
     private calculateBlockSpriteX = (blockHeight: number, blockSize: number, margin: number): number => {
@@ -482,14 +479,28 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     private calculateBlockSize = (rendererHeight: number): number => {
-        return Math.floor(rendererHeight / theme.components.timeline.maxBlocksPerHeight);
+        return Math.floor(rendererHeight * this.scaleGetter() / theme.components.timeline.maxBlocksPerHeight);
     }
 
-    private calculateMargin = (blockSize: number): number => {
-        return blockSize * theme.components.timeline.multiplier.margin;
+    private calculateMarginX = (blockSize: number): number => {
+        return blockSize * theme.components.timeline.multiplier.marginX;
     }
 
-    recalculatePositions = (scale: number) => {
+    private calculateMinMarginY = (blockSize: number): number => {
+        return blockSize * theme.components.timeline.multiplier.minMarginY;
+    }
+
+    private calculateMarginY = (blockSize: number, heightGroupSize: number, rendererHeight: number): number => {
+        const minMarginY = this.calculateMinMarginY(blockSize);
+        const nominalRendererHeight = Math.min(rendererHeight, rendererHeight * this.scaleGetter());
+        let marginY = Math.max(minMarginY, (nominalRendererHeight / heightGroupSize) - blockSize);
+        if ((blockSize + marginY) * heightGroupSize > rendererHeight) {
+            marginY = Math.max(0, (rendererHeight / heightGroupSize) - blockSize);
+        }
+        return marginY;
+    }
+
+    recalculatePositions = () => {
         this.moveTimelineContainer();
         this.recalculateSpritePositions(false);
     }
@@ -498,9 +509,9 @@ export default class TimelineContainer extends PIXI.Container {
         const rendererWidth = this.getDisplayWidth();
         const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
-        const margin = this.calculateMargin(blockSize);
+        const marginX = this.calculateMarginX(blockSize);
 
-        const blockSpriteXForTargetHeight = this.calculateBlockSpriteX(this.targetHeight, blockSize, margin);
+        const blockSpriteXForTargetHeight = this.calculateBlockSpriteX(this.targetHeight, blockSize, marginX);
 
         this.y = rendererHeight / 2;
 
@@ -532,9 +543,9 @@ export default class TimelineContainer extends PIXI.Container {
         const rendererWidth = this.getDisplayWidth();
         const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
-        const margin = this.calculateMargin(blockSize);
+        const marginX = this.calculateMarginX(blockSize);
 
-        const maxBlockAmountOnScreen = rendererWidth / (blockSize + margin);
+        const maxBlockAmountOnScreen = rendererWidth / (blockSize + marginX);
         return Math.ceil(maxBlockAmountOnScreen / 2) + theme.components.timeline.visibleHeightRangePadding;
     }
 
@@ -542,10 +553,10 @@ export default class TimelineContainer extends PIXI.Container {
         const rendererWidth = this.getDisplayWidth();
         const rendererHeight = this.getDisplayHeight();
         const blockSize = this.calculateBlockSize(rendererHeight);
-        const margin = this.calculateMargin(blockSize);
-        const heightWidth = blockSize + margin;
+        const marginX = this.calculateMarginX(blockSize);
+        const heightWidth = blockSize + marginX;
 
-        const widthBetweenCenterAndRightMargin = Math.max(0, ((rendererWidth - heightWidth) / 2) - rightMargin + (margin / 2));
+        const widthBetweenCenterAndRightMargin = Math.max(0, ((rendererWidth - heightWidth) / 2) - rightMargin + (marginX / 2));
         return Math.floor(widthBetweenCenterAndRightMargin / heightWidth);
     }
 
@@ -577,5 +588,9 @@ export default class TimelineContainer extends PIXI.Container {
 
     setDAAScoreClickedListener = (daaScoreClickedListener: (daaScore: number) => void) => {
         this.daaScoreClickedListener = daaScoreClickedListener;
+    }
+
+    setScaleGetter = (scaleGetter: () => number) => {
+        this.scaleGetter = scaleGetter;
     }
 }

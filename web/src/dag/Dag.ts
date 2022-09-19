@@ -75,6 +75,7 @@ export default class Dag {
         this.timelineContainer = new TimelineContainer(this.application);
         this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
         this.timelineContainer.setDAAScoreClickedListener(this.handleDAAScoreClicked);
+        this.timelineContainer.setScaleGetter(this.getScale);
         this.application.ticker.add(this.resizeIfRequired);
         this.application.stage.addChild(this.timelineContainer);
 
@@ -128,7 +129,7 @@ export default class Dag {
         // console.log(debugMsg);
         
         // Recalculate the scene contents
-        this.timelineContainer!.recalculatePositions(this.currentScale);
+        this.timelineContainer!.recalculatePositions();
     }
     
 
