@@ -1,10 +1,17 @@
 import { Paper } from "@mui/material";
-import React, { ReactElement, useState } from 'react'
+import { ReactElement, useState } from 'react'
 import { useSpring, animated } from '@react-spring/web'
 
 const AnimatedPaper = animated(props => <Paper {...props}/>);
 
-const AnimatedCircle = ( {children}: { children: ReactElement } ) => {
+interface AnimatedItemProps {
+    borderRadius: string;
+    magnify: number;
+    children: ReactElement
+}
+
+
+const AnimatedItem = ( {borderRadius, magnify, children}: AnimatedItemProps ) => {
     const [active, toggle] = useState(false)
     const { x } = useSpring({
         from: { x: 0 },
@@ -22,10 +29,9 @@ const AnimatedCircle = ( {children}: { children: ReactElement } ) => {
             onMouseOver={() => toggle(true)}
             onMouseLeave={() => toggle(false)}
             style={{
-                scale: x.to({range: [0, 1], output: [1, 1.03] }),
-                borderRadius: "50%",
+                scale: x.to({range: [0, 1], output: [1, magnify] }),
+                borderRadius: borderRadius,
                 cursor: "pointer",
-
             }}
         >
             {children}
@@ -33,4 +39,4 @@ const AnimatedCircle = ( {children}: { children: ReactElement } ) => {
     );
 }
 
-export default AnimatedCircle;
+export default AnimatedItem;

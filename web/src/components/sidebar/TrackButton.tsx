@@ -2,7 +2,7 @@ import FastForwardIcon from "@mui/icons-material/FastForward";
 import PauseIcon from '@mui/icons-material/Pause';
 import {Box, IconButton, Theme, Tooltip, useTheme} from "@mui/material";
 import React from "react";
-import AnimatedCircle from "../base/AnimatedCircle";
+import AnimatedItem from "../base/AnimatedItem";
 
 interface TrackButtonProps {
     isTracking: boolean;
@@ -17,7 +17,7 @@ const TrackButton = React.forwardRef<typeof Box, TrackButtonProps>(
         const theme = useTheme();
         return (
             <Box ref={ref}>
-                <AnimatedCircle>
+                <AnimatedItem borderRadius={"50px"} magnify={1.08}>
                     <Tooltip
                         title={ isTracking ? "Pause on current DAA score" : "Track DAG tips" }
                         placement="left"
@@ -50,7 +50,7 @@ const TrackButton = React.forwardRef<typeof Box, TrackButtonProps>(
                             </IconButton>
                         </Box>
                     </Tooltip>
-                </AnimatedCircle>
+                </AnimatedItem>
             </Box>
         );
     },

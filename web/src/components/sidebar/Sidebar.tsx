@@ -5,12 +5,13 @@ import { AppConfig } from "../../model/AppConfig";
 import ZoomItem from "../base/ZoomItem";
 import ConnectionIssuesIndicator from "./ConnectionIssuesIndicator";
 import KaspaLogo from "./KaspaButton";
-import SearchButton from "./SearchButton";
+import ScaleButtons from "./ScaleButtons";
 import TrackButton from "./TrackButton";
 
 const Sidebar = ({dag, appConfig}: {dag: Dag, appConfig: AppConfig | null}) => {
     const [isTrackingState, setTrackingState] = useState(true);
     const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
+    const [dagScaleState, setDagScaleState] = useState(dag.getScale())
     
     dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
     dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
@@ -51,8 +52,20 @@ const Sidebar = ({dag, appConfig}: {dag: Dag, appConfig: AppConfig | null}) => {
                     alignItems: 'center',
                     gap: '12px',
                 }}>
-                <ZoomItem visible={false}>
-                    <SearchButton onClick={() => {}}/>
+                <ZoomItem visible={true}>
+                    <ScaleButtons
+                        scale={dagScaleState}
+                        minScale={0.2}
+                        maxScale={1.2}
+                        onIncrease={() => { 
+                            dag.zoomOut();
+                            setDagScaleState(dag.getScale());
+                         }}
+                        onDecrease={() => {
+                            dag.zoomIn();
+                            setDagScaleState(dag.getScale());
+                        }}
+                    />
                 </ZoomItem>
                 <ZoomItem visible={true}>
                     <TrackButton isTracking={isTrackingState} onClick={() => isTrackingState ? dag.setStateTrackCurrent() : dag.setStateTrackHead()}/>

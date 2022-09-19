@@ -1,7 +1,7 @@
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import {Box, IconButton, Theme, Tooltip, useTheme} from "@mui/material";
 import React from "react";
-import AnimatedCircle from "../base/AnimatedCircle";
+import AnimatedItem from "../base/AnimatedItem";
 
 interface SearchButtonProps { 
     onClick: () => void;
@@ -15,7 +15,7 @@ const SearchButton = React.forwardRef<typeof Box, SearchButtonProps>(
         const theme = useTheme();
         return (
             <Box ref={ref}>
-                <AnimatedCircle>
+                <AnimatedItem borderRadius={"50px"} magnify={1.08}>
                     <Tooltip title="Search the DAG" placement="left" arrow enterDelay={theme.transitions.duration.enteringScreen*1.5}>
                         <Box
                             sx={{
@@ -23,12 +23,17 @@ const SearchButton = React.forwardRef<typeof Box, SearchButtonProps>(
                                 borderRadius: "50%",
                             }}
                         >
-                            <IconButton color="primary" onClick={onClick} size="large" centerRipple>
+                            <IconButton 
+                                color="primary"
+                                onClick={onClick}
+                                size="large"
+                                centerRipple
+                            >
                                 <SearchRoundedIcon/>
                             </IconButton>
                         </Box>
                     </Tooltip>
-                </AnimatedCircle>
+                </AnimatedItem>
             </Box>
         );
     },
