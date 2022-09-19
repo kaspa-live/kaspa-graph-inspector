@@ -97,15 +97,15 @@ export default class HeightSprite extends PIXI.Container {
             fill: 0xffffff,
         });
 
+        const spriteMarginXMult = theme.components.height.text.multiplier.marginX * blockSize / this.spriteWidth;
         const language = navigator.language || "en-US";
         const text = new PIXI.Text(this.getTextValue().toLocaleString(language), style);
         text.anchor.set(0.5, 0.5);
         text.tint = theme.components.height.color.contrastText;
         text.y = (spriteHeight / 2) - bottomMargin;
-        if (text.width > this.spriteWidth * 0.8) {
-            // TODO
-            // Optimize readability
-            // Remove some labels (ie. one label every 2 or 3 height sprite)
+        const textSpriteSpread = Math.ceil((text.width / this.spriteWidth) + spriteMarginXMult);
+        if (textSpriteSpread > 1 && this.blockHeight % textSpriteSpread !== 0) {
+            return new PIXI.Text("", style);
         }
         return text;
     }
