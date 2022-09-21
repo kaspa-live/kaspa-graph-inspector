@@ -45,6 +45,9 @@ export interface Theme {
                 multiplier: {
                     size: number;
                 }
+                minFontSize: number;
+                maxFontSize: number;
+                maxTextLines: number;
             }
         }
 
@@ -82,9 +85,11 @@ export interface Theme {
                 multiplier: {
                     size: number;
                     bottomMargin: number;
+                    // horizontal margin between texts expressed in block size multiple
+                    marginX: number;
                 },
-                minSize: number;
-                maxSize: number;
+                minFontSize: number;
+                maxFontSize: number;
                 minBottomMargin: number;
                 maxBottomMargin: number;
             }
@@ -164,6 +169,9 @@ export const theme: Theme = {
                 multiplier: {
                     size: 0.26,             // Stas original: 0.25
                 },
+                minFontSize: 14,
+                maxFontSize: 18,
+                maxTextLines: 3,
             }
         },
 
@@ -237,11 +245,12 @@ export const theme: Theme = {
                                             // Stas original: '"Verdana", "Arial", "Helvetica", sans-serif'
                 fontWeight: "normal",       // Stas original: "normal"
                 multiplier: {
-                    size: 0.225,            // Stas original: 0.15
+                    size: 0.25,             // Stas original: 0.15
                     bottomMargin: 0.5,      // Stas original: 0.5
+                    marginX: 1.25,
                 },
-                minSize: 6,
-                maxSize: 15,
+                minFontSize: 12,
+                maxFontSize: 15,
                 minBottomMargin: 10,
                 maxBottomMargin: 40,
             },
