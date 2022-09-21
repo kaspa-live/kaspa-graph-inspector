@@ -3,6 +3,7 @@ import { Ease, Tween } from "@createjs/tweenjs";
 import { Block } from "../model/Block";
 import { BlockColorConst, BlockColor } from "../model/BlockColor";
 import { HighlightFrame, theme } from "./Theme";
+import { chunkSubstr } from "../common/tools";
 
 //const blockColors: { [color: string]: number } = {"gray": 0xf5faff, "red": 0xfc606f, "blue": 0xb4cfed};
 //const highlightColors: { [color: string]: number } = {"gray": 0x78869e, "red": 0x9e4949, "blue": 0x49849e};
@@ -95,20 +96,38 @@ export default class BlockSprite extends PIXI.Container {
     }
 
     private buildText = (blockSize: number): PIXI.Text => {
+        const nominalFontSize = blockSize * theme.components.block.text.multiplier.size * 2;
+        const textLines = nominalFontSize <= theme.components.block.text.minFontSize - 2 ? Math.max(
+            1, 
+            Math.min(Math.floor(((nominalFontSize) / theme.components.block.text.minFontSize)),
+            theme.components.block.text.maxTextLines)) : Math.max(
+            1, 
+            Math.min(Math.ceil(((nominalFontSize + 2) / theme.components.block.text.maxFontSize)),
+            theme.components.block.text.maxTextLines));
         const style = new PIXI.TextStyle({
             fontFamily: theme.components.block.text.fontFamily,
-            fontSize: blockSize * theme.components.block.text.multiplier.size,
+            fontSize: Math.floor(Math.min(nominalFontSize / textLines, theme.components.block.text.maxFontSize) * 4.0) / 4.0,
             fontWeight: theme.components.block.text.fontWeight,
             fill: theme.components.block[this.blockColor].color.contrastText,
         });
 
         const blockHashLength = this.block.blockHash.length;
-        const lastEightBlockHashCharacters = this.block.blockHash.substring(blockHashLength - 8).toUpperCase();
-        const firstFourDisplayCharacters = lastEightBlockHashCharacters.substring(0, 4);
-        const lastFourDisplayCharacter = lastEightBlockHashCharacters.substring(4);
-        const displayHash = `${firstFourDisplayCharacters}\n${lastFourDisplayCharacter}`;
-
+        const lineLength = textLines * 2;
+        const lastCharactersLength = (lineLength * textLines);
+        const lastBlockHashCharacters = this.block.blockHash.substring(blockHashLength - lastCharactersLength).toUpperCase();
+        let displayHash = chunkSubstr(lastBlockHashCharacters, lineLength).join('\n');
         const text = new PIXI.Text(displayHash, style);
+
+        // const firstFourDisplayCharacters = lastEightBlockHashCharacters.substring(0, 4);
+        // const lastFourDisplayCharacter = lastEightBlockHashCharacters.substring(4);
+        // const displayHash = `${firstFourDisplayCharacters}\n${lastFourDisplayCharacter}`;
+
+        //const text = new PIXI.Text(displayHash, style);
+
+        //const debugTxt = (Math.fround((style.fontSize as number) * 4) / 4).toString();
+        // const debugTxt = `${lineLength}\n${textLines}`;
+        // const text = new PIXI.Text(debugTxt, style);
+        
         text.anchor.set(0.5, 0.5);
         return text;
     }

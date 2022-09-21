@@ -81,9 +81,9 @@ export default class HeightSprite extends PIXI.Container {
 
     private buildText = (spriteHeight: number, blockSize: number): PIXI.Text => {
         const fontSize = Math.round(
-            Math.max(theme.components.height.text.minSize,
+            Math.max(theme.components.height.text.minFontSize,
             Math.min(blockSize * theme.components.height.text.multiplier.size,
-                     theme.components.height.text.maxSize)));
+                     theme.components.height.text.maxFontSize)));
 
         const bottomMargin = Math.round(
             Math.max(theme.components.height.text.minBottomMargin,

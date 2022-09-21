@@ -45,6 +45,9 @@ export interface Theme {
                 multiplier: {
                     size: number;
                 }
+                minFontSize: number;
+                maxFontSize: number;
+                maxTextLines: number;
             }
         }
 
@@ -85,8 +88,8 @@ export interface Theme {
                     // horizontal margin between texts expressed in block size multiple
                     marginX: number;
                 },
-                minSize: number;
-                maxSize: number;
+                minFontSize: number;
+                maxFontSize: number;
                 minBottomMargin: number;
                 maxBottomMargin: number;
             }
@@ -166,6 +169,9 @@ export const theme: Theme = {
                 multiplier: {
                     size: 0.26,             // Stas original: 0.25
                 },
+                minFontSize: 14,
+                maxFontSize: 18,
+                maxTextLines: 3,
             }
         },
 
@@ -243,8 +249,8 @@ export const theme: Theme = {
                     bottomMargin: 0.5,      // Stas original: 0.5
                     marginX: 1.25,
                 },
-                minSize: 10,
-                maxSize: 16,
+                minFontSize: 12,
+                maxFontSize: 15,
                 minBottomMargin: 10,
                 maxBottomMargin: 40,
             },
