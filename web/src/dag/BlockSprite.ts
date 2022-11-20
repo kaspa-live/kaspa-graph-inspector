@@ -118,16 +118,6 @@ export default class BlockSprite extends PIXI.Container {
         let displayHash = chunkSubstr(lastBlockHashCharacters, lineLength).join('\n');
         const text = new PIXI.Text(displayHash, style);
 
-        // const firstFourDisplayCharacters = lastEightBlockHashCharacters.substring(0, 4);
-        // const lastFourDisplayCharacter = lastEightBlockHashCharacters.substring(4);
-        // const displayHash = `${firstFourDisplayCharacters}\n${lastFourDisplayCharacter}`;
-
-        //const text = new PIXI.Text(displayHash, style);
-
-        //const debugTxt = (Math.fround((style.fontSize as number) * 4) / 4).toString();
-        // const debugTxt = `${lineLength}\n${textLines}`;
-        // const text = new PIXI.Text(debugTxt, style);
-        
         text.anchor.set(0.5, 0.5);
         return text;
     }
