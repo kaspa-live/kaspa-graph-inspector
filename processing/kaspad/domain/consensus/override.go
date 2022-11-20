@@ -14,7 +14,7 @@ func (c *Consensus) ValidateTransactionAndPopulateWithConsensusData(transaction 
 	return c.kaspadConsensus.ValidateTransactionAndPopulateWithConsensusData(transaction)
 }
 
-func (c *Consensus) GetBlock(blockHash *externalapi.DomainHash) (*externalapi.DomainBlock, error) {
+func (c *Consensus) GetBlock(blockHash *externalapi.DomainHash) (*externalapi.DomainBlock, bool, error) {
 	return c.kaspadConsensus.GetBlock(blockHash)
 }
 

@@ -109,7 +109,7 @@ func (p *Processing) ResyncDatabase() error {
 			return err
 		}
 
-		pruningPointBlock, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
+		pruningPointBlock, _, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
 		if err != nil {
 			return err
 		}
@@ -284,7 +284,7 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 	}
 	if len(virtualSelectedParentChain.Added) > 0 {
 		virtualSelectedParentHash := virtualSelectedParentChain.Added[len(virtualSelectedParentChain.Added)-1]
-		virtualSelectedParentBlock, err := p.kaspad.Domain().Consensus().GetBlock(virtualSelectedParentHash)
+		virtualSelectedParentBlock, _, err := p.kaspad.Domain().Consensus().GetBlock(virtualSelectedParentHash)
 		if err != nil {
 			return err
 		}
