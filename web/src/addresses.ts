@@ -1,6 +1,6 @@
 // Environment variables are used for configuring the application.
-// They define the adresses of the 3 components that are targets of queries.
-// A variable must contain a host and optionnaly a port and/or a protocol.
+// They define the addresses of the 3 components that are targets of queries.
+// A variable must contain a host and optionally a port and/or a protocol.
 
 const resolveAddress = (environmentVariableName: string): string => {
     const address = process.env[environmentVariableName];
@@ -12,11 +12,11 @@ const resolveAddress = (environmentVariableName: string): string => {
 };
 
 const apiAddress = resolveAddress("REACT_APP_API_ADDRESS");
-const katnipAddress = resolveAddress("REACT_APP_KATNIP_ADDRESS");
+const explorerAddress = resolveAddress("REACT_APP_EXPLORER_ADDRESS");
 const kaspaLiveAddress = resolveAddress("REACT_APP_KASPA_LIVE_ADDRESS");
 
 export {
     apiAddress,
-    katnipAddress,
+    explorerAddress,
     kaspaLiveAddress,
 };

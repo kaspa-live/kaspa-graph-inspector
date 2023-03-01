@@ -5,7 +5,7 @@ import { BlockColor } from '@mui/material/styles/createPalette';
 import Hash from "./block-information/Hash";
 import ListItem from "./block-information/ListItem";
 import ContentTooltip from "./block-information/tooltip/Content";
-import { katnipAddress } from "../../addresses";
+import { explorerAddress } from "../../addresses";
 import { BlockInformation as BlockInformationModel } from "../../model/BlockInformation";
 import React from "react";
 
@@ -36,7 +36,7 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
         return <div/>;
     }
 
-    const katnipAddressForBlock = `${katnipAddress}/block/${blockInformation.block.blockHash}`;
+    const explorerAddressForBlock = `${explorerAddress}/blocks/${blockInformation.block.blockHash}`;
 
     let blockColorText = "Undecided";
     let blockColorClass: BlockColor = "gray";
@@ -110,7 +110,7 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
             hash in its parents.</p>
         <p>Here, we represent each child with an arrow. Note that all arrows point from right to left — from child to
             parent. Moving towards the right in the graph reveals increasingly younger generations of blocks until we
-            reach the rightmosts, and youngest, blocks. That's the tips of the DAG.</p>
+            reach the rightmost, and youngest, blocks. That's the tips of the DAG.</p>
     </ContentTooltip>;
 
     const parentElements = [];
@@ -280,7 +280,7 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
                         padding: '15px 20px 15px',
                     }}>
                         <Typography variant="body2">
-                            More details on <Link href={katnipAddressForBlock} target="_blank" rel="noreferrer" sx={{textDecoration: 'underline', color: 'text.primary', fontWeight: 'bold'}}>Katnip&nbsp;Block&nbsp;Explorer</Link>
+                            More details on <Link href={explorerAddressForBlock} target="_blank" rel="noreferrer" sx={{textDecoration: 'underline', color: 'text.primary', fontWeight: 'bold'}}>Kaspa&nbsp;Block&nbsp;Explorer</Link>
                         </Typography>
                     </Box>
                 </Box>

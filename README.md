@@ -2,12 +2,14 @@ kaspa-graph-inspector
 =====================
 
 KGI is comprised of four components:
+
 * A postgres database
 * A `processing` kaspa node (this is simply a kaspad wrapped in some extra logic)
 * An `api` REST server
 * A `web` server
 
 How the components interact:
+
 * The `processing` node connects to the Kaspa network the same way a regular kaspad node does and starts syncing just as a kaspad node would
 * While it's syncing, it writes metadata about every block to the postgres database
 * From the other end, the `web` server listens to http requests on some port
@@ -16,11 +18,11 @@ How the components interact:
 * The `api` REST server queries the postgres database and returns it to the clientside
 * The clientside uses the response it received from the `api` REST server to update the UI
 
-
 Development
 -----------
 
 For development, it's recommended to run KGI from within Docker
+
 1. Make sure you have docker installed by running `docker --version`
 2. Make sure you have docker-compose installed by running `docker-compose --version`
 3. Define the following environment variables:
@@ -34,7 +36,6 @@ For development, it's recommended to run KGI from within Docker
    8. KASPAD_VERSION=4a560f25a60e876b58d2643ca6eb7e07525e76cc (this can be either a specific kaspda commit hash or a kaspad tag)
    9. KASPA_LIVE_ADDRESS=localhost
 4. Run: `./docker-run.sh`
-
 
 Deployment
 ----------
@@ -56,7 +57,7 @@ Deployment
    2. Within the `web` directory, run: `npm install`
    3. Set the following environment variables:
       1. REACT_APP_API_ADDRESS=example.com:1234 (this is the public address of where your `api` server will be)
-      2. REACT_APP_KATNIP_ADDRESS=katnip.kaspanet.org
+      2. REACT_APP_EXPLORER_ADDRESS=explorer.kaspa.org
       3. REACT_APP_KASPA_LIVE_ADDRESS=kaspa.live
    4. Within the `web` directory, run: `npm run build`
    5. Copy the entire `web` directory to wherever you wish to run the `web` server from
@@ -70,7 +71,7 @@ Deployment
       5. POSTGRES_PORT=5432
    3. Run: `kgi-processing --connection-string=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable`
 6. Run `api`
-   1. Navigate to wherever you copied `api` to 
+   1. Navigate to wherever you copied `api` to
    2. Run: `npm run start`
 7. Run `web`
    1. Navigate to wherever you copied `web` to
