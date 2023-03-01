@@ -36,7 +36,10 @@ const BlockInformation = React.forwardRef<typeof Box, BlockInformationProps>(
         return <div/>;
     }
 
-    const explorerAddressForBlock = `${explorerAddress}/blocks/${blockInformation.block.blockHash}`;
+    // Adapt URL to katnip or explorer
+    const blockFolder = explorerAddress.includes('katnip') ? `block` : `blocks`;
+    
+    const explorerAddressForBlock = `${explorerAddress}/${blockFolder}/${blockInformation.block.blockHash}`;
 
     let blockColorText = "Undecided";
     let blockColorClass: BlockColor = "gray";
