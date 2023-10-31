@@ -4,9 +4,9 @@ import (
 	"github.com/go-pg/pg/v10"
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
-	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
-	"github.com/kaspanet/kaspad/domain/consensus/database"
+	"github.com/kaspanet/kaspad/app/appmessage"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
+	"github.com/kaspanet/kaspad/infrastructure/network/rpcclient"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +14,7 @@ var log = logging.Logger()
 
 type Batch struct {
 	database      *databasePackage.Database
-	kaspad        *kaspadPackage.Kaspad
+	rpcClient     *rpcclient.RPCClient
 	blocks        []*BlockAndHash
 	hashes        map[externalapi.DomainHash]*BlockAndHash
 	prunningBlock *externalapi.DomainBlock
@@ -27,10 +27,10 @@ type BlockAndHash struct {
 	hash *externalapi.DomainHash
 }
 
-func New(database *databasePackage.Database, kaspad *kaspadPackage.Kaspad, prunningBlock *externalapi.DomainBlock) *Batch {
+func New(database *databasePackage.Database, rpcClient *rpcclient.RPCClient, prunningBlock *externalapi.DomainBlock) *Batch {
 	batch := &Batch{
 		database:      database,
-		kaspad:        kaspad,
+		rpcClient:     rpcClient,
 		blocks:        make([]*BlockAndHash, 0),
 		hashes:        make(map[externalapi.DomainHash]*BlockAndHash),
 		prunningBlock: prunningBlock,
@@ -121,17 +121,18 @@ func (b *Batch) CollectDirectDependencies(databaseTransaction *pg.Tx, hash *exte
 			return errors.Wrapf(err, "Could not check if parent %s for block %s does exist in database", parentHash, hash)
 		}
 		if !parentExists {
-			parentBlock, err := b.kaspad.Domain().Consensus().GetBlockEvenIfHeaderOnly(parentHash)
+			rpcBlock, err := b.rpcClient.GetBlock(parentHash.String(), false)
 			if err != nil {
 				// We ignore the `block not found` kaspad error.
 				// In this case the parent is out the node scope so we have no way
 				// to include it in the batch
-				if !errors.Is(err, database.ErrNotFound) {
-					return err
-				} else {
-					log.Warnf("Parent %s for block %s not found by kaspad domain consensus; the missing dependency is ignored", parentHash, hash)
-				}
+				log.Warnf("Parent %s for block %s not found by kaspad domain consensus; the missing dependency is ignored", parentHash, hash)
+				// TODO: Check that this is actually a not found error, and return error otherwise
 			} else {
+				parentBlock, err := appmessage.RPCBlockToDomainBlock(rpcBlock.Block)
+				if err != nil {
+					return err
+				}
 				b.Add(parentHash, parentBlock)
 				log.Warnf("Parent %s for block %s found by kaspad domain consensus; the missing dependency is registered for processing", parentHash, hash)
 			}

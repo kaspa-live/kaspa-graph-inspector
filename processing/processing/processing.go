@@ -1,7 +1,10 @@
 package processing
 
 import (
+	"github.com/kaspanet/kaspad/app/appmessage"
+	"github.com/kaspanet/kaspad/infrastructure/network/rpcclient"
 	"sync"
+	"time"
 
 	"github.com/go-pg/pg/v10"
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
@@ -9,12 +12,10 @@ import (
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/tools"
-	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/processing/batch"
 	versionPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/version"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
 	"github.com/kaspanet/kaspad/domain/consensus/utils/consensushashing"
-	"github.com/kaspanet/kaspad/infrastructure/db/database"
 	"github.com/kaspanet/kaspad/version"
 	"github.com/pkg/errors"
 )
@@ -24,14 +25,14 @@ var log = logging.Logger()
 type Processing struct {
 	config    *configPackage.Config
 	database  *databasePackage.Database
-	kaspad    *kaspadPackage.Kaspad
+	rpcClient *rpcclient.RPCClient
 	appConfig *model.AppConfig
 
 	sync.Mutex
 }
 
 func NewProcessing(config *configPackage.Config,
-	database *databasePackage.Database, kaspad *kaspadPackage.Kaspad) (*Processing, error) {
+	database *databasePackage.Database, rpcClient *rpcclient.RPCClient) (*Processing, error) {
 
 	appConfig := &model.AppConfig{
 		ID:                true,
@@ -43,12 +44,15 @@ func NewProcessing(config *configPackage.Config,
 	processing := &Processing{
 		config:    config,
 		database:  database,
-		kaspad:    kaspad,
+		rpcClient: rpcClient,
 		appConfig: appConfig,
 	}
-	processing.initConsensusEventsHandler()
+	err := processing.initConsensusEventsHandler()
+	if err != nil {
+		return nil, err
+	}
 
-	err := processing.RegisterAppConfig()
+	err = processing.RegisterAppConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -61,30 +65,55 @@ func NewProcessing(config *configPackage.Config,
 	return processing, nil
 }
 
-func (p *Processing) initConsensusEventsHandler() {
-	go func() {
-		for {
-			consensusEvent, ok := <-p.kaspad.Domain().ConsensusEventsChannel()
-			if !ok {
-				return
-			}
-			switch event := consensusEvent.(type) {
-			case *externalapi.VirtualChangeSet:
-				err := p.ProcessVirtualChange(event)
-				if err != nil {
-					logging.LogErrorAndExit("Failed to process virtual change consensus event: %s", err)
-				}
-			case *externalapi.BlockAdded:
-				log.Debugf("Consensus event handler gets block %s", consensushashing.BlockHash(event.Block))
-				err := p.ProcessBlock(event.Block)
-				if err != nil {
-					logging.LogErrorAndExit("Failed to process block added consensus event: %s", err)
-				}
-			default:
-				logging.LogErrorAndExit("Failed to process consensus event: %s", errors.Errorf("Got event of unsupported type %T", consensusEvent))
-			}
+func (p *Processing) initConsensusEventsHandler() error {
+	err := p.rpcClient.RegisterForVirtualSelectedParentChainChangedNotifications(false, func(notification *appmessage.VirtualSelectedParentChainChangedNotificationMessage) {
+		added, err := hashesFromStrings(notification.AddedChainBlockHashes)
+		if err != nil {
+			panic(err)
 		}
-	}()
+
+		removed, err := hashesFromStrings(notification.AddedChainBlockHashes)
+		if err != nil {
+			panic(err)
+		}
+
+		event := &externalapi.VirtualChangeSet{
+			VirtualSelectedParentChainChanges: &externalapi.SelectedChainPath{
+				Added:   added,
+				Removed: removed,
+			},
+			VirtualUTXODiff:                nil,
+			VirtualParents:                 nil,
+			VirtualSelectedParentBlueScore: 0,
+			VirtualDAAScore:                0,
+		}
+
+		err = p.ProcessVirtualChange(event)
+		if err != nil {
+			logging.LogErrorAndExit("Failed to process virtual change consensus event: %s", err)
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	err = p.rpcClient.RegisterForBlockAddedNotifications(func(notification *appmessage.BlockAddedNotificationMessage) {
+		block, err := appmessage.RPCBlockToDomainBlock(notification.Block)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Debugf("Consensus event handler gets block %s", consensushashing.BlockHash(block))
+		err = p.ProcessBlock(block)
+		if err != nil {
+			logging.LogErrorAndExit("Failed to process block added consensus event: %s", err)
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (p *Processing) RegisterAppConfig() error {
@@ -104,12 +133,17 @@ func (p *Processing) ResyncDatabase() error {
 		log.Infof("Resyncing database")
 		defer log.Infof("Finished resyncing database")
 
-		pruningPointHash, err := p.kaspad.Domain().Consensus().PruningPoint()
+		dagInfo, err := p.rpcClient.GetBlockDAGInfo()
 		if err != nil {
 			return err
 		}
 
-		pruningPointBlock, _, err := p.kaspad.Domain().Consensus().GetBlock(pruningPointHash)
+		pruningPointHash, err := externalapi.NewDomainHashFromString(dagInfo.PruningPointHash)
+		if err != nil {
+			return err
+		}
+
+		rpcPruning, err := p.rpcClient.GetBlock(dagInfo.PruningPointHash, false)
 		if err != nil {
 			return err
 		}
@@ -145,7 +179,7 @@ func (p *Processing) ResyncDatabase() error {
 
 			pruningPointDatabaseBlock := &model.Block{
 				BlockHash:                      pruningPointHash.String(),
-				Timestamp:                      pruningPointBlock.Header.TimeInMilliseconds(),
+				Timestamp:                      rpcPruning.Block.Header.Timestamp,
 				ParentIDs:                      []uint64{},
 				Height:                         0,
 				HeightGroupIndex:               0,
@@ -170,14 +204,47 @@ func (p *Processing) ResyncDatabase() error {
 			log.Infof("Pruning point %s has been added to the database", pruningPointHash)
 		}
 
-		headersSelectedTip, err := p.kaspad.Domain().Consensus().GetHeadersSelectedTip()
+		log.Infof("Load node blocks")
+		selectedTipHash, err := p.rpcClient.GetSelectedTipHash()
 		if err != nil {
 			return err
 		}
-		log.Infof("Load node blocks")
-		hashesBetweenPruningPointAndHeadersSelectedTip, _, err := p.kaspad.Domain().Consensus().GetHashesBetween(pruningPointHash, headersSelectedTip, 0)
-		if err != nil {
-			return err
+
+		lowHash := dagInfo.PruningPointHash
+		hashesBetweenPruningPointAndHeadersSelectedTip := make([]*externalapi.DomainHash, 0)
+		count := 0
+	outer:
+		for i := 0; ; i++ {
+			log.Debugf("Requesting GetBlocks with lowHash %s", lowHash)
+			getBlocks, err := p.rpcClient.GetBlocks(lowHash, false, false)
+			if err != nil {
+				return err
+			}
+			count += len(getBlocks.BlockHashes)
+			if i%1000 == 0 {
+				rpcBlock, err := p.rpcClient.GetBlock(getBlocks.BlockHashes[0], false)
+				if err != nil {
+					return err
+				}
+
+				log.Infof("Time %s", time.Unix(rpcBlock.Block.Header.Timestamp/1000, 0))
+
+				log.Infof("Progress %d%%", (100*(rpcBlock.Block.Header.DAAScore-rpcPruning.Block.Header.DAAScore))/(dagInfo.VirtualDAAScore-rpcPruning.Block.Header.DAAScore))
+			}
+
+			hashes, err := hashesFromStrings(getBlocks.BlockHashes)
+			if err != nil {
+				return err
+			}
+
+			hashesBetweenPruningPointAndHeadersSelectedTip = append(hashesBetweenPruningPointAndHeadersSelectedTip, hashes...)
+			for _, hash := range getBlocks.BlockHashes {
+				if hash == selectedTipHash.SelectedTipHash {
+					break outer
+				}
+			}
+
+			lowHash = getBlocks.BlockHashes[len(getBlocks.BlockHashes)-1]
 		}
 		log.Infof("Node blocks loaded")
 
@@ -227,9 +294,18 @@ func (p *Processing) ResyncDatabase() error {
 		}
 
 		totalToAdd := len(hashesBetweenPruningPointAndHeadersSelectedTip) - startIndex
+		pruningPointBlock, err := appmessage.RPCBlockToDomainBlock(rpcPruning.Block)
+		if err != nil {
+			return err
+		}
+
 		for i := startIndex; i < len(hashesBetweenPruningPointAndHeadersSelectedTip); i++ {
 			blockHash := hashesBetweenPruningPointAndHeadersSelectedTip[i]
-			block, err := p.kaspad.Domain().Consensus().GetBlockEvenIfHeaderOnly(blockHash)
+			rpcBlock, err := p.rpcClient.GetBlock(blockHash.String(), false)
+			if err != nil {
+				return err
+			}
+			block, err := appmessage.RPCBlockToDomainBlock(rpcBlock.Block)
 			if err != nil {
 				return err
 			}
@@ -271,25 +347,45 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 	}
 	log.Infof("Resyncing virtual selected parent chain from block %s", highestBlockHash)
 
-	virtualSelectedParentChain, err := p.kaspad.Domain().Consensus().GetVirtualSelectedParentChainFromBlock(highestBlockHash)
+	chainFromBlock, err := p.rpcClient.GetVirtualSelectedParentChainFromBlock(highestBlockVirtualSelectedParentChain.BlockHash, false)
 	if err != nil {
-		if database.IsNotFoundError(err) {
-			// This may occur when restoring a kgi database on a system which kaspad database
-			// is older than the kgi database.
-			log.Errorf("Could not get virtual selected parent chain from block %s: %s", highestBlockHash, err)
-			return nil
-		}
-		// We ignore the error.
+		// This may occur when restoring a kgi database on a system which kaspad database
+		// is older than the kgi database.
+		log.Errorf("Could not get virtual selected parent chain from block %s: %s", highestBlockHash, err)
 		return nil
 	}
-	if len(virtualSelectedParentChain.Added) > 0 {
-		virtualSelectedParentHash := virtualSelectedParentChain.Added[len(virtualSelectedParentChain.Added)-1]
-		virtualSelectedParentBlock, _, err := p.kaspad.Domain().Consensus().GetBlock(virtualSelectedParentHash)
+
+	if len(chainFromBlock.AddedChainBlockHashes) > 0 {
+		virtualSelectedParentHash, err := externalapi.NewDomainHashFromString(chainFromBlock.AddedChainBlockHashes[len(chainFromBlock.AddedChainBlockHashes)-1])
 		if err != nil {
 			return err
 		}
+
+		virtualSelectedParentBlockRPCBlock, err := p.rpcClient.GetBlock(chainFromBlock.AddedChainBlockHashes[len(chainFromBlock.AddedChainBlockHashes)-1], false)
+		if err != nil {
+			return err
+		}
+
+		virtualSelectedParentBlock, err := appmessage.RPCBlockToDomainBlock(virtualSelectedParentBlockRPCBlock.Block)
+		if err != nil {
+			return err
+		}
+
+		added, err := hashesFromStrings(chainFromBlock.AddedChainBlockHashes)
+		if err != nil {
+			return err
+		}
+
+		removed, err := hashesFromStrings(chainFromBlock.AddedChainBlockHashes)
+		if err != nil {
+			return err
+		}
+
 		blockInsertionResult := &externalapi.VirtualChangeSet{
-			VirtualSelectedParentChainChanges: virtualSelectedParentChain,
+			VirtualSelectedParentChainChanges: &externalapi.SelectedChainPath{
+				Added:   added,
+				Removed: removed,
+			},
 		}
 		if withDependencies {
 			err = p.processBlockAndDependencies(databaseTransaction, virtualSelectedParentHash, virtualSelectedParentBlock, nil)
@@ -319,7 +415,7 @@ func (p *Processing) ProcessBlock(block *externalapi.DomainBlock) error {
 func (p *Processing) processBlockAndDependencies(databaseTransaction *pg.Tx, hash *externalapi.DomainHash,
 	block, pruningBlock *externalapi.DomainBlock) error {
 
-	batch := batch.New(p.database, p.kaspad, pruningBlock)
+	batch := batch.New(p.database, p.rpcClient, pruningBlock)
 	err := batch.CollectBlockAndDependencies(databaseTransaction, hash, block)
 	if err != nil {
 		return err
@@ -449,23 +545,24 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		log.Debugf("Block %s already exists in database; not processed", blockHash)
 	}
 
-	blockInfo, err := p.kaspad.Domain().Consensus().GetBlockInfo(blockHash)
+	rpcBlock, err := p.rpcClient.GetBlock(blockHash.String(), false)
 	if err != nil {
-		// enhanced error description
-		return errors.Wrapf(err, "Could not get block info for block %s", blockHash)
+		return err
 	}
-	if blockInfo.BlockStatus == externalapi.StatusHeaderOnly || isIncompleteBlock {
+
+	if rpcBlock.Block.VerboseData.IsHeaderOnly || isIncompleteBlock {
 		return nil
 	}
 
-	blockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(blockHash)
+	selectedParent, err := externalapi.NewDomainHashFromString(rpcBlock.Block.VerboseData.SelectedParentHash)
 	if err != nil {
-		return errors.Wrapf(err, "Could not get GHOSTDAG data for block %s", blockHash)
+		return err
 	}
-	selectedParentID, err := p.database.BlockIDByHash(databaseTransaction, blockGHOSTDAGData.SelectedParent())
+
+	selectedParentID, err := p.database.BlockIDByHash(databaseTransaction, selectedParent)
 	if err != nil {
 		return errors.Wrapf(err, "Could not get selected parent block ID for block %s",
-			blockGHOSTDAGData.SelectedParent())
+			selectedParent)
 	}
 	blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
 	if err != nil {
@@ -478,7 +575,12 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		return errors.Wrapf(err, "Could not update selected parent for block %s", blockHash)
 	}
 
-	mergeSetRedIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetReds())
+	mergeSetReds, err := hashesFromStrings(rpcBlock.Block.VerboseData.MergeSetRedsHashes)
+	if err != nil {
+		return err
+	}
+
+	mergeSetRedIDs, err := p.database.BlockIDsByHashes(databaseTransaction, mergeSetReds)
 	if err != nil {
 		// enhanced error description
 		// return errors.Wrapf(err, "Could not get ids of merge set reds for block %s", blockHash)
@@ -487,9 +589,15 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		// This occures sometimes when the app was fresly started, at the end or just after ResyncDatabase
 		// The actual conditions and the way to solve this has to be determined yet.
 		// Update 2022-04-22: processBlockAndDependencies should solve the issue
-		log.Errorf("Could not get ids of merge set reds for block %s: %s", blockHash, blockGHOSTDAGData.MergeSetReds())
+		log.Errorf("Could not get ids of merge set reds for block %s: %s", blockHash, mergeSetReds)
 	}
-	mergeSetBlueIDs, err := p.database.BlockIDsByHashes(databaseTransaction, blockGHOSTDAGData.MergeSetBlues())
+
+	mergeSetBlues, err := hashesFromStrings(rpcBlock.Block.VerboseData.MergeSetBluesHashes)
+	if err != nil {
+		return err
+	}
+
+	mergeSetBlueIDs, err := p.database.BlockIDsByHashes(databaseTransaction, mergeSetBlues)
 	if err != nil {
 		// enhanced error description
 		// return errors.Wrapf(err, "Could not get ids of merge set blues for block %s", blockHash)
@@ -498,7 +606,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		// This occures sometimes when the app was fresly started, at the end or just after ResyncDatabase
 		// The actual conditions and the way to solve this has to be determined yet.
 		// Update 2022-04-22: processBlockAndDependencies should solve the issue
-		log.Errorf("Could not get ids of merge set blues for block %s: %s", blockHash, blockGHOSTDAGData.MergeSetBlues())
+		log.Errorf("Could not get ids of merge set blues for block %s: %s", blockHash, mergeSetBlues)
 	}
 	err = p.database.UpdateBlockMergeSet(databaseTransaction, blockID, mergeSetRedIDs, mergeSetBlueIDs)
 	if err != nil {
@@ -507,6 +615,18 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	}
 
 	return nil
+}
+
+func hashesFromStrings(strs []string) ([]*externalapi.DomainHash, error) {
+	hashes := make([]*externalapi.DomainHash, len(strs))
+	for i, str := range strs {
+		var err error
+		hashes[i], err = externalapi.NewDomainHashFromString(str)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return hashes, nil
 }
 
 func (p *Processing) ProcessVirtualChange(blockInsertionResult *externalapi.VirtualChangeSet) error {
@@ -556,12 +676,16 @@ func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInser
 	}
 
 	for _, addedBlockHash := range addedBlockHashes {
-		addedBlockGHOSTDAGData, err := p.kaspad.BlockGHOSTDAGData(addedBlockHash)
+		rpcBlock, err := p.rpcClient.GetBlock(addedBlockHash.String(), false)
 		if err != nil {
-			return errors.Wrapf(err, "Could not get GHOSTDAG data for added block %s", addedBlockHash)
+			return err
 		}
 
-		blueHashes := addedBlockGHOSTDAGData.MergeSetBlues()
+		blueHashes, err := hashesFromStrings(rpcBlock.Block.VerboseData.MergeSetBluesHashes)
+		if err != nil {
+			return err
+		}
+
 		if len(blueHashes) > 0 {
 			for _, blueHash := range blueHashes {
 				blueBlockID, err := p.database.BlockIDByHash(databaseTransaction, blueHash)
@@ -573,7 +697,11 @@ func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInser
 			}
 		}
 
-		redHashes := addedBlockGHOSTDAGData.MergeSetReds()
+		redHashes, err := hashesFromStrings(rpcBlock.Block.VerboseData.MergeSetRedsHashes)
+		if err != nil {
+			return err
+		}
+
 		if len(redHashes) > 0 {
 			for _, redHash := range redHashes {
 				redBlockID, err := p.database.BlockIDByHash(databaseTransaction, redHash)
@@ -595,14 +723,15 @@ func (p *Processing) processVirtualChange(databaseTransaction *pg.Tx, blockInser
 func (p *Processing) getBlocksDAAScores(databaseTransaction *pg.Tx, blockHashes []*externalapi.DomainHash) (map[uint64]uint64, error) {
 	results := make(map[uint64]uint64)
 	for _, blockHash := range blockHashes {
-		block, err := p.kaspad.Domain().Consensus().GetBlockHeader(blockHash)
+		block, err := p.rpcClient.GetBlock(blockHash.String(), false)
 		if err != nil {
 			return nil, err
 		}
+
 		blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
 		// We ignore non-existing blocks in the database
 		if err == nil {
-			results[blockID] = block.DAAScore()
+			results[blockID] = block.Block.Header.DAAScore
 		}
 	}
 	return results, nil
