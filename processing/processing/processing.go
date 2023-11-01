@@ -229,7 +229,9 @@ func (p *Processing) ResyncDatabase() error {
 
 				log.Infof("Time %s", time.Unix(rpcBlock.Block.Header.Timestamp/1000, 0))
 
-				log.Infof("Progress %d%%", (100*(rpcBlock.Block.Header.DAAScore-rpcPruning.Block.Header.DAAScore))/(dagInfo.VirtualDAAScore-rpcPruning.Block.Header.DAAScore))
+				if dagInfo.VirtualDAAScore-rpcPruning.Block.Header.DAAScore != 0 {
+					log.Infof("Progress %d%%", (100*(rpcBlock.Block.Header.DAAScore-rpcPruning.Block.Header.DAAScore))/(dagInfo.VirtualDAAScore-rpcPruning.Block.Header.DAAScore))
+				}
 			}
 
 			hashes, err := hashesFromStrings(getBlocks.BlockHashes)
@@ -559,20 +561,19 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 		return err
 	}
 
-	selectedParentID, err := p.database.BlockIDByHash(databaseTransaction, selectedParent)
-	if err != nil {
-		return errors.Wrapf(err, "Could not get selected parent block ID for block %s",
-			selectedParent)
-	}
 	blockID, err := p.database.BlockIDByHash(databaseTransaction, blockHash)
 	if err != nil {
 		// enhanced error description
 		return errors.Wrapf(err, "Could not get id for block %s", blockHash)
 	}
-	err = p.database.UpdateBlockSelectedParent(databaseTransaction, blockID, selectedParentID)
-	if err != nil {
-		// enhanced error description
-		return errors.Wrapf(err, "Could not update selected parent for block %s", blockHash)
+
+	selectedParentID, err := p.database.BlockIDByHash(databaseTransaction, selectedParent)
+	if err == nil {
+		err = p.database.UpdateBlockSelectedParent(databaseTransaction, blockID, selectedParentID)
+		if err != nil {
+			// enhanced error description
+			return errors.Wrapf(err, "Could not update selected parent for block %s", blockHash)
+		}
 	}
 
 	mergeSetReds, err := hashesFromStrings(rpcBlock.Block.VerboseData.MergeSetRedsHashes)

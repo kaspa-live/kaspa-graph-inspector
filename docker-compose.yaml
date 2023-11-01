@@ -9,6 +9,17 @@ services:
     user: root
     network_mode: host
 
+  persistent-postgres:
+    image: "postgres:13.2"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    user: root
+    network_mode: host
+    volumes:
+      - ${KGI_POSTGRES_MOUNT:-/tmp/kgi-postgres-mount}:/var/lib/postgresql/data
+
   processing:
     image: "kaspa-graph-inspector-processing:latest"
     depends_on:
@@ -16,6 +27,7 @@ services:
     command:
       - "/app/processing"
       - "--connection-string=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=disable"
+      - "--rpcserver=${KGI_RPCSERVER}"
     network_mode: host
     user: root
     restart: always

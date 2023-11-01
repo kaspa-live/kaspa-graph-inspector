@@ -32,7 +32,7 @@ func main() {
 	}
 	defer database.Close()
 
-	rpcAddress, err := config.NetParams().NormalizeRPCServerAddress("localhost")
+	rpcAddress, err := config.NetParams().NormalizeRPCServerAddress(config.RPCServer)
 	if err != nil {
 		panic(err)
 	}
