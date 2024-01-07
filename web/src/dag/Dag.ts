@@ -15,7 +15,7 @@ export default class Dag {
     private tickIntervalInMilliseconds: number | undefined;
     private appConfig: AppConfig | undefined;
 
-    private currentScale: number = 1.0;
+    private currentScale: number = 0.2;
     private currentWidth: number = 0;
     private currentHeight: number = 0;
     private currentTickId: number | undefined = undefined;
