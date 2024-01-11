@@ -25,11 +25,9 @@ services:
     depends_on:
       - postgres
     environment:
-      - PGUSER=${POSTGRES_USER}
-      - PGPASSWORD=${POSTGRES_PASSWORD}
-      - PGDATABASE=${POSTGRES_DB}
-      - PGHOST=localhost
-      - PGPORT=5432
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
       - API_PORT=${API_PORT}
     command:
       - "npm"
