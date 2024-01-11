@@ -72,7 +72,13 @@ Deployment
    3. Run: `kgi-processing --connection-string=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable`
 6. Run `api`
    1. Navigate to wherever you copied `api` to
-   2. Run: `npm run start`
+   2. Set the following environment variables:
+      1. POSTGRES_USER=username - which is the username for database connection.
+      2. POSTGRES_PASSWORD=password - which is the password for database connection.
+      3. POSTGRES_DB=database-name - which is the database to be used.
+      4. POSTGRES_HOST=database.example.com (optional) - which is the host of the database server (default: localhost).
+      5. POSTGRES_PORT=5432 (optional) - which is the port for database connection (default: 5432).
+   3. Run: `npm run start`
 7. Run `web`
    1. Navigate to wherever you copied `web` to
    2. Run: `npm install -g serve`

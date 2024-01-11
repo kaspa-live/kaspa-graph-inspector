@@ -2,11 +2,38 @@ import pg from "pg";
 import {AppConfig, Block, BlockHashById, BlocksAndEdgesAndHeightGroups, Edge, HeightGroup} from "./model";
 import { packageVersion } from "./version.js";
 
+/* database environment. */
+const postgres_user = process.env.POSTGRES_USER;
+const postgres_password = process.env.POSTGRES_PASSWORD;
+const postgres_host = process.env.POSTGRES_HOST ?? "localhost";
+const postgres_port = process.env.POSTGRES_PORT ?? "5432";
+const postgres_database = process.env.POSTGRES_DB;
+
+/* missing check. */
+if (!postgres_user) {
+    console.log("The POSTGRES_USER environment variable is required");
+    process.exit(1);
+}
+if (!postgres_password) {
+    console.log("The POSTGRES_PASSWORD environment variable is required");
+    process.exit(1);
+}
+if (!postgres_database) {
+    console.log("The POSTGRES_DB environment variable is required");
+    process.exit(1);
+}
+
 export default class Database {
     private pool: pg.Pool;
 
     constructor() {
-        this.pool = new pg.Pool();
+        this.pool = new pg.Pool({
+            user: postgres_user,
+            password: postgres_password,
+            host: postgres_host,
+            port: parseInt(postgres_port),
+            database: postgres_database,
+        });
     }
 
     withClient = async (func: (client: pg.PoolClient) => Promise<void>) => {
