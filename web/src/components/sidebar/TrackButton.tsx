@@ -17,7 +17,7 @@ const TrackButton = React.forwardRef<typeof Box, TrackButtonProps>(
         const theme = useTheme();
         return (
             <Box ref={ref}>
-                <AnimatedItem borderRadius={"50px"} magnify={1.08}>
+                <AnimatedItem borderRadius={"50px"} magnify={1.08} backgroundColor={theme.palette.primary.main}>
                     <Tooltip
                         title={ isTracking ? "Pause on current DAA score" : "Track DAG tips" }
                         placement="left"
