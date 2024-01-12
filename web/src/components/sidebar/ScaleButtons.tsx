@@ -24,7 +24,7 @@ const ScaleButtons = React.forwardRef<typeof Box, ScaleButtonsProps>(
                 ref={ref}
                 sx={{ minHeight: '72px' }}
             >
-                <AnimatedItem borderRadius={"4px"} magnify={1.05}>
+                <AnimatedItem borderRadius={"4px"} magnify={1.05} backgroundColor={theme.palette.primary.main}>
                     <ButtonGroup
                         variant="text"
                         orientation="vertical"

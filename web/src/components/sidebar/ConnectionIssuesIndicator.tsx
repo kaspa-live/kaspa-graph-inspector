@@ -14,7 +14,7 @@ const ConnectionIssuesIndicator = React.forwardRef<typeof Box, ConnectionIssuesI
         const theme = useTheme();
         return (
             <Box ref={ref}>
-                <AnimatedItem borderRadius={"50%"} magnify={1.05}>
+                <AnimatedItem borderRadius={"50%"} magnify={1.05} backgroundColor={theme.palette.primary.main}>
                     <Tooltip title="Connection is unstable" placement="left" arrow enterDelay={theme.transitions.duration.enteringScreen*1.5}>
                         <Box sx={{
                                 backgroundColor: 'warning.light',
