@@ -1,10 +1,11 @@
 package processing
 
 import (
-	"github.com/kaspanet/kaspad/app/appmessage"
-	"github.com/kaspanet/kaspad/infrastructure/network/rpcclient"
 	"sync"
 	"time"
+
+	"github.com/kaspanet/kaspad/app/appmessage"
+	"github.com/kaspanet/kaspad/infrastructure/network/rpcclient"
 
 	"github.com/go-pg/pg/v10"
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
@@ -47,17 +48,19 @@ func NewProcessing(config *configPackage.Config,
 		rpcClient: rpcClient,
 		appConfig: appConfig,
 	}
-	err := processing.initConsensusEventsHandler()
-	if err != nil {
-		return nil, err
-	}
 
-	err = processing.RegisterAppConfig()
+	err := processing.RegisterAppConfig()
 	if err != nil {
 		return nil, err
 	}
 
 	err = processing.ResyncDatabase()
+	if err != nil {
+		return nil, err
+	}
+
+	// Start listening to events only after resyncing is done, otherwise we get overwhelmed
+	err = processing.initConsensusEventsHandler()
 	if err != nil {
 		return nil, err
 	}
