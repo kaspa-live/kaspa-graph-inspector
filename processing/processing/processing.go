@@ -39,7 +39,7 @@ func NewProcessing(config *configPackage.Config,
 		ID:                true,
 		KaspadVersion:     version.Version(),
 		ProcessingVersion: versionPackage.Version(),
-		Network:           config.ActiveNetParams.Name,
+		Network:           config.NetName,
 	}
 
 	processing := &Processing{
@@ -119,9 +119,19 @@ func (p *Processing) initConsensusEventsHandler() error {
 	return nil
 }
 
+func (p *Processing) updateRpcClientVersion() error {
+	info, err := p.rpcClient.GetInfo()
+	if err != nil {
+		return err
+	}
+	p.appConfig.KaspadVersion = info.ServerVersion
+	return nil
+}
+
 func (p *Processing) RegisterAppConfig() error {
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
 		log.Infof("Registering app config")
+		log.Infof("Config = KGI version: %s, Node version: %s, Network: %s", p.appConfig.ProcessingVersion, p.appConfig.KaspadVersion, p.appConfig.Network)
 		defer log.Infof("Finished registering app config")
 
 		return p.database.StoreAppConfig(databaseTransaction, p.appConfig)
