@@ -14,6 +14,11 @@ import (
 )
 
 const defaultTimeout = 30 * time.Second
+const defaultReconnectDelay = 2 * time.Second
+const defaultRouteCapacity = 200
+
+// OnDisconnectedHandler defines a handler function for when the client disconnected
+type OnReconnectedHandler func()
 
 // RPCClient is an RPC client
 type RPCClient struct {
@@ -26,14 +31,23 @@ type RPCClient struct {
 	isReconnecting       uint32
 	lastDisconnectedTime time.Time
 
-	timeout time.Duration
+	timeout              time.Duration
+	routeCapacity        int
+	reconnectDelay       time.Duration
+	onReconnectedHandler OnReconnectedHandler
 }
 
 // NewRPCClient сreates a new RPC client with a default call timeout value
-func NewRPCClient(rpcAddress string) (*RPCClient, error) {
+func NewRPCClient(rpcAddress string, routeCapacity int) (*RPCClient, error) {
+	if routeCapacity == 0 {
+		routeCapacity = defaultRouteCapacity
+	}
+
 	rpcClient := &RPCClient{
-		rpcAddress: rpcAddress,
-		timeout:    defaultTimeout,
+		rpcAddress:     rpcAddress,
+		timeout:        defaultTimeout,
+		reconnectDelay: defaultReconnectDelay,
+		routeCapacity:  routeCapacity,
 	}
 	err := rpcClient.connect()
 	if err != nil {
@@ -50,7 +64,7 @@ func (c *RPCClient) connect() error {
 	}
 	rpcClient.SetOnDisconnectedHandler(c.handleClientDisconnected)
 	rpcClient.SetOnErrorHandler(c.handleClientError)
-	rpcRouter, err := buildRPCRouter()
+	rpcRouter, err := buildRPCRouter(c.routeCapacity)
 	if err != nil {
 		return errors.Wrapf(err, "error creating the RPC router")
 	}
@@ -121,9 +135,9 @@ func (c *RPCClient) Reconnect() error {
 				return nil
 			}
 			log.Warnf("Could not automatically reconnect to %s: %s", c.rpcAddress, err)
-			log.Warnf("Retrying in %s", retryDelay)
+			log.Warnf("Retrying in %s", c.reconnectDelay)
 		}
-		time.Sleep(retryDelay)
+		time.Sleep(c.reconnectDelay)
 	}
 }
 
@@ -139,6 +153,9 @@ func (c *RPCClient) handleClientDisconnected() {
 		if err != nil {
 			panic(err)
 		}
+		if c.onReconnectedHandler != nil {
+			c.onReconnectedHandler()
+		}
 	}
 }
 
@@ -150,9 +167,19 @@ func (c *RPCClient) handleClientError(err error) {
 	c.handleClientDisconnected()
 }
 
+// SetOnDisconnectedHandler sets the client's onDisconnectedHandler
+func (c *RPCClient) SetOnReconnectedHandler(onReconnectedHandler OnReconnectedHandler) {
+	c.onReconnectedHandler = onReconnectedHandler
+}
+
 // SetTimeout sets the timeout by which to wait for RPC responses
 func (c *RPCClient) SetTimeout(timeout time.Duration) {
 	c.timeout = timeout
+}
+
+// SetTimeout sets the timeout by which to wait for RPC responses
+func (c *RPCClient) SetReconnectDelay(reconnectDelay time.Duration) {
+	c.reconnectDelay = reconnectDelay
 }
 
 // Close closes the RPC client
