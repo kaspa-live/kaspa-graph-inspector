@@ -7,6 +7,7 @@ import {BlockInformation} from "../model/BlockInformation";
 import DataSource, {resolveDataSource} from "../data/DataSource";
 import { theme } from "./Theme";
 import { AppConfig, areAppConfigsEqual, getDefaultAppConfig } from "../model/AppConfig";
+import { log } from "node:console";
 
 export default class Dag {
     private application: PIXI.Application | undefined;
@@ -32,7 +33,8 @@ export default class Dag {
 
     private readonly blockHashesByIds: { [id: string]: string } = {};
 
-    constructor() {
+    constructor(scale: number) {
+        this.currentScale = this.getBoundedScale(scale);
         this.appConfig = getDefaultAppConfig();
         this.currentTickFunction = async () => {
             // Do nothing
@@ -158,11 +160,20 @@ export default class Dag {
 
     getScale = () => this.currentScale;
     setScale = (scale: number) => {
-        const boundedScale = Math.round(Math.max(0.2, Math.min(scale, 1.2)) * 10) / 10;
+        const boundedScale = this.getBoundedScale(scale);
         if (boundedScale !== this.currentScale) {
             this.currentScale = boundedScale;
             this.resize();
         }
+    }
+
+    getBoundedScale = (scale: number): number => {
+        return Math.round(Math.max(0.2, Math.min(scale, 1.2)) * 10) / 10;
+    }
+    setInitialScale = (scale: number) => {
+        this.currentScale = this.getBoundedScale(scale);
+        console.log("setInitialScale", scale, this.currentScale);
+        console.log(scale, this.currentScale);
     }
 
     zoomIn = () => { this.setScale(this.currentScale - 0.1) };
@@ -512,6 +523,21 @@ export default class Dag {
         const urlParams = this.initializeUrlSearchParams();
         window.history.pushState(null, "", `?${urlParams}`);
         this.run();
+    }
+
+    handleInitialUrlScale = () => {
+        const urlParams = this.initializeUrlSearchParams();
+        const scaleParam = urlParams.get("scale")
+        console.log(scaleParam);
+        if (scaleParam) {
+            const scale = parseFloat(scaleParam);
+            console.log(scale);
+            if (!isNaN(scale)) {
+                this.setInitialScale(scale);
+            }
+            urlParams.delete("scale");
+            //window.history.pushState(null, "", `?${urlParams}`);
+        }
     }
 
     private initializeUrlSearchParams = (): URLSearchParams => {

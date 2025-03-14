@@ -10,7 +10,7 @@ import SlideItem from './components/base/SlideItem';
 import AppContainer from './components/base/AppContainer';
 import GlobalStyles from '@mui/material/GlobalStyles';
 
-const App = ({interactive}: {interactive: boolean}) => {
+const App = ({interactive, scale}: {interactive: boolean, scale: number}) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [appConfigState, setAppConfig] = useState<AppConfig | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
@@ -18,6 +18,8 @@ const App = ({interactive}: {interactive: boolean}) => {
     const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
     const appContainerRef = useRef(null);
 
+    dag.setInitialScale(scale);
+    dag.handleInitialUrlScale();
     dag.setBlockInformationChangedListener(blockInformation => {
         const hasBlockChanged = blockInformation?.block.blockHash !== blockInformationState?.block.blockHash;
 
@@ -138,6 +140,6 @@ const theme = createTheme({
     },
 });
 
-const dag = new Dag();
+const dag = new Dag(0.2);
 
 export default App;
