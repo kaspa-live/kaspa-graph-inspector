@@ -192,40 +192,40 @@ export const theme: Theme = {
             virtualChain: {
                 color: 0x85a2c1,            // Stas original: 0xb4cfed
                                             // https://fffuel.co/cccolor/ - 0x5581AA - Tint palette 3
-                lineWidth: 5,               // Stas original: 4
-                arrowRadius: 7,             // Stas original: 6
+                lineWidth: 7,               // Stas original: 4
+                arrowRadius: 9,             // Stas original: 6
             },
             highlighted: {
                 parent: {
                     color: 0xaaaaaa,        // Stas original: 0x6be39f
                                             // normal
-                    lineWidth: 6,           // Stas original: 4
-                    arrowRadius: 8,         // Stas original: 6
+                    lineWidth: 8,           // Stas original: 4
+                    arrowRadius: 10,         // Stas original: 6
                 },
                 child: {
                     color: 0xaaaaaa,        // Stas original: 0x6be39f
                                             // normal
-                    lineWidth: 6,           // Stas original: 4
-                    arrowRadius: 8,         // Stas original: 6
+                    lineWidth: 8,           // Stas original: 4
+                    arrowRadius: 10,         // Stas original: 6
                 },
                 selected: {
                     color: 0x898989,        // Stas original: 0x4de3bb
                                             // https://fffuel.co/pppalette/ - 0xaaaaaa - Shade palette 2
-                    lineWidth: 6,           // Stas original: 6
-                    arrowRadius: 8,         // Stas original: 8
+                    lineWidth: 8,           // Stas original: 6
+                    arrowRadius: 10,         // Stas original: 8
                 },
                 virtualChain: {
                     parent: {
                         color: 0x85a2c1,    // Stas original: 0x7ce0e6,
                                             // virtualChain
-                        lineWidth: 8,       // Stas original: 6
-                        arrowRadius: 8,     // Stas original: 8
+                        lineWidth: 10,       // Stas original: 6
+                        arrowRadius: 10,     // Stas original: 8
                     },
                     child: {
                         color: 0x85a2c1,    // Stas original: 0x7ce0e6,
                                             // virtualChain
-                        lineWidth: 8,      // Stas original: 6
-                        arrowRadius: 8,     // Stas original: 8
+                        lineWidth: 10,      // Stas original: 6
+                        arrowRadius: 10,     // Stas original: 8
                     },
                 },
                 markRadius: 6,
