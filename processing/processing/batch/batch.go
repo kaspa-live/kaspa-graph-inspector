@@ -1,14 +1,18 @@
 package batch
 
 import (
+	"os"
+
 	"github.com/go-pg/pg/v10"
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/network/rpcclient"
 	"github.com/kaspanet/kaspad/app/appmessage"
 	"github.com/kaspanet/kaspad/domain/consensus/model/externalapi"
-	"github.com/kaspanet/kaspad/infrastructure/network/rpcclient"
 	"github.com/pkg/errors"
 )
+
+const MaxSupportedMissingDependencies = 600
 
 var log = logging.Logger()
 
@@ -107,6 +111,14 @@ func (b *Batch) CollectBlockAndDependencies(databaseTransaction *pg.Tx, hash *ex
 		if err != nil {
 			return err
 		}
+
+		// If too many missing dependencies are found, just terminate the process and
+		// let the service make a fresh restart.
+		if len(b.blocks) > MaxSupportedMissingDependencies {
+			log.Errorf("More then %d missing dependencies found! KGI is out of sync with the node.", MaxSupportedMissingDependencies)
+			log.Errorf("Terminating the process so it can restart from scratch.")
+			os.Exit(1)
+		}
 	}
 	return nil
 }
@@ -134,7 +146,7 @@ func (b *Batch) CollectDirectDependencies(databaseTransaction *pg.Tx, hash *exte
 					return err
 				}
 				b.Add(parentHash, parentBlock)
-				log.Warnf("Parent %s for block %s found by kaspad domain consensus; the missing dependency is registered for processing", parentHash, hash)
+				log.Warnf("Missing parent %s of %s registered for processing", parentHash, hash)
 			}
 		}
 	}

@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/kaspanet/kaspad/infrastructure/network/rpcclient"
 
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/network/rpcclient"
 	processingPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/processing"
 	versionPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/version"
 	"github.com/kaspanet/kaspad/version"
@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	rpcClient, err := rpcclient.NewRPCClient(rpcAddress)
+	rpcClient, err := rpcclient.NewRPCClient(rpcAddress, processingPackage.RpcRouteCapacity)
 	if err != nil {
 		panic(err)
 	}
