@@ -7,7 +7,7 @@ import {packageVersion} from "../version";
 
 export default class ApiDataSource implements DataSource {
     getTickIntervalInMilliseconds = (): number => {
-        return 50;
+        return 334;
     };
 
     getBlocksBetweenHeights = (startHeight: number, endHeight: number): Promise<BlocksAndEdgesAndHeightGroups | void> => {
