@@ -10,70 +10,71 @@ import SlideItem from './components/base/SlideItem';
 import AppContainer from './components/base/AppContainer';
 import GlobalStyles from '@mui/material/GlobalStyles';
 
-const App = ({interactive, scale}: {interactive: boolean, scale: number}) => {
+export const App = ({ interactive }: { interactive: boolean }) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [appConfigState, setAppConfig] = useState<AppConfig | null>(null);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
     const [wasBlockInformationPanelCloseRequested, setBlockInformationPanelCloseRequested] = useState(false);
     const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
+    const [isInteractiveState] = useState(interactive);
     const appContainerRef = useRef(null);
-
-    dag.setInitialScale(scale);
-    dag.handleInitialUrlScale();
-    dag.setBlockInformationChangedListener(blockInformation => {
-        const hasBlockChanged = blockInformation?.block.blockHash !== blockInformationState?.block.blockHash;
-
-        // Reset close requests if the block changed
-        if (hasBlockChanged) {
-            setBlockInformationPanelCloseRequested(false);
-        }
-
-        setBlockInformationPanelOpenState(blockInformation !== null && (!wasBlockInformationPanelCloseRequested || hasBlockChanged));
-
-        // Only set the target block if it exists to prevent text in an already
-        // open panel from disappearing on close
-        if (blockInformation) {
-            setBlockInformationState(blockInformation);
-        }
-
-        // This prevents the panel slide-out animation from occurring on page load
-        setWasBlockSetState(wasBlockSetState || blockInformation !== null);
-    });
 
     dag.setAppConfigChangedListener(appConfig => {
         setAppConfig(appConfig);
     });
 
-    dag.setBlockClickedListener(block => {
-        setBlockInformationPanelOpenState(!!block);
-        setBlockInformationPanelCloseRequested(!block);
-    });
+    if (isInteractiveState) {
+        dag.setBlockInformationChangedListener(blockInformation => {
+            const hasBlockChanged = blockInformation?.block.blockHash !== blockInformationState?.block.blockHash;
+
+            // Reset close requests if the block changed
+            if (hasBlockChanged) {
+                setBlockInformationPanelCloseRequested(false);
+            }
+
+            setBlockInformationPanelOpenState(blockInformation !== null && (!wasBlockInformationPanelCloseRequested || hasBlockChanged));
+
+            // Only set the target block if it exists to prevent text in an already
+            // open panel from disappearing on close
+            if (blockInformation) {
+                setBlockInformationState(blockInformation);
+            }
+
+            // This prevents the panel slide-out animation from occurring on page load
+            setWasBlockSetState(wasBlockSetState || blockInformation !== null);
+        });
+
+        dag.setBlockClickedListener(block => {
+            setBlockInformationPanelOpenState(!!block);
+            setBlockInformationPanelCloseRequested(!block);
+        });
+    }
 
     return (
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={theme}>
                 {appGlobalStyles}
                 <AppContainer sx={{
-                        padding: 0,
-                        margin: 0,
+                    padding: 0,
+                    margin: 0,
 
-                        position: 'absolute',
-                        minWidth: '120px',
-                        top: 0,
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
+                    position: 'absolute',
+                    minWidth: '120px',
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
 
-                        display: 'flex',
-                        flexDirection: 'column',
-                        overflow: 'hidden',
-                    }}
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                }}
                     ref={appContainerRef}
                 >
-                    <Canvas dag={dag}/>
-                    <Sidebar dag={dag} appConfig={appConfigState}/>
+                    <Canvas dag={dag} />
+                    <Sidebar dag={dag} appConfig={appConfigState} interactive={isInteractiveState} />
 
-                    {!wasBlockSetState || !interactive ? undefined :
+                    {!wasBlockSetState || !isInteractiveState ? undefined :
                         <SlideItem
                             appear={false}
                             direction="right"
@@ -140,6 +141,4 @@ const theme = createTheme({
     },
 });
 
-const dag = new Dag(0.2);
-
-export default App;
+export const dag = new Dag(0.2);

@@ -1,13 +1,12 @@
 import * as PIXI from "pixi.js-legacy";
 import TimelineContainer from "./TimelineContainer";
-import {Block} from "../model/Block";
-import {getBlockChildIds} from "../model/BlocksAndEdgesAndHeightGroups"
-import {Ticker} from "@createjs/core";
-import {BlockInformation} from "../model/BlockInformation";
-import DataSource, {resolveDataSource} from "../data/DataSource";
+import { Block } from "../model/Block";
+import { getBlockChildIds } from "../model/BlocksAndEdgesAndHeightGroups"
+import { Ticker } from "@createjs/core";
+import { BlockInformation } from "../model/BlockInformation";
+import DataSource, { resolveDataSource } from "../data/DataSource";
 import { theme } from "./Theme";
 import { AppConfig, areAppConfigsEqual, getDefaultAppConfig } from "../model/AppConfig";
-import { log } from "node:console";
 
 export default class Dag {
     private application: PIXI.Application | undefined;
@@ -16,6 +15,7 @@ export default class Dag {
     private tickIntervalInMilliseconds: number | undefined;
     private appConfig: AppConfig | undefined;
 
+    private interactive: boolean = false;
     private currentScale: number = 0.2;
     private currentWidth: number = 0;
     private currentHeight: number = 0;
@@ -74,9 +74,11 @@ export default class Dag {
             autoDensity: true,
         });
 
-        this.timelineContainer = new TimelineContainer(this.application);
-        this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
-        this.timelineContainer.setDAAScoreClickedListener(this.handleDAAScoreClicked);
+        this.timelineContainer = new TimelineContainer(this.application, this.interactive);
+        if (this.interactive) {
+            this.timelineContainer.setBlockClickedListener(this.handleBlockClicked);
+            this.timelineContainer.setDAAScoreClickedListener(this.handleDAAScoreClicked);
+        }
         this.timelineContainer.setScaleGetter(this.getScale);
         this.application.ticker.add(this.resizeIfRequired);
         this.application.stage.addChild(this.timelineContainer);
@@ -101,7 +103,7 @@ export default class Dag {
                     });
 
                 this.run();
-        });
+            });
 
         this.resize();
     }
@@ -129,11 +131,11 @@ export default class Dag {
         //                  "Renderer view     : " + renderer.view.width + "," + renderer.view.height + "\n" + 
         //                  "Renderer screen   : " + renderer.screen.width + "," + renderer.screen.height;
         // console.log(debugMsg);
-        
+
         // Recalculate the scene contents
         this.timelineContainer!.recalculatePositions();
     }
-    
+
 
     private resetAppConfig = () => {
         this.setAppConfig(getDefaultAppConfig())
@@ -158,6 +160,21 @@ export default class Dag {
     getDisplayHeight = () => this.application!.renderer.screen.height;
     getDisplayWidth = () => this.application!.renderer.screen.width;
 
+    setInteractive = (interactive: boolean) => {
+        if (interactive != this.interactive) {
+            this.interactive = interactive
+            this.updateInteractive();
+        }
+    }
+
+    updateInteractive = () => {
+        if (this.interactive) {
+
+        } else {
+
+        }
+    }
+
     getScale = () => this.currentScale;
     setScale = (scale: number) => {
         const boundedScale = this.getBoundedScale(scale);
@@ -173,7 +190,6 @@ export default class Dag {
     setInitialScale = (scale: number) => {
         this.currentScale = this.getBoundedScale(scale);
         console.log("setInitialScale", scale, this.currentScale);
-        console.log(scale, this.currentScale);
     }
 
     zoomIn = () => { this.setScale(this.currentScale - 0.1) };
@@ -415,7 +431,7 @@ export default class Dag {
         let [mergeSetBlueHashes, notFoundMergeSetBlueIds] = this.getCachedBlockHashes(block.mergeSetBlueIds);
         notFoundIds = notFoundIds.concat(notFoundMergeSetBlueIds);
 
-        const [childIds, selectedChildId] = getBlockChildIds(this.timelineContainer!.gettBlocksAndEdgesAndHeightGroups()!, block);
+        const [childIds, selectedChildId] = getBlockChildIds(this.timelineContainer!.getBlocksAndEdgesAndHeightGroups()!, block);
         let [childHashes, notFoundChildIds] = this.getCachedBlockHashes(childIds);
         notFoundIds = notFoundIds.concat(notFoundChildIds);
 
@@ -437,23 +453,23 @@ export default class Dag {
                     if (notFoundParentIds.includes(blockHashById.id)) {
                         parentHashes = parentHashes.concat(blockHashById.hash);
                     }
-                    
+
                     if (block.selectedParentId === blockHashById.id) {
                         selectedParentHash = blockHashById.hash;
                     }
-                    
+
                     if (notFoundMergeSetRedIds.includes(blockHashById.id)) {
                         mergeSetBlueHashes = mergeSetBlueHashes.concat(blockHashById.hash);
                     }
-                    
+
                     if (notFoundMergeSetBlueIds.includes(blockHashById.id)) {
                         mergeSetBlueHashes = mergeSetBlueHashes.concat(blockHashById.hash);
                     }
-                    
+
                     if (notFoundChildIds.includes(blockHashById.id)) {
                         childHashes = childHashes.concat(blockHashById.hash);
                     }
-                    
+
                     if (selectedChildId === blockHashById.id) {
                         selectedChildHash = blockHashById.hash;
                     }
@@ -523,21 +539,6 @@ export default class Dag {
         const urlParams = this.initializeUrlSearchParams();
         window.history.pushState(null, "", `?${urlParams}`);
         this.run();
-    }
-
-    handleInitialUrlScale = () => {
-        const urlParams = this.initializeUrlSearchParams();
-        const scaleParam = urlParams.get("scale")
-        console.log(scaleParam);
-        if (scaleParam) {
-            const scale = parseFloat(scaleParam);
-            console.log(scale);
-            if (!isNaN(scale)) {
-                this.setInitialScale(scale);
-            }
-            urlParams.delete("scale");
-            //window.history.pushState(null, "", `?${urlParams}`);
-        }
     }
 
     private initializeUrlSearchParams = (): URLSearchParams => {

@@ -1,8 +1,8 @@
 import * as PIXI from "pixi.js-legacy";
-import {Block} from "../model/Block";
+import { Block } from "../model/Block";
 import BlockSprite from "./BlockSprite";
 import EdgeSprite from "./EdgeSprite";
-import {Ease, Tween} from "@createjs/tweenjs";
+import { Ease, Tween } from "@createjs/tweenjs";
 import HeightSprite from "./HeightSprite";
 import {
     areBlocksAndEdgesAndHeightGroupsEqual,
@@ -11,9 +11,9 @@ import {
     getDAAScoreGroupHeight,
     getBlockChildIds
 } from "../model/BlocksAndEdgesAndHeightGroups";
-import {Edge} from "../model/Edge";
-import {HeightGroup} from "../model/HeightGroup";
-import {BlockColorConst} from "../model/BlockColor";
+import { Edge } from "../model/Edge";
+import { HeightGroup } from "../model/HeightGroup";
+import { BlockColorConst } from "../model/BlockColor";
 import { theme } from "./Theme";
 
 export default class TimelineContainer extends PIXI.Container {
@@ -38,10 +38,11 @@ export default class TimelineContainer extends PIXI.Container {
     private daaScoreClickedListener: (daaScore: number) => void;
     private scaleGetter: () => number;
 
-    constructor(application: PIXI.Application) {
+    constructor(application: PIXI.Application, interactive: boolean) {
         super();
 
         this.application = application;
+        this.interactive = interactive;
 
         this.blockClickedListener = () => {
             // Do nothing
@@ -63,7 +64,7 @@ export default class TimelineContainer extends PIXI.Container {
         this.addChild(this.blockContainer);
     }
 
-    gettBlocksAndEdgesAndHeightGroups = (): BlocksAndEdgesAndHeightGroups | null => this.currentBlocksAndEdgesAndHeightGroups;
+    getBlocksAndEdgesAndHeightGroups = (): BlocksAndEdgesAndHeightGroups | null => this.currentBlocksAndEdgesAndHeightGroups;
 
     setBlocksAndEdgesAndHeightGroups = (blocksAndEdgesAndHeightGroups: BlocksAndEdgesAndHeightGroups, targetBlock: Block | null = null) => {
         // Don't bother updating anything if there's nothing to update
@@ -151,7 +152,7 @@ export default class TimelineContainer extends PIXI.Container {
                 // Add the height to the heightSprite-by-heightKey map
                 const heightGroup = this.heightKeysToHeightGroups[heightKey];
                 const heightDAAScore = getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, heightGroup.height)
-                const heightSprite = new HeightSprite(this.application, heightGroup.height, heightDAAScore);
+                const heightSprite = new HeightSprite(this.application, heightGroup.height, heightDAAScore, this.interactive);
                 heightSprite.setDAAScoreClickedListener(this.daaScoreClickedListener);
                 this.heightKeysToHeightSprites[heightKey] = heightSprite;
 
@@ -162,14 +163,14 @@ export default class TimelineContainer extends PIXI.Container {
         // Update height sprites DAAScore
         Object.keys(heightKeysInBlocks)
             .forEach(heightKey => {
-              const heightGroup = this.heightKeysToHeightGroups[heightKey];
-              if (this.heightKeysToHeightSprites[heightKey]) {
-                const heightSprite = this.heightKeysToHeightSprites[heightKey];
-                const heightDAAScore = getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, heightGroup.height)
-                if (heightSprite.getDAAScore() !== heightDAAScore) {
-                    heightSprite.setDAAScore(heightDAAScore)
+                const heightGroup = this.heightKeysToHeightGroups[heightKey];
+                if (this.heightKeysToHeightSprites[heightKey]) {
+                    const heightSprite = this.heightKeysToHeightSprites[heightKey];
+                    const heightDAAScore = getHeightGroupDAAScore(this.currentBlocksAndEdgesAndHeightGroups!, heightGroup.height)
+                    if (heightSprite.getDAAScore() !== heightDAAScore) {
+                        heightSprite.setDAAScore(heightDAAScore)
+                    }
                 }
-              }
             });
 
         // Add new block sprites
@@ -187,7 +188,7 @@ export default class TimelineContainer extends PIXI.Container {
 
                 // Animate the block sprite as it's created
                 blockSprite.alpha = 0.0;
-                Tween.get(blockSprite).to({alpha: 1.0}, 500);
+                Tween.get(blockSprite).to({ alpha: 1.0 }, 500);
             }
         }
 
@@ -214,7 +215,7 @@ export default class TimelineContainer extends PIXI.Container {
 
                 // Animate the edge sprite as its created
                 edgeSprite.alpha = 0.0;
-                Tween.get(edgeSprite).to({alpha: 1.0}, 500);
+                Tween.get(edgeSprite).to({ alpha: 1.0 }, 500);
             }
         }
 
@@ -232,7 +233,7 @@ export default class TimelineContainer extends PIXI.Container {
         const blockKey = this.buildBlockKey(block.id);
         const targetBlock = this.blockKeysToBlocks[targetBlockKey];
 
-        const [childIds, ] = getBlockChildIds(this.currentBlocksAndEdgesAndHeightGroups!, targetBlock);
+        const [childIds,] = getBlockChildIds(this.currentBlocksAndEdgesAndHeightGroups!, targetBlock);
         const childBlockKeys = childIds.map(blockId => this.buildBlockKey(blockId));
         if (childBlockKeys.indexOf(blockKey) >= 0) {
             blockSprite.setHighlighted(true, false, block.color);
@@ -317,7 +318,7 @@ export default class TimelineContainer extends PIXI.Container {
     }
 
     recalculateTargetHeight = () => {
-        if  (this.currentBlocksAndEdgesAndHeightGroups !== null) {
+        if (this.currentBlocksAndEdgesAndHeightGroups !== null) {
             this.targetHeight = getDAAScoreGroupHeight(this.currentBlocksAndEdgesAndHeightGroups, this.targetDAAScore);
         }
     }
@@ -363,7 +364,7 @@ export default class TimelineContainer extends PIXI.Container {
                     if (!wasBlockSpriteSizeSet || !animate) {
                         blockSprite.y = targetY;
                     } else {
-                        Tween.get(blockSprite).to({y: targetY}, 500, Ease.quadOut);
+                        Tween.get(blockSprite).to({ y: targetY }, 500, Ease.quadOut);
                     }
                 }
             });
@@ -430,7 +431,7 @@ export default class TimelineContainer extends PIXI.Container {
                     const toY = event.target.target.toY;
                     this.updateEdgeSprite(edgeSprite, blockSize, marginX, fromX, toX, fromY, toY);
                 };
-                Tween.get(tween, {onChange: onChange}).to({fromY: fromY, toY: toY}, 500, Ease.quadOut);
+                Tween.get(tween, { onChange: onChange }).to({ fromY: fromY, toY: toY }, 500, Ease.quadOut);
             });
     }
 
@@ -521,7 +522,7 @@ export default class TimelineContainer extends PIXI.Container {
             // screen-length. Otherwise, just set it the x
             const targetX = rendererWidth / 2 - blockSpriteXForTargetHeight;
             if (Math.abs(this.x - targetX) < rendererWidth) {
-                Tween.get(this).to({x: targetX}, 500, Ease.quadOut);
+                Tween.get(this).to({ x: targetX }, 500, Ease.quadOut);
                 return;
             }
             this.x = targetX;
