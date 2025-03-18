@@ -701,6 +701,7 @@ func (p *Processing) processBlock(databaseTransaction *pg.Tx, block *externalapi
 	}
 
 	if rpcBlock.Block.VerboseData.IsHeaderOnly || isIncompleteBlock {
+		log.Infof("Block %s is incomplete so leaving block processing", blockHash)
 		return nil
 	}
 
