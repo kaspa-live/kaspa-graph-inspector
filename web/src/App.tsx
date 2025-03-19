@@ -9,6 +9,7 @@ import { BlockInformation } from "./model/BlockInformation";
 import SlideItem from './components/base/SlideItem';
 import AppContainer from './components/base/AppContainer';
 import GlobalStyles from '@mui/material/GlobalStyles';
+import { theme } from './dag/Theme';
 
 export const App = ({ interactive }: { interactive: boolean }) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
@@ -50,9 +51,11 @@ export const App = ({ interactive }: { interactive: boolean }) => {
         });
     }
 
+    const muiTheme = createTheme(theme.options);
+
     return (
         <StyledEngineProvider injectFirst>
-            <ThemeProvider theme={theme}>
+            <ThemeProvider theme={muiTheme}>
                 {appGlobalStyles}
                 <AppContainer sx={{
                     padding: 0,
@@ -105,40 +108,5 @@ const appGlobalStyles = <GlobalStyles styles={{
         boxSizing: 'border-box',
     },
 }} />
-
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: "#175676"
-        },
-        secondary: {
-            main: "#26c6da"
-        },
-        background: {
-            paper: "#fff"
-        },
-
-        brand: {
-            logo: {
-                main: "#71c9bb",
-            },
-        },
-        block: {
-            blue: {
-                main: "#5581AA",
-                dark: "#1f5278",        // https://fffuel.co/cccolor/ - #5581AA - Shade palette 4
-                light: "#95adc8"        // https://fffuel.co/cccolor/ - #5581AA - Tint palette 4
-            },
-            red: {
-                main: "#B34D50",
-                dark: "#82212a",        // https://fffuel.co/cccolor/ - #B34D50 - Shade palette 4
-                light: "#d48d8b"        // https://fffuel.co/cccolor/ - #B34D50 - Tint palette 4
-            },
-            gray: {
-                main: "#aaaaaa",
-            },
-        },
-    },
-});
 
 export const dag = new Dag(0.2);
