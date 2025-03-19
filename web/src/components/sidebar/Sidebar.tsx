@@ -7,8 +7,9 @@ import ConnectionIssuesIndicator from "./ConnectionIssuesIndicator";
 import KaspaLogo from "./KaspaButton";
 import ScaleButtons from "./ScaleButtons";
 import TrackButton from "./TrackButton";
+import { Params } from "../../Params";
 
-const Sidebar = ({ dag, appConfig, interactive }: { dag: Dag, appConfig: AppConfig | null, interactive: boolean }) => {
+const Sidebar = ({ dag, appConfig, params }: { dag: Dag, appConfig: AppConfig | null, params: Params }) => {
     const [isTrackingState, setTrackingState] = useState(true);
     const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
     const [dagScaleState, setDagScaleState] = useState(dag.getScale())
@@ -39,7 +40,7 @@ const Sidebar = ({ dag, appConfig, interactive }: { dag: Dag, appConfig: AppConf
                 alignItems: 'center',
                 gap: '12px',
             }}>
-                <KaspaLogo appConfig={appConfig} withLinkToKGI={!interactive} />
+                <KaspaLogo appConfig={appConfig} params={params} withLinkToKGI={!params.interactive} />
             </Box>
 
             <ZoomItem visible={isHavingConnectionIssuesState}>
@@ -67,8 +68,8 @@ const Sidebar = ({ dag, appConfig, interactive }: { dag: Dag, appConfig: AppConf
                         }}
                     />
                 </ZoomItem>
-                {interactive &&
-                    <ZoomItem visible={interactive}>
+                {params.interactive &&
+                    <ZoomItem visible={params.interactive}>
                         <TrackButton isTracking={isTrackingState} onClick={() => isTrackingState ? dag.setStateTrackCurrent() : dag.setStateTrackHead()} />
                     </ZoomItem>
                 }

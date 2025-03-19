@@ -289,6 +289,7 @@ const lightTheme: Theme = {
             brand: {
                 logo: {
                     main: "#71c9bb",
+                    contrastText: "#fff",
                 },
             },
             block: {
@@ -487,6 +488,7 @@ const darkTheme: Theme = {
             brand: {
                 logo: {
                     main: "#70C7BA",
+                    contrastText: "#1a1a1a",
                 },
             },
             block: {

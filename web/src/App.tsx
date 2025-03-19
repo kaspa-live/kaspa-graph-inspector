@@ -10,21 +10,22 @@ import SlideItem from './components/base/SlideItem';
 import AppContainer from './components/base/AppContainer';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import { theme } from './dag/Theme';
+import { Params } from './Params';
 
-export const App = ({ interactive }: { interactive: boolean }) => {
+export const App = ({ params }: { params: Params }) => {
     const [blockInformationState, setBlockInformationState] = useState<BlockInformation | null>(null);
     const [appConfigState, setAppConfig] = useState<AppConfig | null>(null);
+    const [paramsState] = useState(params);
     const [wasBlockSetState, setWasBlockSetState] = useState(false);
     const [wasBlockInformationPanelCloseRequested, setBlockInformationPanelCloseRequested] = useState(false);
     const [isBlockInformationPanelOpenState, setBlockInformationPanelOpenState] = useState(false);
-    const [isInteractiveState] = useState(interactive);
     const appContainerRef = useRef(null);
 
     dag.setAppConfigChangedListener(appConfig => {
         setAppConfig(appConfig);
     });
 
-    if (isInteractiveState) {
+    if (paramsState.interactive) {
         dag.setBlockInformationChangedListener(blockInformation => {
             const hasBlockChanged = blockInformation?.block.blockHash !== blockInformationState?.block.blockHash;
 
@@ -75,9 +76,9 @@ export const App = ({ interactive }: { interactive: boolean }) => {
                     ref={appContainerRef}
                 >
                     <Canvas dag={dag} />
-                    <Sidebar dag={dag} appConfig={appConfigState} interactive={isInteractiveState} />
+                    <Sidebar dag={dag} appConfig={appConfigState} params={paramsState} />
 
-                    {!wasBlockSetState || !isInteractiveState ? undefined :
+                    {!wasBlockSetState || !paramsState.interactive ? undefined :
                         <SlideItem
                             appear={false}
                             direction="right"
