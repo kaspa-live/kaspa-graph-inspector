@@ -475,6 +475,7 @@ const darkTheme: Theme = {
 
     options: {
         palette: {
+            mode: 'dark',
             primary: {
                 main: "#9aaebf"
             },
