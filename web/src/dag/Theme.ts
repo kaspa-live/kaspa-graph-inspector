@@ -295,18 +295,26 @@ export const lightTheme: Theme = {
             block: {
                 blue: {
                     main: "#5581AA",
-                    dark: "#1f5278",        // https://fffuel.co/cccolor/ - #5581AA - Shade palette 4
-                    light: "#95adc8"        // https://fffuel.co/cccolor/ - #5581AA - Tint palette 4
+                    dark: "#1f5278", // https://fffuel.co/cccolor/ - #5581AA - Shade palette 4
+                    light: "#95adc8" // https://fffuel.co/cccolor/ - #5581AA - Tint palette 4
                 },
                 red: {
                     main: "#B34D50",
-                    dark: "#82212a",        // https://fffuel.co/cccolor/ - #B34D50 - Shade palette 4
-                    light: "#d48d8b"        // https://fffuel.co/cccolor/ - #B34D50 - Tint palette 4
+                    dark: "#82212a", // https://fffuel.co/cccolor/ - #B34D50 - Shade palette 4
+                    light: "#d48d8b" // https://fffuel.co/cccolor/ - #B34D50 - Tint palette 4
                 },
                 gray: {
                     main: "#aaaaaa",
                 },
             },
+            tooltip: {
+                background: {
+                    main: "#175676"
+                },
+                border: {
+                    main: "#fff"
+                },
+            }
         },
     }
 }
@@ -479,13 +487,13 @@ export const darkTheme: Theme = {
         palette: {
             mode: 'dark',
             primary: {
-                main: "#adc1de"             // https://fffuel.co/cccolor/ - #175676 - Cooler palette 7 - #6490c3 - Tint palette 5 - #adc1de
+                main: "#adc1de" // https://fffuel.co/cccolor/ - #175676 - Cooler palette 7 - #6490c3 - Tint palette 5 - #adc1de
             },
             secondary: {
-                main: "#a1e0eb"             // https://fffuel.co/cccolor/ - #26c6da - Tint palette 5 
+                main: "#a1e0eb" // https://fffuel.co/cccolor/ - #26c6da - Tint palette 5 
             },
             background: {
-                paper: "#3b3b3b"            // https://fffuel.co/cccolor/ - #2b2b2b - Tint palette 1 - #3b3b3b
+                paper: "#3b3b3b" // https://fffuel.co/cccolor/ - #2b2b2b - Tint palette 1 - #3b3b3b
             },
 
             brand: {
@@ -497,18 +505,26 @@ export const darkTheme: Theme = {
             block: {
                 blue: {
                     main: "#5581AA",
-                    dark: "#1f5278",        // https://fffuel.co/cccolor/ - #5581AA - Shade palette 4
-                    light: "#95adc8"        // https://fffuel.co/cccolor/ - #5581AA - Tint palette 4
+                    dark: "#1f5278", // https://fffuel.co/cccolor/ - #5581AA - Shade palette 4
+                    light: "#95adc8" // https://fffuel.co/cccolor/ - #5581AA - Tint palette 4
                 },
                 red: {
                     main: "#B34D50",
-                    dark: "#82212a",        // https://fffuel.co/cccolor/ - #B34D50 - Shade palette 4
-                    light: "#d48d8b"        // https://fffuel.co/cccolor/ - #B34D50 - Tint palette 4
+                    dark: "#82212a", // https://fffuel.co/cccolor/ - #B34D50 - Shade palette 4
+                    light: "#d48d8b" // https://fffuel.co/cccolor/ - #B34D50 - Tint palette 4
                 },
                 gray: {
                     main: "#aaaaaa",
                 },
             },
+            tooltip: {
+                background: {
+                    main: "#3b3b3b"
+                },
+                border: {
+                    main: "#888888"
+                },
+            }
         },
     }
 }
