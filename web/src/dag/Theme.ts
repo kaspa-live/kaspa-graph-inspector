@@ -112,7 +112,7 @@ export interface Theme {
     options: ThemeOptions;  // MUI theme options
 };
 
-const lightTheme: Theme = {
+export const lightTheme: Theme = {
     components: {
         block: {
             roundingRadius: 10,             // Stas original: 10
@@ -311,7 +311,7 @@ const lightTheme: Theme = {
     }
 }
 
-const darkTheme: Theme = {
+export const darkTheme: Theme = {
     components: {
         block: {
             roundingRadius: 10,             // Stas original: 10
@@ -323,8 +323,8 @@ const darkTheme: Theme = {
                     contrastText: 0xffffff, // Stas original: 0x666666  
                 },
                 border: {
-                    color: 0xffffff,        // Stas original: 0xaaaaaa
-                    width: 2.0,             // Stas original: 3
+                    color: 0x2b2b2b,        // Stas original: 0xaaaaaa
+                    width: 0.0,             // Stas original: 3
                 },
             },
             red: {
@@ -335,20 +335,21 @@ const darkTheme: Theme = {
                     contrastText: 0xffffff, // Stas original: 0x666666   
                 },
                 border: {
-                    color: 0xffffff,        // Stas original: 0xaaaaaa
-                    width: 2.0,             // Stas original: 3
+                    color: 0x2b2b2b,        // Stas original: 0xaaaaaa
+                    width: 0.0,             // Stas original: 3
                 },
             },
             gray: {
                 color: {
-                    main: 0xf5f5f5,         // Stas original: 0xf5faff
+                    main: 0xdcdcdc,         // Stas original: 0xf5faff
+                    // https://fffuel.co/cccolor/ - #f5f5f5 - Shade palette 1 - #dcdcdc
                     highlight: 0x949494,    // Stas original: 0x78869e
-                    // https://fffuel.co/cccolor/ - 0xf5f5f5 - Shade palette 4
+                    // https://fffuel.co/cccolor/ - #f5f5f5 - Shade palette 4
                     contrastText: 0x666666, // Stas original: 0x666666
                 },
                 border: {
-                    color: 0xaaaaaa,        // Stas original: 0xaaaaaa
-                    width: 2.0,             // Stas original: 3
+                    color: 0x2b2b2b,        // Stas original: 0xaaaaaa
+                    width: 0.0,             // Stas original: 3
                 },
             },
             focus: {
@@ -388,47 +389,47 @@ const darkTheme: Theme = {
 
         edge: {
             normal: {
-                color: 0xaaaaaa,            // Stas original: 0xaaaaaa
+                color: 0x787878,            // https://fffuel.co/cccolor/ - #aaaaaa - Shade palette 3 - #787878
                 lineWidth: 2,               // Stas original: 2
                 arrowRadius: 5,             // Stas original: 4
             },
             virtualChain: {
-                color: 0x85a2c1,            // Stas original: 0xb4cfed
-                // https://fffuel.co/cccolor/ - 0x5581AA - Tint palette 3
-                lineWidth: 7,               // Stas original: 4
-                arrowRadius: 9,             // Stas original: 6
+                color: 0x48759d,            // Stas original: 0xb4cfed
+                // https://fffuel.co/cccolor/ - #5581AA - Shade palette 1 - #48759d
+                lineWidth: 8,               // Stas original: 4
+                arrowRadius: 10,             // Stas original: 6
             },
             highlighted: {
                 parent: {
-                    color: 0xaaaaaa,        // Stas original: 0x6be39f
+                    color: 0x787878,        // Stas original: 0x6be39f
                     // normal
                     lineWidth: 8,           // Stas original: 4
                     arrowRadius: 10,         // Stas original: 6
                 },
                 child: {
-                    color: 0xaaaaaa,        // Stas original: 0x6be39f
+                    color: 0x787878,        // Stas original: 0x6be39f
                     // normal
                     lineWidth: 8,           // Stas original: 4
                     arrowRadius: 10,         // Stas original: 6
                 },
                 selected: {
-                    color: 0x898989,        // Stas original: 0x4de3bb
-                    // https://fffuel.co/pppalette/ - 0xaaaaaa - Shade palette 2
+                    color: 0xb3b3b3,        // Stas original: 0x4de3bb
+                    // https://fffuel.co/pppalette/ - #787878 - Tint palette 5 - #b3b3b3
                     lineWidth: 8,           // Stas original: 6
                     arrowRadius: 10,         // Stas original: 8
                 },
                 virtualChain: {
                     parent: {
-                        color: 0x85a2c1,    // Stas original: 0x7ce0e6,
+                        color: 0x48759d,    // Stas original: 0x7ce0e6,
                         // virtualChain
-                        lineWidth: 10,       // Stas original: 6
-                        arrowRadius: 10,     // Stas original: 8
+                        lineWidth: 11,       // Stas original: 6
+                        arrowRadius: 11,     // Stas original: 8
                     },
                     child: {
-                        color: 0x85a2c1,    // Stas original: 0x7ce0e6,
+                        color: 0x48759d,    // Stas original: 0x7ce0e6,
                         // virtualChain
-                        lineWidth: 10,      // Stas original: 6
-                        arrowRadius: 10,     // Stas original: 8
+                        lineWidth: 11,      // Stas original: 6
+                        arrowRadius: 11,     // Stas original: 8
                     },
                 },
                 markRadius: 6,
@@ -441,6 +442,7 @@ const darkTheme: Theme = {
                 main: 0xf7f7f7,             // Stas original: 0xf7f9fa
                 // NOT USED
                 highlight: 0x3b3b3b,        // Stas original: 0xe8e8e8
+                // https://fffuel.co/cccolor/ - #2b2b2b - Tint palette 1 - #3b3b3b
                 contrastText: 0x777777,     // Stas original: 0x777777
             },
             text: {
@@ -477,13 +479,13 @@ const darkTheme: Theme = {
         palette: {
             mode: 'dark',
             primary: {
-                main: "#9aaebf"
+                main: "#adc1de"             // https://fffuel.co/cccolor/ - #175676 - Cooler palette 7 - #6490c3 - Tint palette 5 - #adc1de
             },
             secondary: {
-                main: "#b2e5ee"
+                main: "#a1e0eb"             // https://fffuel.co/cccolor/ - #26c6da - Tint palette 5 
             },
             background: {
-                paper: "#3b3b3b"
+                paper: "#3b3b3b"            // https://fffuel.co/cccolor/ - #2b2b2b - Tint palette 1 - #3b3b3b
             },
 
             brand: {

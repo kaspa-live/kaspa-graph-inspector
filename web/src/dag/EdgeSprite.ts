@@ -1,7 +1,7 @@
 import '@pixi/graphics-extras';
 import * as PIXI from "pixi.js-legacy";
-import {Tween} from "@createjs/tweenjs";
-import { EdgeLayout, theme } from "./Theme";
+import { Tween } from "@createjs/tweenjs";
+import { EdgeLayout, theme, Theme } from "./Theme";
 
 class EdgeGraphicsDefinition {
     readonly color;
@@ -23,17 +23,49 @@ class EdgeGraphicsDefinition {
     }
 }
 
+class ThemeEdgeGraphicsDefinitions {
+    readonly normalDefinition: EdgeGraphicsDefinition;
+    readonly inVirtualSelectedParentChainDefinition;
+    readonly highlightedParentDefinition;
+    readonly highlightedChildDefinition;
+    readonly highlightedSelectedParentDefinition;
+    readonly highlightedParentInVirtualSelectedParentChainDefinition;
+    readonly highlightedChildInVirtualSelectedParentChainDefinition;
+
+    readonly definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition };
+
+    constructor(theme: Theme) {
+        this.normalDefinition = new EdgeGraphicsDefinition(theme.components.edge.normal, false, false);
+        this.inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.virtualChain, false, false);
+        this.highlightedParentDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.parent, true, false);
+        this.highlightedChildDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.child, true, true);
+        this.highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.selected, true, false);
+        this.highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.virtualChain.parent, true, false);
+        this.highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.virtualChain.child, true, true);
+
+        this.definitionMap = this.initializeDefinitionMap();
+    }
+
+    private initializeDefinitionMap(): Record<string, EdgeGraphicsDefinition> {
+        let definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = {};
+        definitionMap[this.normalDefinition.key()] = this.normalDefinition;
+        definitionMap[this.inVirtualSelectedParentChainDefinition.key()] = this.inVirtualSelectedParentChainDefinition;
+        definitionMap[this.highlightedParentDefinition.key()] = this.highlightedParentDefinition;
+        definitionMap[this.highlightedChildDefinition.key()] = this.highlightedChildDefinition;
+        definitionMap[this.highlightedSelectedParentDefinition.key()] = this.highlightedSelectedParentDefinition;
+        definitionMap[this.highlightedParentInVirtualSelectedParentChainDefinition.key()] = this.highlightedParentInVirtualSelectedParentChainDefinition;
+        definitionMap[this.highlightedChildInVirtualSelectedParentChainDefinition.key()] = this.highlightedChildInVirtualSelectedParentChainDefinition;
+        return definitionMap;
+    }
+}
+
+let themeDefs = new ThemeEdgeGraphicsDefinitions(theme);
+
+export function updateTheme() {
+    themeDefs = new ThemeEdgeGraphicsDefinitions(theme);
+}
+
 export default class EdgeSprite extends PIXI.Container {
-    private static readonly normalDefinition = new EdgeGraphicsDefinition(theme.components.edge.normal, false, false);
-    private static readonly inVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.virtualChain, false, false);
-    private static readonly highlightedParentDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.parent, true, false);
-    private static readonly highlightedChildDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.child, true, true);
-    private static readonly highlightedSelectedParentDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.selected, true, false);
-    private static readonly highlightedParentInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.virtualChain.parent, true, false);
-    private static readonly highlightedChildInVirtualSelectedParentChainDefinition = new EdgeGraphicsDefinition(theme.components.edge.highlighted.virtualChain.child, true, true);
-
-    private static readonly definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = EdgeSprite.initializeDefinitionMap();
-
     private readonly application: PIXI.Application;
     private readonly fromBlockId: number;
     private readonly toBlockId: number;
@@ -61,23 +93,11 @@ export default class EdgeSprite extends PIXI.Container {
         this.fromBlockId = fromBlockId;
         this.toBlockId = toBlockId;
 
-        for (let definitionKey in EdgeSprite.definitionMap) {
+        for (let definitionKey in themeDefs.definitionMap) {
             this.graphicsMap[definitionKey] = this.addNewGraphics();
         }
-        this.graphicsMap[EdgeSprite.normalDefinition.key()].alpha = 1.0;
-        this.baseDefinition = EdgeSprite.normalDefinition;
-    }
-
-    private static initializeDefinitionMap(): Record<string, EdgeGraphicsDefinition> {
-        let definitionMap: { [definitionKey: string]: EdgeGraphicsDefinition } = {};
-        definitionMap[EdgeSprite.normalDefinition.key()] = EdgeSprite.normalDefinition;
-        definitionMap[EdgeSprite.inVirtualSelectedParentChainDefinition.key()] = EdgeSprite.inVirtualSelectedParentChainDefinition;
-        definitionMap[EdgeSprite.highlightedParentDefinition.key()] = EdgeSprite.highlightedParentDefinition;
-        definitionMap[EdgeSprite.highlightedChildDefinition.key()] = EdgeSprite.highlightedChildDefinition;
-        definitionMap[EdgeSprite.highlightedSelectedParentDefinition.key()] = EdgeSprite.highlightedSelectedParentDefinition;
-        definitionMap[EdgeSprite.highlightedParentInVirtualSelectedParentChainDefinition.key()] = EdgeSprite.highlightedParentInVirtualSelectedParentChainDefinition;
-        definitionMap[EdgeSprite.highlightedChildInVirtualSelectedParentChainDefinition.key()] = EdgeSprite.highlightedChildInVirtualSelectedParentChainDefinition;
-        return definitionMap;
+        this.graphicsMap[themeDefs.normalDefinition.key()].alpha = 1.0;
+        this.baseDefinition = themeDefs.normalDefinition;
     }
 
     private addNewGraphics = (): PIXI.Graphics => {
@@ -102,8 +122,8 @@ export default class EdgeSprite extends PIXI.Container {
             this.blockBoundsVectorX = blockBoundsVectorX;
             this.blockBoundsVectorY = blockBoundsVectorY;
 
-            for (let definitionKey in EdgeSprite.definitionMap) {
-                const definition = EdgeSprite.definitionMap[definitionKey];
+            for (let definitionKey in themeDefs.definitionMap) {
+                const definition = themeDefs.definitionMap[definitionKey];
                 const graphics = this.graphicsMap[definitionKey];
                 this.renderGraphics(graphics, definition);
             }
@@ -122,7 +142,7 @@ export default class EdgeSprite extends PIXI.Container {
         const baseLineWidth = theme.scale(this.baseDefinition!.lineWidth, this.blockSize);
         const baseArrowRadius = theme.scale(this.baseDefinition!.arrowRadius, this.blockSize);
 
-        // We want a noticeable increase in size for a highlited edge
+        // We want a noticeable increase in size for a highlighted edge
         if (definition.isHighlight) {
             lineWidth = Math.max(lineWidth, baseLineWidth + theme.components.edge.highlighted.minBorderIncrease);
             arrowRadius = Math.max(arrowRadius, baseArrowRadius + (theme.components.edge.highlighted.minBorderIncrease * 0.5));
@@ -140,11 +160,11 @@ export default class EdgeSprite extends PIXI.Container {
 
         // To gat the actual arrow radius, we must consider the radius of the 
         // triangle, but also the line width that is drawn around it.
-        // The triangle is equilateral, so the increase in radius is exactely
+        // The triangle is equilateral, so the increase in radius is exactly
         // 1x the line width. This because the extra thickness of the triangle
         // is 0.5x the line width, for an incident angle of 30 degree (2 edges
         // respectively at 30 and -30 degree form a triangle tip), with the 
-        // hypothenuse of 1x line width being the increase in radius.
+        // hypotenuse of 1x line width being the increase in radius.
         const totalArrowRadius = arrowRadius + lineWidth;
 
         const arrowOffsetX = -toX * totalArrowRadius / toVectorMagnitude;
@@ -193,7 +213,7 @@ export default class EdgeSprite extends PIXI.Container {
             || this.isHighlightedParent !== isHighlightedParent
             || this.isHighlightedChild !== isHighlightedChild
             || this.isSelectedParent !== isSelectedParent) {
-            
+
             this.isInVirtualSelectedParentChain = isInVirtualSelectedParentChain;
             this.isHighlightedParent = isHighlightedParent;
             this.isHighlightedChild = isHighlightedChild;
@@ -235,23 +255,23 @@ export default class EdgeSprite extends PIXI.Container {
         let definition;
         if (this.isInVirtualSelectedParentChain) {
             if (this.isHighlightedParent) {
-                definition = EdgeSprite.highlightedParentInVirtualSelectedParentChainDefinition;
+                definition = themeDefs.highlightedParentInVirtualSelectedParentChainDefinition;
             } else if (this.isHighlightedChild) {
-                definition = EdgeSprite.highlightedChildInVirtualSelectedParentChainDefinition;
+                definition = themeDefs.highlightedChildInVirtualSelectedParentChainDefinition;
             } else {
-                definition = EdgeSprite.inVirtualSelectedParentChainDefinition;
+                definition = themeDefs.inVirtualSelectedParentChainDefinition;
             }
         } else {
             if (this.isHighlightedParent) {
                 if (this.isSelectedParent) {
-                    definition = EdgeSprite.highlightedSelectedParentDefinition;
+                    definition = themeDefs.highlightedSelectedParentDefinition;
                 } else {
-                    definition = EdgeSprite.highlightedParentDefinition;
+                    definition = themeDefs.highlightedParentDefinition;
                 }
             } else if (this.isHighlightedChild) {
-                definition = EdgeSprite.highlightedChildDefinition;
+                definition = themeDefs.highlightedChildDefinition;
             } else {
-                definition = EdgeSprite.normalDefinition;
+                definition = themeDefs.normalDefinition;
             }
         }
 
@@ -266,14 +286,16 @@ export default class EdgeSprite extends PIXI.Container {
     private changeShownGraphics = (targetDefinition: EdgeGraphicsDefinition) => {
         const targetKey = targetDefinition.key();
         const targetGraphics = this.graphicsMap[targetKey];
-        Tween.get(targetGraphics).to({alpha: 1.0}, 500);
+        Tween.get(targetGraphics).to({ alpha: 1.0 }, 500);
 
         for (let definitionKey in this.graphicsMap) {
             if (targetKey === definitionKey) {
                 continue;
             }
             const graphics = this.graphicsMap[definitionKey];
-            Tween.get(graphics).to({alpha: 0.0}, 500);
+            if (graphics.alpha != 0.0) {
+                Tween.get(graphics).to({ alpha: 0.0 }, 500);
+            }
         }
     }
 
