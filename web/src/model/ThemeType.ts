@@ -16,7 +16,8 @@ export function parseThemeType(value: string | undefined, defaultValue: ThemeTyp
     if (value) {
         let v = value.toLowerCase().trim();
         switch (v) {
-            case ThemeTypeConst.LIGHT, ThemeTypeConst.DARK: {
+            case ThemeTypeConst.LIGHT:
+            case ThemeTypeConst.DARK: {
                 return v;
             }
         }

@@ -161,7 +161,7 @@ export default class Dag {
     getDisplayWidth = () => this.application!.renderer.screen.width;
 
     setInteractive = (interactive: boolean) => {
-        if (interactive != this.interactive) {
+        if (interactive !== this.interactive) {
             this.interactive = interactive
             this.updateInteractive();
         }

@@ -293,7 +293,7 @@ export default class EdgeSprite extends PIXI.Container {
                 continue;
             }
             const graphics = this.graphicsMap[definitionKey];
-            if (graphics.alpha != 0.0) {
+            if (graphics.alpha !== 0.0) {
                 Tween.get(graphics).to({ alpha: 0.0 }, 500);
             }
         }

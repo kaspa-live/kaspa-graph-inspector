@@ -1,7 +1,6 @@
 import {ReactChild, ReactElement, ReactFragment, ReactPortal} from "react";
 import { Tooltip as TooltipMUI, TooltipProps as TooltipPropsMUI } from "@mui/material";
 import { styled } from '@mui/material/styles';
-import { BorderColor } from "@mui/icons-material";
 
 const StyledTooltip = styled(
         ({ className, ...props }: TooltipPropsMUI) => (<TooltipMUI {...props} classes={{ popper: className }}/>),

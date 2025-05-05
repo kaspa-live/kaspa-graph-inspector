@@ -12,7 +12,7 @@ const KaspaLogo = ({ appConfig, params, withLinkToKGI }: { appConfig: AppConfig 
     let buttonBkgColor = theme.palette.background.paper;
 
     if (appConfig) {
-        if (!params.interactive && params.theme == ThemeTypeConst.DARK) {
+        if (!params.interactive && params.theme === ThemeTypeConst.DARK) {
             // Supposedly this is the kaspa.org config
             // Do nothing
         } else if (isMainnet(appConfig)) {
