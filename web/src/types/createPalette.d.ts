@@ -11,7 +11,12 @@ declare module '@mui/material/styles/createPalette' {
             blue?: PaletteColorOptions;
             red?: PaletteColorOptions;
             gray?: PaletteColorOptions;
-        }    
+        }
+
+        tooltip: {
+            background?: PaletteColorOptions;
+            border?: PaletteColorOptions;
+        }
     }
 
     interface Palette {
@@ -23,6 +28,11 @@ declare module '@mui/material/styles/createPalette' {
             blue: PaletteColor;
             red: PaletteColor;
             gray: PaletteColor;
+        }
+
+        tooltip: {
+            background: PaletteColor;
+            border: PaletteColor;
         }
     }
 

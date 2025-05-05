@@ -41,11 +41,30 @@ type Flags struct {
 	Resync                   bool     `long:"resync" description:"Force to resync all available node blocks with the PostgrSQL database -- Use if some recently added blocks have missing parents"`
 	ClearDB                  bool     `long:"clear-db" description:"Clear the PostgrSQL database and sync from scratch"`
 	LogLevel                 string   `short:"d" long:"loglevel" description:"Logging level for all subsystems {trace, debug, info, warn, error, critical} -- You may also specify <subsystem>=<level>,<subsystem2>=<level>,... to set the log level for individual subsystems -- Use show to list available subsystems"`
+	RPCServer                string   `short:"s" long:"rpcserver" description:"RPC server to connect to"`
+	NetSuffix                int   	 `long:"netsuffix" description:"Testnet network suffix number"`
 	kaspaConfigPackage.NetworkFlags
 }
 
 type Config struct {
+	NetName	string
 	*Flags
+}
+
+func (f *Config) applyNetSuffix() error {
+	f.NetName = f.ActiveNetParams.Name
+
+	if f.NetSuffix == 0 {
+		return nil
+	}
+
+	if !f.Testnet {
+		return errors.New("Net suffix is only allowed on testnet")
+	}
+
+	f.NetName = fmt.Sprintf("%v%d", f.ActiveNetParams.Name[:len(f.ActiveNetParams.Name)-2], f.NetSuffix)
+
+	return nil
 }
 
 // cleanAndExpandPath expands environment variables and leading ~ in the
@@ -64,8 +83,9 @@ func cleanAndExpandPath(path string) string {
 
 func defaultFlags() *Flags {
 	return &Flags{
-		AppDir:   defaultDataDir,
-		LogLevel: defaultLogLevel,
+		AppDir:    defaultDataDir,
+		LogLevel:  defaultLogLevel,
+		RPCServer: "localhost",
 	}
 }
 
@@ -123,6 +143,11 @@ func LoadConfig() (*Config, error) {
 	if cfg.LogLevel == "show" {
 		fmt.Println("Supported subsystems", kaspaLogger.SupportedSubsystems())
 		os.Exit(0)
+	}
+
+	err = cfg.applyNetSuffix()
+	if err != nil {
+		return nil, err
 	}
 
 	// Initialize log rotation. After log rotation has been initialized, the

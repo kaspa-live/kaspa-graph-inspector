@@ -7,12 +7,13 @@ import ConnectionIssuesIndicator from "./ConnectionIssuesIndicator";
 import KaspaLogo from "./KaspaButton";
 import ScaleButtons from "./ScaleButtons";
 import TrackButton from "./TrackButton";
+import { Params } from "../../Params";
 
-const Sidebar = ({dag, appConfig}: {dag: Dag, appConfig: AppConfig | null}) => {
+const Sidebar = ({ dag, appConfig, params }: { dag: Dag, appConfig: AppConfig | null, params: Params }) => {
     const [isTrackingState, setTrackingState] = useState(true);
     const [isHavingConnectionIssuesState, setHavingConnectionIssuesState] = useState(false);
     const [dagScaleState, setDagScaleState] = useState(dag.getScale())
-    
+
     dag.setIsTrackingChangedListener(isTracking => setTrackingState(isTracking));
     dag.setIsFetchFailingListener(isFailing => setHavingConnectionIssuesState(isFailing));
 
@@ -20,7 +21,7 @@ const Sidebar = ({dag, appConfig}: {dag: Dag, appConfig: AppConfig | null}) => {
         <Box sx={{
             padding: 0,
             margin: 0,
-                
+
             position: 'absolute',
             top: '2vw',
             bottom: '2vw',
@@ -34,42 +35,44 @@ const Sidebar = ({dag, appConfig}: {dag: Dag, appConfig: AppConfig | null}) => {
             gap: '24px',
         }}>
             <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '12px',
-                }}>
-                <KaspaLogo appConfig={appConfig} />
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '12px',
+            }}>
+                <KaspaLogo appConfig={appConfig} params={params} withLinkToKGI={!params.interactive} />
             </Box>
 
             <ZoomItem visible={isHavingConnectionIssuesState}>
-                <ConnectionIssuesIndicator/>
+                <ConnectionIssuesIndicator />
             </ZoomItem>
 
             <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '12px',
-                }}>
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '12px',
+            }}>
                 <ZoomItem visible={true}>
                     <ScaleButtons
                         scale={dagScaleState}
                         minScale={0.2}
                         maxScale={1.2}
-                        onIncrease={() => { 
+                        onIncrease={() => {
                             dag.zoomOut();
                             setDagScaleState(dag.getScale());
-                         }}
+                        }}
                         onDecrease={() => {
                             dag.zoomIn();
                             setDagScaleState(dag.getScale());
                         }}
                     />
                 </ZoomItem>
-                <ZoomItem visible={true}>
-                    <TrackButton isTracking={isTrackingState} onClick={() => isTrackingState ? dag.setStateTrackCurrent() : dag.setStateTrackHead()}/>
-                </ZoomItem>
+                {params.interactive &&
+                    <ZoomItem visible={params.interactive}>
+                        <TrackButton isTracking={isTrackingState} onClick={() => isTrackingState ? dag.setStateTrackCurrent() : dag.setStateTrackHead()} />
+                    </ZoomItem>
+                }
             </Box>
         </Box>
     );

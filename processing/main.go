@@ -6,7 +6,7 @@ import (
 	databasePackage "github.com/kaspa-live/kaspa-graph-inspector/processing/database"
 	configPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/config"
 	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/logging"
-	kaspadPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/kaspad"
+	"github.com/kaspa-live/kaspa-graph-inspector/processing/infrastructure/network/rpcclient"
 	processingPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/processing"
 	versionPackage "github.com/kaspa-live/kaspa-graph-inspector/processing/version"
 	"github.com/kaspanet/kaspad/version"
@@ -24,7 +24,7 @@ func main() {
 
 	logging.Logger().Infof("Application version %s", versionPackage.Version())
 	logging.Logger().Infof("Embedded kaspad version %s", version.Version())
-	logging.Logger().Infof("Network %s", config.ActiveNetParams.Name)
+	logging.Logger().Infof("Network %s", config.NetName)
 
 	database, err := databasePackage.Connect(config.DatabaseConnectionString)
 	if err != nil {
@@ -32,11 +32,16 @@ func main() {
 	}
 	defer database.Close()
 
-	kaspad, err := kaspadPackage.New(config)
+	rpcAddress, err := config.NetParams().NormalizeRPCServerAddress(config.RPCServer)
 	if err != nil {
-		logging.LogErrorAndExit("Could not create kaspad: %s", err)
+		panic(err)
 	}
-	processing, err := processingPackage.NewProcessing(config, database, kaspad)
+	rpcClient, err := rpcclient.NewRPCClient(rpcAddress, processingPackage.RpcRouteCapacity)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = processingPackage.NewProcessing(config, database, rpcClient)
 	if err != nil {
 		logging.LogErrorAndExit("Could not initialize processing: %s", err)
 	}
@@ -54,22 +59,22 @@ func main() {
 	// 	logging.Logger().Debugf("Consensus ValidateAndInsertBlock listener gets block %s with status %s", blockHash, blockInfo.BlockStatus.String())
 	// })
 
-	kaspad.SetOnVirtualResolvedListener(func() {
-		err := processing.ResyncVirtualSelectedParentChain()
-		if err != nil {
-			logging.LogErrorAndExit("Could not resync the virtual selected parent chain: %s", err)
-		}
-	})
-	kaspad.SetOnConsensusResetListener(func() {
-		err := processing.ResyncDatabase()
-		if err != nil {
-			logging.LogErrorAndExit("Could not resync database: %s", err)
-		}
-	})
-	err = kaspad.Start()
-	if err != nil {
-		logging.LogErrorAndExit("Could not start kaspad: %s", err)
-	}
+	//kaspad.SetOnVirtualResolvedListener(func() {
+	//	err := processing.ResyncVirtualSelectedParentChain()
+	//	if err != nil {
+	//		logging.LogErrorAndExit("Could not resync the virtual selected parent chain: %s", err)
+	//	}
+	//})
+	//kaspad.SetOnConsensusResetListener(func() {
+	//	err := processing.ResyncDatabase()
+	//	if err != nil {
+	//		logging.LogErrorAndExit("Could not resync database: %s", err)
+	//	}
+	//})
+	//err = kaspad.Start()
+	//if err != nil {
+	//	logging.LogErrorAndExit("Could not start kaspad: %s", err)
+	//}
 
 	<-make(chan struct{})
 }

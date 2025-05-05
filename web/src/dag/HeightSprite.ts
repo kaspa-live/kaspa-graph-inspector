@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js-legacy";
-import {Ease, Tween} from "@createjs/tweenjs";
+import { Ease, Tween } from "@createjs/tweenjs";
 import { theme } from "./Theme";
 
 const heightTextures: { [key: string]: PIXI.RenderTexture } = {};
@@ -13,7 +13,7 @@ const heightTexture = (application: PIXI.Application, width: number, height: num
         graphics.drawRect(0, 0, width, height);
         graphics.endFill();
 
-        let textureOptions: PIXI.IGenerateTextureOptions  = {
+        let textureOptions: PIXI.IGenerateTextureOptions = {
             scaleMode: PIXI.SCALE_MODES.LINEAR,
             resolution: resolution,
         }
@@ -38,7 +38,7 @@ export default class HeightSprite extends PIXI.Container {
     private spriteHeight: number = 0;
     private daaScoreClickedListener: (daaScore: number) => void;
 
-    constructor(application: PIXI.Application, blockHeight: number, daaScore: number) {
+    constructor(application: PIXI.Application, blockHeight: number, daaScore: number, interactive: boolean) {
         super();
 
         this.application = application;
@@ -56,11 +56,11 @@ export default class HeightSprite extends PIXI.Container {
         this.textContainer = new PIXI.Container();
         this.addChild(this.textContainer);
 
-        this.currentSprite = this.buildSprite();
+        this.currentSprite = this.buildSprite(interactive);
         this.spriteContainer.addChild(this.currentSprite);
     }
 
-    private buildSprite = (): PIXI.Sprite => {
+    private buildSprite = (interactive: boolean): PIXI.Sprite => {
         const sprite = new PIXI.Sprite();
         sprite.anchor.set(0.5, 0.5);
         sprite.alpha = 0.0;
@@ -68,13 +68,15 @@ export default class HeightSprite extends PIXI.Container {
 
         sprite.interactive = true;
         sprite.buttonMode = true;
-        sprite.on("pointerover", () => {
-            Tween.get(sprite).to({alpha: 1.0}, 200, Ease.linear);
-        });
-        sprite.on("pointerout", () => {
-            Tween.get(sprite).to({alpha: 0.0}, 200, Ease.linear);
-        });
-        sprite.on("pointertap", () => this.daaScoreClickedListener(this.daaScore));
+        if (interactive) {
+            sprite.on("pointerover", () => {
+                Tween.get(sprite).to({ alpha: 1.0 }, 200, Ease.linear);
+            });
+            sprite.on("pointerout", () => {
+                Tween.get(sprite).to({ alpha: 0.0 }, 200, Ease.linear);
+            });
+            sprite.on("pointertap", () => this.daaScoreClickedListener(this.daaScore));
+        }
 
         return sprite;
     }
@@ -82,14 +84,14 @@ export default class HeightSprite extends PIXI.Container {
     private buildText = (spriteHeight: number, blockSize: number): PIXI.Text => {
         const fontSize = Math.round(
             Math.max(theme.components.height.text.minFontSize,
-            Math.min(blockSize * theme.components.height.text.multiplier.size,
-                     theme.components.height.text.maxFontSize)));
+                Math.min(blockSize * theme.components.height.text.multiplier.size,
+                    theme.components.height.text.maxFontSize)));
 
         const bottomMargin = Math.round(
             Math.max(theme.components.height.text.minBottomMargin,
-            Math.min(blockSize * theme.components.height.text.multiplier.bottomMargin,
-                     theme.components.height.text.maxBottomMargin)));
-            
+                Math.min(blockSize * theme.components.height.text.multiplier.bottomMargin,
+                    theme.components.height.text.maxBottomMargin)));
+
         const style = new PIXI.TextStyle({
             fontFamily: theme.components.height.text.fontFamily,
             fontWeight: theme.components.height.text.fontWeight,
@@ -128,7 +130,7 @@ export default class HeightSprite extends PIXI.Container {
     }
 
     setDAAScore = (daaScore: number) => {
-      this.daaScore = daaScore;
+        this.daaScore = daaScore;
     }
 
     getDAAScore = (): number => {
