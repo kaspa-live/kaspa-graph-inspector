@@ -302,7 +302,7 @@ func (p *Processing) ResyncDatabase() error {
 			if err != nil {
 				return err
 			}
-			log.Infof("Cycle %d - Node blocks loaded", cycle)
+			log.Infof("Cycle %d - Node blocks hashes loaded", cycle)
 
 			startIndex := int(0)
 			if keepDatabase && cycle == 0 {
@@ -344,7 +344,10 @@ func (p *Processing) ResyncDatabase() error {
 				}
 
 				if addedCount%100000 == 0 || (i == len(hashesToSelectedTip)-1 && addedCount >= 1000) {
-					err := p.resyncVirtualSelectedParentChain(databaseTransaction, false, block)
+					// Here, any missing data is most probably indicative of an ongoing node pruning.
+					// So we fail and force a restart of the processing tier which will be based on the
+					// new pruning point.
+					err := p.resyncVirtualSelectedParentChain(databaseTransaction, false, block, FailOnMissingData)
 					if err != nil {
 						return err
 					}
@@ -353,7 +356,7 @@ func (p *Processing) ResyncDatabase() error {
 
 			// Resync the VPSC when getting close to the tip
 			if len(hashesToSelectedTip) < 20 {
-				err := p.resyncVirtualSelectedParentChain(databaseTransaction, false, block)
+				err := p.resyncVirtualSelectedParentChain(databaseTransaction, false, block, ReportMissingData)
 				if err != nil {
 					return err
 				}
@@ -477,11 +480,11 @@ func (p *Processing) ResyncVirtualSelectedParentChain() error {
 	defer p.Unlock()
 
 	return p.database.RunInTransaction(func(databaseTransaction *pg.Tx) error {
-		return p.resyncVirtualSelectedParentChain(databaseTransaction, true, nil)
+		return p.resyncVirtualSelectedParentChain(databaseTransaction, true, nil, ReportMissingData)
 	})
 }
 
-func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx, withDependencies bool, stopBlock *block.Block) error {
+func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx, withDependencies bool, stopBlock *block.Block, missingDataPolicy MissingDataPolicy) error {
 	log.Debugf("Resyncing virtual selected parent chain")
 	defer log.Debugf("Finished resyncing virtual selected parent chain")
 
@@ -502,8 +505,13 @@ func (p *Processing) resyncVirtualSelectedParentChain(databaseTransaction *pg.Tx
 	}
 	changes, err := p.getVirtualSelectedParentChainChanges(highestBlockHash, stopBlock)
 	if err != nil {
-		log.Errorf("Could not get virtual selected parent chain from block %s: %s", highestBlockHash, err)
-		return nil
+		switch missingDataPolicy {
+		case ReportMissingData:
+			log.Errorf("Could not get virtual selected parent chain from block %s: %s", highestBlockHash, err)
+			return nil
+		case FailOnMissingData:
+			return errors.Wrapf(err, "Could not get virtual selected parent chain from block %s", highestBlockHash)
+		}
 	}
 
 	log.Infof("Resyncing virtual selected parent chain from block %s with %d added, %d removed", highestBlockHash, len(changes.Added), len(changes.Removed))
