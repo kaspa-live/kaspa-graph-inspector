@@ -12,7 +12,7 @@ services:
     #network_mode: host
 
   persistent-postgres:
-    image: "postgres:13.2"
+    image: "postgres:17.7-alpine"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
