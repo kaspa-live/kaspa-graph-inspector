@@ -54,9 +54,9 @@ func (b *Batch) InScope(block *block.Block) bool {
 	return b.syncBlock == nil || b.syncBlock.Domain.Header.DAAScore() <= block.Domain.Header.DAAScore()+PrePruningPointDaaScoreThreshold
 }
 
-// IgnoreParents returns true if `block` has a DAA score lower than that of the pruning block
+// IgnoreParents returns true if `block` has a DAA score lower than that of the pruning block or block is genesis
 func (b *Batch) IgnoreParents(block *block.Block) bool {
-	return b.syncBlock != nil && block.Domain.Header.DAAScore() < b.syncBlock.Domain.Header.DAAScore()
+	return b.syncBlock != nil && (block.Domain.Header.DAAScore() < b.syncBlock.Domain.Header.DAAScore()) || (block.Domain.Header.DAAScore() == 0)
 }
 
 // Add adds a pair `hash` and its matching `block` to the batch.
