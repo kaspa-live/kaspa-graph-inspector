@@ -103,9 +103,6 @@ function docker_compose() {
 # Start postgres
 docker_compose up -d persistent-postgres
 
-# Wait for postgres to finish initializing
-sleep 10s
-
 # Start processing, api, and web
 docker_compose up -d processing
 docker_compose up -d api
