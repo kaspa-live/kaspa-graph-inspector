@@ -9,6 +9,11 @@ services:
       - "${POSTGRES_PORT}:5432"
     user: root
     #network_mode: host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   persistent-postgres:
     image: "postgres:17.7-alpine"
@@ -23,7 +28,7 @@ services:
     volumes:
       - ${KGI_POSTGRES_MOUNT:-/tmp/kgi-postgres-mount}:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
