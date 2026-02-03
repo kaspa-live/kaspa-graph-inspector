@@ -50,3 +50,5 @@ require (
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 	mellium.im/sasl v0.2.1 // indirect
 )
+
+replace github.com/kaspanet/kaspad => ../../../kaspanet/kaspad
