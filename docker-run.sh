@@ -6,9 +6,9 @@ set -e
 # DB #
 ######
 
-export POSTGRES_USER=${POSTGRES_USER-postgres}
-export POSTGRES_PASSWORD=${POSTGRES_PASSWORD-postgres}
-export POSTGRES_DB=${POSTGRES_DB-postgres}
+export POSTGRES_USER=${POSTGRES_USER-kgi}
+# POSTGRES_PASSWORD is required
+export POSTGRES_DB=${POSTGRES_DB-kgi}
 export POSTGRES_HOST=${POSTGRES_HOST-"localhost"}
 export POSTGRES_PORT=${POSTGRES_PORT-"5433"}
 
@@ -27,18 +27,16 @@ export KGI_POSTGRES_MOUNT=${KGI_POSTGRES_MOUNT-"~/.kgi-postgres"}
 # API #
 #######
 
-export API_ADDRESS=${API_ADDRESS-"localhost"}
-# provide a public host or ip for a deployment (ie: "kaspa.live")
+export API_ADDRESS=${API_ADDRESS-"localhost"} # provide a public host or ip for a deployment (ie: "kaspa.live")
 export API_PORT=${API_PORT-"4575"}
 
 #######
 # Web #
 #######
 
-export KASPA_LIVE_ADDRESS=${KASPA_LIVE_ADDRESS-"kaspa.live"}
-# provide a public host or ip for a deployment (ie: "kaspa.live")
+export KASPA_LIVE_ADDRESS=${KASPA_LIVE_ADDRESS-"localhost"} # provide a public host or ip for a deployment (ie: "kaspa.live")
 export WEB_PORT=${WEB_PORT-"8080"}
-export EXPLORER_ADDRESS=${EXPLORER_ADDRESS-"explorer.kaspa.org"}
+# EXPLORER_ADDRESS is optional with default depending on KGI_NETWORK and KGI_NETWORK_SUFFIX
 
 
 # Verify that all the required environment variables are set
@@ -71,17 +69,23 @@ if [ true = "${REQUIRED_VARIABLE_NOT_SET}" ]; then
   exit 1
 fi
 
-# Check the processing network variables and create KGI_NETWORK_ARGS based on those
-if [ "testnet" == "${KGI_NETWORK}" ]; then
+# Checks the processing network variables and creates KGI_NETWORK_ARGS based on those
+# If unset/empty, defines EXPLORER_ADDRESS according to the network variables
+if [ -z "${KGI_NETWORK}" ]; then
+  export EXPLORER_ADDRESS=${EXPLORER_ADDRESS-"explorer.kaspa.org"}
+elif [ "testnet" == "${KGI_NETWORK}" ]; then
   if [ -z "${KGI_NETWORK_SUFFIX}" ]; then
     echo "On testnet, the network suffix is mandatory. Set KGI_NETWORK_SUFFIX"
     exit 1
   fi
   export KGI_NETWORK_ARGS=${KGI_NETWORK_ARGS-"--testnet --netsuffix=${KGI_NETWORK_SUFFIX}"}
+  export EXPLORER_ADDRESS=${EXPLORER_ADDRESS-"explorer-tn${KGI_NETWORK_SUFFIX}.kaspa.org"}
 elif [ "simnet"  == "${KGI_NETWORK}" ]; then
   export KGI_NETWORK_ARGS=${KGI_NETWORK_ARGS-"--simnet"}
+  export EXPLORER_ADDRESS=${EXPLORER_ADDRESS-"localhost"}
 elif [ "devnet"  == "${KGI_NETWORK}" ]; then
   export KGI_NETWORK_ARGS=${KGI_NETWORK_ARGS-"--devnet"}
+  export EXPLORER_ADDRESS=${EXPLORER_ADDRESS-"localhost"}
 fi
 
 # Build kaspa-graph-inspector
@@ -98,9 +102,6 @@ function docker_compose() {
 
 # Start postgres
 docker_compose up -d persistent-postgres
-
-# Wait for postgres to finish initializing
-sleep 10s
 
 # Start processing, api, and web
 docker_compose up -d processing

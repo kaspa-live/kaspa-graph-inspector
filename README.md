@@ -27,13 +27,14 @@ For development, it's recommended to run KGI from within Docker
 1. Make sure you have docker installed by running `docker --version`
 2. Make sure you have docker-compose installed by running `docker-compose --version`
 3. Define the following environment variables:
-   1. POSTGRES_PORT=5433
-   2. KGI_NETWORK=testnet - accepted values ["", "testnet", "simnet", "devnet"]
-   3. KGI_NETWORK_SUFFIX=12 - only if KGI_NETWORK=="testnet"
-   4. API_PORT=4575
-   5. WEB_PORT=8080
-   6. KASPA_LIVE_ADDRESS=localhost
-   7. EXPLORER_ADDRESS=explorer.kaspa.org - adapt to the network type
+   1. POSTGRES_USER=username
+   2. POSTGRES_PASSWORD=password
+   3. POSTGRES_DB=database-name
+   4. POSTGRES_PORT=5433
+   5. KGI_NETWORK=testnet - accepted values ["", "testnet", "simnet", "devnet"]
+   6. KGI_NETWORK_SUFFIX=12 - only if KGI_NETWORK=="testnet"
+   7. API_PORT=4575
+   8. WEB_PORT=8080
 4. Run: `./docker-run.sh`
 
 Deployment
