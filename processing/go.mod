@@ -31,7 +31,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jrick/logrotate v1.0.0 // indirect
 	github.com/kaspanet/go-muhash v0.0.4 // indirect
-	github.com/kaspanet/go-secp256k1 v0.0.7 // indirect
 	github.com/lib/pq v1.8.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20190923125748-758128399b1d // indirect
@@ -50,5 +49,3 @@ require (
 	gopkg.in/yaml.v3 v3.0.0 // indirect
 	mellium.im/sasl v0.2.1 // indirect
 )
-
-replace github.com/kaspanet/kaspad => ../../../kaspanet/kaspad
