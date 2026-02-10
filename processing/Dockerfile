@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS build
+FROM golang:1.24-alpine AS build
 
 # gcc and libc (musl-dev) are required by kaspad
 # git is required to build kaspad by commit-hash
